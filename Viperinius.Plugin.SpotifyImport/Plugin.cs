@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Jellyfin.Plugin.Template.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
+using Viperinius.Plugin.SpotifyImport.Configuration;
 
-namespace Jellyfin.Plugin.Template;
+namespace Viperinius.Plugin.SpotifyImport;
 
 /// <summary>
 /// The main plugin.
