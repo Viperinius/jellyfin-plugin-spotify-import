@@ -8,6 +8,7 @@
     <Nullable>enable</Nullable>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,5 +26,9 @@
     <None Remove="Configuration\configPage.html" />
     <EmbeddedResource Include="Configuration\configPage.html" />
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
+    <Exec Command="SET jfpath=$(APPDATA)\..\Local\jellyfin\plugins\$(TargetName)&#xD;&#xA;if not exist &quot;%25jfpath%25&quot; mkdir &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetPath)&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;%25jfpath%25&quot;" />
+  </Target>
 
 </Project>
