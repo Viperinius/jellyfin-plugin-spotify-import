@@ -9,6 +9,7 @@
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="SerilogAnalyzer" Version="0.15.0" PrivateAssets="All" />
+    <PackageReference Include="SpotifyAPI.Web" Version="7.0.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.376" PrivateAssets="All" />
     <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" PrivateAssets="All" />
   </ItemGroup>
@@ -28,7 +30,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
-    <Exec Command="SET jfpath=$(APPDATA)\..\Local\jellyfin\plugins\$(TargetName)&#xD;&#xA;if not exist &quot;%25jfpath%25&quot; mkdir &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetPath)&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;%25jfpath%25&quot;" />
+    <Exec Command="SET jfpath=$(APPDATA)\..\Local\jellyfin\plugins\$(TargetName)&#xD;&#xA;if not exist &quot;%25jfpath%25&quot; mkdir &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetPath)&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)SpotifyAPI.Web.dll&quot; &quot;%25jfpath%25&quot;" />
   </Target>
 
 </Project>
