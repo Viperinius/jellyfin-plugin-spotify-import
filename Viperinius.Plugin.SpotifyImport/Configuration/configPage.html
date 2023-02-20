@@ -42,6 +42,9 @@
                 pluginUniqueId: 'F03D0ADB-289F-4986-BD6F-2468025249B3'
             };
 
+            // match a given spotify id with or without a prepended url or uri part
+            const playlistIdRegex = /^(https?:\/\/open.spotify.com\/playlist\/|spotify:playlist:)?([a-zA-Z0-9]+)$/gm;
+
             document.querySelector('#SpotifyImportConfigPage')
                 .addEventListener('pageshow', function() {
                     Dashboard.showLoadingMsg();
@@ -63,6 +66,20 @@
                     ApiClient.getPluginConfiguration(SpotifyImportConfig.pluginUniqueId).then(function (config) {
                         config.SpotifyClientId = document.querySelector('#SpotifyClientId').value;
                         config.SpotifyClientSecret = document.querySelector('#SpotifyClientSecret').value;
+
+                        let match;
+                        config.PlaylistIds = [];
+                        while ((match = playlistIdRegex.exec(document.querySelector('#SpotifyPlaylists').value)) !== null) {
+                            if (match.index === playlistIdRegex.lastIndex) {
+                                playlistIdRegex.lastIndex++;
+                            }
+
+                            console.log(match);
+                            if (match.length > 2) {
+                                config.PlaylistIds.push(match[2]);
+                            }
+                        }
+
                         ApiClient.updatePluginConfiguration(SpotifyImportConfig.pluginUniqueId, config).then(function (result) {
                             Dashboard.processPluginConfigurationUpdateResult(result);
                         });
