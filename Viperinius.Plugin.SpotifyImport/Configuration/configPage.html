@@ -8,15 +8,27 @@
     <div id="SpotifyImportConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-select,emby-checkbox,emby-textarea">
         <div data-role="content">
             <div class="content-primary">
-                <form id="SpotifyImportConfigForm">
+                <form id="NfoChaptersConfigForm">
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h2 class="sectionTitle">Spotify Import</h2>
+                    </div>
+                    <div class="verticalSection">
+                        <p>This plugin imports playlists from Spotify.</p>
+                        <br />
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="EnableVerboseLogging" name="EnableVerboseLogging" type="checkbox" is="emby-checkbox" />
+                            <span>Enable verbose logging for this plugin.</span>
+                        </label>
+                    </div>
                     <div class="inputContainer">
-                        <label class="inputLabel inputLabelUnfocused" for="SpotifyClientId">Spotify Client ID</label>
-                        <input id="SpotifyClientId" class="emby-input" type="text" is="emby-input" />
+                        <input id="SpotifyClientId" type="text" is="emby-input" label="Spotify Client ID" />
                         <div class="fieldDescription">How to get this value? Check <a href="https://developer.spotify.com/documentation/general/guides/authorization/app-settings/">here</a></div>
                     </div>
                     <div class="inputContainer">
-                        <label class="inputLabel inputLabelUnfocused" for="SpotifyClientSecret">Spotify Client Secret</label>
-                        <input id="SpotifyClientSecret" class="emby-input" type="password" is="emby-input" />
+                        <input id="SpotifyClientSecret" type="password" is="emby-input" label="Spotify Client Secret" />
                         <div class="fieldDescription">How to get this value? Check <a href="https://developer.spotify.com/documentation/general/guides/authorization/app-settings/">here</a></div>
                     </div>
                     <div class="inputContainer">
@@ -29,6 +41,7 @@
                             <p>URL (ex.: https://open.spotify.com/playlist/4cOdK2wGLETKBW3PvgPWqT)</p>
                         </div>
                     </div>
+
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block emby-button">
                             <span>Save</span>
@@ -42,13 +55,11 @@
                 pluginUniqueId: 'F03D0ADB-289F-4986-BD6F-2468025249B3'
             };
 
-            // match a given spotify id with or without a prepended url or uri part
-            const playlistIdRegex = /^(https?:\/\/open.spotify.com\/playlist\/|spotify:playlist:)?([a-zA-Z0-9]+)$/gm;
-
             document.querySelector('#SpotifyImportConfigPage')
                 .addEventListener('pageshow', function() {
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(SpotifyImportConfig.pluginUniqueId).then(function (config) {
+                        document.querySelector('#EnableVerboseLogging').checked = config.EnableVerboseLogging;
                         document.querySelector('#SpotifyClientId').value = config.SpotifyClientId;
                         document.querySelector('#SpotifyClientSecret').value = config.SpotifyClientSecret;
 
@@ -64,17 +75,21 @@
                 .addEventListener('submit', function(e) {
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(SpotifyImportConfig.pluginUniqueId).then(function (config) {
+                        config.EnableVerboseLogging = document.querySelector('#EnableVerboseLogging').checked;
                         config.SpotifyClientId = document.querySelector('#SpotifyClientId').value;
                         config.SpotifyClientSecret = document.querySelector('#SpotifyClientSecret').value;
 
                         let match;
                         config.PlaylistIds = [];
+
+                        // match a given spotify id with or without a prepended url or uri part
+                        const playlistIdRegex = /^(https?:\/\/open.spotify.com\/playlist\/|spotify:playlist:)?([a-zA-Z0-9]+)$/gm;
+
                         while ((match = playlistIdRegex.exec(document.querySelector('#SpotifyPlaylists').value)) !== null) {
                             if (match.index === playlistIdRegex.lastIndex) {
                                 playlistIdRegex.lastIndex++;
                             }
 
-                            console.log(match);
                             if (match.length > 2) {
                                 config.PlaylistIds.push(match[2]);
                             }

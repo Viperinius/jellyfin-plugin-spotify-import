@@ -22,6 +22,11 @@ public class PluginConfiguration : BasePluginConfiguration
     }
 
     /// <summary>
+    /// Gets or sets a value indicating whether to enable verbose logging (ex: spotify requests).
+    /// </summary>
+    public bool EnableVerboseLogging { get; set; }
+
+    /// <summary>
     /// Gets or sets the Spotify client ID.
     /// </summary>
     public string SpotifyClientId { get; set; }
