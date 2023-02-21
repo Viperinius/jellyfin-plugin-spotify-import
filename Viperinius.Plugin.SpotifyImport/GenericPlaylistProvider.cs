@@ -36,7 +36,7 @@ namespace Viperinius.Plugin.SpotifyImport
         /// <summary>
         /// Gets or sets the list of playlist sources.
         /// </summary>
-        public List<ProviderPlaylistInfo> Playlists { get; set; }
+        public List<ProviderPlaylistInfo> Playlists { get; protected set; }
 
         public abstract void SetUpProvider();
 
