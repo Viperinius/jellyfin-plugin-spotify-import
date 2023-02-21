@@ -66,18 +66,18 @@ namespace Viperinius.Plugin.SpotifyImport
                     updateReason |= ItemUpdateType.ImageUpdate;
                 }
 
-                if (!string.IsNullOrWhiteSpace(providerPlaylist.Description))
+                if (!string.IsNullOrWhiteSpace(providerPlaylist.Description) && providerPlaylist.Description != playlist.Overview)
                 {
                     playlist.Overview = providerPlaylist.Description;
                     updateReason |= ItemUpdateType.MetadataEdit;
                 }
 
-                await FindTracksAndAddToPlaylist(playlist, providerPlaylist.Tracks, user, cancellationToken).ConfigureAwait(false);
-
                 if (updateReason != ItemUpdateType.None)
                 {
                     await _libraryManager.UpdateItemAsync(playlist, playlist.GetParent(), updateReason, cancellationToken).ConfigureAwait(false);
                 }
+
+                await FindTracksAndAddToPlaylist(playlist, providerPlaylist.Tracks, user, cancellationToken).ConfigureAwait(false);
             }
         }
 
