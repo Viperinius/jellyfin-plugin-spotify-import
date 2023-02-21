@@ -40,13 +40,13 @@ namespace Viperinius.Plugin.SpotifyImport
 
         public abstract void SetUpProvider();
 
-        public virtual async Task PopulatePlaylists(List<string> playlistIds)
+        public virtual async Task PopulatePlaylists(List<string> playlistIds, CancellationToken? cancellationToken = null)
         {
             _logger.LogInformation("Starting to query {Amount} playlists from {Name}", playlistIds.Count, Name);
 
             foreach (var playlistId in playlistIds)
             {
-                var playlist = await GetPlaylist(playlistId).ConfigureAwait(false);
+                var playlist = await GetPlaylist(playlistId, cancellationToken).ConfigureAwait(false);
                 if (playlist != null)
                 {
                     Playlists.Add(playlist);
