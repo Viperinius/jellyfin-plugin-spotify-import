@@ -15,6 +15,12 @@
 
 ## About
 
+This plugin enables you to import playlists from Spotify to your Jellyfin server automatically. It provides a scheduled task that queries a given list of Spotify playlists and tries to recreate it as best as possible in Jellyfin.
+
+The playlist will be created with the same name, description and image as configured in Spotify. Any matching songs that exist on your Jellyfin server will be added to this new playlist or to an already existing playlist with this name.
+
+This is still work in progress, see [below](#to-do) for more details what might be coming.
+
 
 ## Installation
 
@@ -27,6 +33,18 @@ https://raw.githubusercontent.com/Viperinius/jellyfin-plugins/master/manifest.js
 
 ## How to
 
+After installing the plugin, visit its configuration page and add your Spotify Client ID and Client Secret.
+> *Note*: The ID and secret are currently simply stored in the configuration file of the plugin -> They are stored in clear text!
+
+Then, go to the field `Spotify Playlist IDs` and paste the identifier of the Spotify playlists that you want to import.
+
+Following identifier formats work:
+- The raw ID, e.g. `4cOdK2wGLETKBW3PvgPWqT`
+- The Spotify URI, e.g. `spotify:playlist:4cOdK2wGLETKBW3PvgPWqT`
+- The full Spotify playlist URL, e.g. `https://open.spotify.com/playlist/4cOdK2wGLETKBW3PvgPWqT`
+
+When done, save these settings and you're set. The plugin will do its thing periodically (default: daily at 03:00).
+If you want to change this or want to let it run immediately, head to the scheduled tasks page and look for the task `Import Spotify playlists`.
 
 ## To do
 
@@ -36,3 +54,4 @@ A few things that are not implemented yet:
 - Expand configuration to allow more customisation than just pasting in Spotify IDs
     - Set name of the Jellyfin playlist
     - Specify target user that owns the Jellyfin playlist
+- Allow (optional) synchronisation by also removing items that are not present in the Spotify playlist
