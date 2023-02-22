@@ -1,16 +1,16 @@
 ---
-name: "Template"
-guid: "eb5d7894-8eef-4b36-aa6f-5d124e828ce1"
-version: "1.0.0.0"
+name: "Spotify Import"
+guid: "F03D0ADB-289F-4986-BD6F-2468025249B3"
+version: "0.0.0.0"
 targetAbi: "10.8.0.0"
 framework: "net6.0"
-overview: "Short description about your plugin"
+overview: "This plugin imports playlists from Spotify."
 description: >
-  This is a longer description that can span more than one
-  line and include details about your plugin.
-category: "General"
-owner: "jellyfin"
+  This plugin enables you to import playlists from Spotify to your Jellyfin server automatically.
+  It provides a scheduled task that queries a given list of Spotify playlists and tries to recreate them as best as possible in Jellyfin.
+category: "Metadata"
+owner: "Viperinius"
 artifacts:
-- "Jellyfin.Plugin.Template.dll"
+- "Viperinius.Plugin.SpotifyImport.dll"
 changelog: >
   changelog
