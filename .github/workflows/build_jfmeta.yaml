@@ -1,0 +1,40 @@
+on:
+  workflow_call:
+    inputs:
+      dotnet-version:
+        required: false
+        default: "6.0.x"
+        description: "The .NET version to setup for the build"
+        type: string
+      dotnet-target:
+        required: false
+        default: "net6.0"
+        description: "The .NET target to set for JPRM"
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a # tag=v3.0.3
+        with:
+          dotnet-version: "${{ inputs.dotnet-version }}"
+
+      - name: Build Jellyfin Plugin
+        #uses: oddstr13/jellyfin-plugin-repository-manager@a7795e010e63a6dcbbd5e6d8274f801d021f1045 # tag=v0.5.0
+        uses: oddstr13/jellyfin-plugin-repository-manager@master
+        id: jprm
+        with:
+          dotnet-target: "${{ inputs.dotnet-target }}"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3
+        with:
+          name: build-artifact
+          retention-days: 30
+          if-no-files-found: error
+          path: ${{ steps.jprm.outputs.artifact }}
