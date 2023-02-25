@@ -47,6 +47,11 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool GenerateMissingTrackLists { get; set; }
 
     /// <summary>
+    /// Gets the list of existing files with missing tracks.
+    /// </summary>
+    public string[] MissingTrackListPaths => MissingTrackStore.GetFileList().ToArray();
+
+    /// <summary>
     /// Adds a new playlist ID.
     /// </summary>
     /// <param name="id">The targeted ID.</param>

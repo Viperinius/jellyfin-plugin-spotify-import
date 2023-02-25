@@ -44,9 +44,16 @@
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label class="emby-checkbox-label">
                             <input id="GenerateMissingTrackLists" name="GenerateMissingTrackLists" type="checkbox" is="emby-checkbox" />
-                            <span>Enable creating files that list any tracks of a playlist that are missing on this server.</span>
+                            <span>Enable creating files that list any tracks of a playlist that are missing from this server.</span>
                         </label>
                     </div>
+                    <div class="verticalSection">
+                        <p>Available files:</p>
+                        <div class="missingTracks readOnlyContent">
+                            <p>-</p>
+                        </div>
+                    </div>
+                    
 
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block emby-button">
@@ -74,6 +81,27 @@
                         }
 
                         document.querySelector('#GenerateMissingTrackLists').checked = config.GenerateMissingTrackLists;
+                        if (config.GenerateMissingTrackLists) {
+                            let missingTracksHtml = '';
+                            missingTracksHtml += '<div class="paperList">';
+                            missingTracksHtml += config.MissingTrackListPaths.map(function(path) {
+                                const fileName = path.split('\\').pop().split('/').pop();
+                                let apiUrl = ApiClient.getUrl('Viperinius.Plugin.SpotifyImport/MissingTracksFile', {
+                                    name: fileName
+                                });
+                                apiUrl += '&api_key=' + ApiClient.accessToken();
+                                let pathHtml = '';
+                                pathHtml += '<a is="emby-linkbutton" href="' + apiUrl + '" target="_blank" class="listItem listItem-border" style="color:inherit;">';
+                                pathHtml += '<div class="listItemBody two-line">';
+                                pathHtml += "<h3 class='listItemBodyText' dir='ltr' style='text-align: left'>" + fileName + '</h3>';
+                                pathHtml += '<div class="listItemBodyText secondary"></div>';
+                                pathHtml += '</div>';
+                                pathHtml += '</a>';
+                                return pathHtml;
+                            }).join('');
+                            missingTracksHtml += '</div>';
+                            document.querySelector('.missingTracks').innerHTML = missingTracksHtml;
+                        }
 
                         Dashboard.hideLoadingMsg();
                     });
