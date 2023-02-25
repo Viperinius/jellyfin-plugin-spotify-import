@@ -8,7 +8,7 @@
     <div id="SpotifyImportConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-select,emby-checkbox,emby-textarea">
         <div data-role="content">
             <div class="content-primary">
-                <form id="NfoChaptersConfigForm">
+                <form id="SpotifyImportConfigForm">
                     <div class="sectionTitleContainer flex align-items-center">
                         <h2 class="sectionTitle">Spotify Import</h2>
                     </div>
@@ -41,6 +41,12 @@
                             <p>URL (ex.: https://open.spotify.com/playlist/4cOdK2wGLETKBW3PvgPWqT)</p>
                         </div>
                     </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="GenerateMissingTrackLists" name="GenerateMissingTrackLists" type="checkbox" is="emby-checkbox" />
+                            <span>Enable creating files that list any tracks of a playlist that are missing on this server.</span>
+                        </label>
+                    </div>
 
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block emby-button">
@@ -66,6 +72,8 @@
                         if (config.PlaylistIds) {
                             document.querySelector('#SpotifyPlaylists').value = config.PlaylistIds.join('\n');
                         }
+
+                        document.querySelector('#GenerateMissingTrackLists').checked = config.GenerateMissingTrackLists;
 
                         Dashboard.hideLoadingMsg();
                     });
@@ -94,6 +102,8 @@
                                 config.PlaylistIds.push(match[2]);
                             }
                         }
+
+                        config.GenerateMissingTrackLists = document.querySelector('#GenerateMissingTrackLists').checked;
 
                         ApiClient.updatePluginConfiguration(SpotifyImportConfig.pluginUniqueId, config).then(function (result) {
                             Dashboard.processPluginConfigurationUpdateResult(result);

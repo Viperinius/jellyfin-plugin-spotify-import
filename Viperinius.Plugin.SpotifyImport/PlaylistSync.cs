@@ -84,6 +84,7 @@ namespace Viperinius.Plugin.SpotifyImport
         private async Task FindTracksAndAddToPlaylist(Playlist playlist, List<ProviderTrackInfo> providerTrackInfos, User user, CancellationToken cancellationToken)
         {
             var newTracks = new List<Guid>();
+            var missingTracks = new List<ProviderTrackInfo>();
 
             foreach (var providerTrack in providerTrackInfos)
             {
@@ -97,10 +98,20 @@ namespace Viperinius.Plugin.SpotifyImport
                     {
                         newTracks.Add(track.Id);
                     }
+                    else if (Plugin.Instance?.Configuration.GenerateMissingTrackLists ?? false)
+                    {
+                        missingTracks.Add(providerTrack);
+                    }
                 }
             }
 
             await _playlistManager.AddToPlaylistAsync(playlist.Id, newTracks, user.Id).ConfigureAwait(false);
+
+            if (Plugin.Instance?.Configuration.GenerateMissingTrackLists ?? false)
+            {
+                var missingFilePath = MissingTrackStore.GetFilePath(playlist.Name);
+                await MissingTrackStore.WriteFile(missingFilePath, missingTracks).ConfigureAwait(false);
+            }
         }
 
         private Audio? GetTrack(ProviderTrackInfo providerTrackInfo)

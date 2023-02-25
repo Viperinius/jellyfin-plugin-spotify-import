@@ -42,6 +42,11 @@ public class PluginConfiguration : BasePluginConfiguration
     public string[] PlaylistIds { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether to enable the creation of files containing missing tracks on the server.
+    /// </summary>
+    public bool GenerateMissingTrackLists { get; set; }
+
+    /// <summary>
     /// Adds a new playlist ID.
     /// </summary>
     /// <param name="id">The targeted ID.</param>
