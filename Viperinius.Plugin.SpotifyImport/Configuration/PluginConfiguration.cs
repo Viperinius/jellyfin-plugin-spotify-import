@@ -18,7 +18,6 @@ public class PluginConfiguration : BasePluginConfiguration
     public PluginConfiguration()
     {
         SpotifyClientId = string.Empty;
-        SpotifyClientSecret = string.Empty;
         PlaylistIds = Array.Empty<string>();
     }
 
@@ -31,11 +30,6 @@ public class PluginConfiguration : BasePluginConfiguration
     /// Gets or sets the Spotify client ID.
     /// </summary>
     public string SpotifyClientId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the Spotify client secret.
-    /// </summary>
-    public string SpotifyClientSecret { get; set; }
 
     /// <summary>
     /// Gets or sets the targeted playlist IDs.

@@ -30,17 +30,14 @@
                             Make sure to use "<span id="SpotifyAuthRedirectUri"></span>" as Redirect URI.
                         </div>
                     </div>
-                    <div>
+                    <div class="verticalSection">
                         <div class="fieldDescription hide" id="authSpotifyAlreadyDesc">
                             Found an existing authorization. (Created at: <span id="authSpotifyCreatedAt"></span>)
                         </div>
                         <button is="emby-button" type="button" id="authSpotify" class="raised block">
                             <span>Authorize</span>
                         </button>
-                    </div>
-                    <div class="inputContainer">
-                        <input id="SpotifyClientSecret" type="password" is="emby-input" label="Spotify Client Secret" />
-                        <div class="fieldDescription">How to get this value? Check <a href="https://developer.spotify.com/documentation/general/guides/authorization/app-settings/">here</a></div>
+                        <br>
                     </div>
                     <div class="inputContainer">
                         <label class="textareaLabel textareaLabelUnfocused" for="SpotifyPlaylists">Spotify Playlist IDs</label>
@@ -92,7 +89,6 @@
 
                         document.querySelector('#EnableVerboseLogging').checked = config.EnableVerboseLogging;
                         document.querySelector('#SpotifyClientId').value = config.SpotifyClientId;
-                        document.querySelector('#SpotifyClientSecret').value = config.SpotifyClientSecret;
 
                         if (config.PlaylistIds) {
                             document.querySelector('#SpotifyPlaylists').value = config.PlaylistIds.join('\n');
@@ -131,7 +127,6 @@
                     ApiClient.getPluginConfiguration(SpotifyImportConfig.pluginUniqueId).then(function (config) {
                         config.EnableVerboseLogging = document.querySelector('#EnableVerboseLogging').checked;
                         config.SpotifyClientId = document.querySelector('#SpotifyClientId').value;
-                        config.SpotifyClientSecret = document.querySelector('#SpotifyClientSecret').value;
 
                         let match;
                         config.PlaylistIds = [];
