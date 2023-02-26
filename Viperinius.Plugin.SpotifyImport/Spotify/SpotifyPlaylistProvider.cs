@@ -33,16 +33,24 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
         public override void SetUpProvider()
         {
             if (string.IsNullOrWhiteSpace(Plugin.Instance?.Configuration.SpotifyClientId) ||
-                string.IsNullOrWhiteSpace(Plugin.Instance?.Configuration.SpotifyClientSecret))
+                Plugin.Instance?.Configuration.SpotifyAuthToken == null ||
+                string.IsNullOrEmpty(Plugin.Instance?.Configuration.SpotifyAuthToken.AccessToken))
             {
-                _logger.LogError("Missing Spotify client ID or secret!");
+                _logger.LogError("Missing Spotify auth token or client ID!");
                 return;
             }
 
+            var authenticator = new PKCEAuthenticator(
+                                        Plugin.Instance!.Configuration.SpotifyClientId,
+                                        Plugin.Instance!.Configuration.SpotifyAuthToken);
+            authenticator.TokenRefreshed += (ev, token) =>
+            {
+                Plugin.Instance!.Configuration.SpotifyAuthToken = token;
+                Plugin.Instance!.SaveConfiguration();
+            };
+
             var config = _defaultSpotifyConfig.WithHTTPLogger(new SpotifyLogger(_apiLogger))
-                                              .WithAuthenticator(new ClientCredentialsAuthenticator(
-                                                  Plugin.Instance!.Configuration.SpotifyClientId,
-                                                  Plugin.Instance!.Configuration.SpotifyClientSecret));
+                                              .WithAuthenticator(authenticator);
             _spotifyClient = new SpotifyClient(config);
         }
 
