@@ -51,7 +51,7 @@ This procedure needs a little bit of setup from your end (basically the same as 
 
 ### Get started
 
-After installing the plugin, visit its configuration page and add your Spotify Client ID and click on `Authorize`. You will be redirected to Spotify to grant access. The plugin requests access to these scopes:
+After installing the plugin, visit its configuration page and add your Spotify Client ID (save afterwards) and click on `Authorize`. You will be redirected to Spotify to grant access. The plugin requests access to these scopes:
 - Read private playlists
 - Read collaborative playlists
 

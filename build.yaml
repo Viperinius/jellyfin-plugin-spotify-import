@@ -13,5 +13,6 @@ category: "Metadata"
 owner: "Viperinius"
 artifacts:
 - "Viperinius.Plugin.SpotifyImport.dll"
+- "SpotifyAPI.Web.dll"
 changelog: >
   changelog
