@@ -32,6 +32,11 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     public override Guid Id => Guid.Parse("F03D0ADB-289F-4986-BD6F-2468025249B3");
 
     /// <summary>
+    /// Gets the base path for the plugin API.
+    /// </summary>
+    public static string PluginApiBase => $"{nameof(Viperinius)}.{nameof(Viperinius.Plugin)}.{nameof(SpotifyImport)}";
+
+    /// <summary>
     /// Gets the current plugin instance.
     /// </summary>
     public static Plugin? Instance { get; private set; }

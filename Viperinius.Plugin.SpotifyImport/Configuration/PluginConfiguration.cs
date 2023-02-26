@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.Xml.Serialization;
 using MediaBrowser.Model.Plugins;
 
 namespace Viperinius.Plugin.SpotifyImport.Configuration;
@@ -49,7 +50,14 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>
     /// Gets the list of existing files with missing tracks.
     /// </summary>
+    [XmlIgnore]
     public string[] MissingTrackListPaths => MissingTrackStore.GetFileList().ToArray();
+
+    /// <summary>
+    /// Gets or sets the Spotify auth token.
+    /// </summary>
+    [XmlElement(IsNullable = true)]
+    public SpotifyAPI.Web.PKCETokenResponse? SpotifyAuthToken { get; set; }
 
     /// <summary>
     /// Adds a new playlist ID.

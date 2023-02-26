@@ -25,7 +25,18 @@
                     </div>
                     <div class="inputContainer">
                         <input id="SpotifyClientId" type="text" is="emby-input" label="Spotify Client ID" />
-                        <div class="fieldDescription">How to get this value? Check <a href="https://developer.spotify.com/documentation/general/guides/authorization/app-settings/">here</a></div>
+                        <div class="fieldDescription">
+                            How to get this value? Check <a href="https://developer.spotify.com/documentation/general/guides/authorization/app-settings/">here</a>.
+                            Make sure to use "<span id="SpotifyAuthRedirectUri"></span>" as Redirect URI.
+                        </div>
+                    </div>
+                    <div>
+                        <div class="fieldDescription hide" id="authSpotifyAlreadyDesc">
+                            Found an existing authorization. (Created at: <span id="authSpotifyCreatedAt"></span>)
+                        </div>
+                        <button is="emby-button" type="button" id="authSpotify" class="raised block">
+                            <span>Authorize</span>
+                        </button>
                     </div>
                     <div class="inputContainer">
                         <input id="SpotifyClientSecret" type="password" is="emby-input" label="Spotify Client Secret" />
@@ -67,11 +78,18 @@
             var SpotifyImportConfig = {
                 pluginUniqueId: 'F03D0ADB-289F-4986-BD6F-2468025249B3'
             };
+            const pluginApiBaseUrl = 'Viperinius.Plugin.SpotifyImport';
 
             document.querySelector('#SpotifyImportConfigPage')
                 .addEventListener('pageshow', function() {
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(SpotifyImportConfig.pluginUniqueId).then(function (config) {
+                        document.querySelector('#SpotifyAuthRedirectUri').innerText = ApiClient.getUrl(pluginApiBaseUrl + '/SpotifyAuthCallback');
+                        if (config.SpotifyAuthToken && 'CreatedAt' in config.SpotifyAuthToken) {
+                            document.querySelector('#authSpotifyAlreadyDesc').classList.remove('hide');
+                            document.querySelector('#authSpotifyCreatedAt').innerText = config.SpotifyAuthToken['CreatedAt'].split('T')[0];
+                        }
+
                         document.querySelector('#EnableVerboseLogging').checked = config.EnableVerboseLogging;
                         document.querySelector('#SpotifyClientId').value = config.SpotifyClientId;
                         document.querySelector('#SpotifyClientSecret').value = config.SpotifyClientSecret;
@@ -86,7 +104,7 @@
                             missingTracksHtml += '<div class="paperList">';
                             missingTracksHtml += config.MissingTrackListPaths.map(function(path) {
                                 const fileName = path.split('\\').pop().split('/').pop();
-                                let apiUrl = ApiClient.getUrl('Viperinius.Plugin.SpotifyImport/MissingTracksFile', {
+                                let apiUrl = ApiClient.getUrl(pluginApiBaseUrl + '/MissingTracksFile', {
                                     name: fileName
                                 });
                                 apiUrl += '&api_key=' + ApiClient.accessToken();
@@ -140,6 +158,30 @@
 
                     e.preventDefault();
                     return false;
+                });
+
+            document.querySelector('#authSpotify')
+                .addEventListener('click', function () {
+                    const fullAuthUrl = ApiClient.getUrl(pluginApiBaseUrl + '/SpotifyAuth', {
+                        'baseUrl': ApiClient._serverAddress,
+                        'api_key': ApiClient.accessToken()
+                    });
+
+                    fetch(fullAuthUrl, { method: 'POST' }).then(function (res) {
+                        if (!res || !res.ok) {
+                            throw "invalid response";
+                        }
+
+                        res.json().then(function (json) {
+                            if (!json || !('login_req_uri' in json)) {
+                                throw "invalid json response";
+                            }
+
+                            window.open(json['login_req_uri'], '_self');
+                        });
+                    }).catch(function (error) {
+                        console.error(error);
+                    });
                 });
         </script>
     </div>

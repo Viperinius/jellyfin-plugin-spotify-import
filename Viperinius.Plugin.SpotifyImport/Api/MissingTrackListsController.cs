@@ -26,7 +26,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
         /// </summary>
         /// <param name="name">File name to get.</param>
         /// <returns>The file.</returns>
-        [HttpGet($"Viperinius.Plugin.{nameof(SpotifyImport)}/MissingTracksFile")]
+        [HttpGet($"{nameof(Viperinius)}.{nameof(Viperinius.Plugin)}.{nameof(SpotifyImport)}/MissingTracksFile")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
