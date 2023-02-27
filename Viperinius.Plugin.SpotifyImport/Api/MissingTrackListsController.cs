@@ -42,5 +42,33 @@ namespace Viperinius.Plugin.SpotifyImport.Api
             var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             return File(stream, "application/json; charset=utf-8");
         }
+
+        /// <summary>
+        /// Deletes a missing tracks list file or all, if no file given.
+        /// </summary>
+        /// <param name="name">File name to delete.</param>
+        /// <returns>Nothing.</returns>
+        [HttpDelete($"{nameof(Viperinius)}.{nameof(Viperinius.Plugin)}.{nameof(SpotifyImport)}/MissingTracksFile")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public ActionResult DeleteListFile([FromQuery] string? name = null)
+        {
+            var files = MissingTrackStore.GetFileList();
+            if (!string.IsNullOrEmpty(name))
+            {
+                files = files.Where(f => Path.GetFileName(f) == name).ToList();
+            }
+
+            foreach (var file in files)
+            {
+                if (System.IO.File.Exists(file))
+                {
+                    System.IO.File.Delete(file);
+                }
+            }
+
+            return NoContent();
+        }
     }
 }

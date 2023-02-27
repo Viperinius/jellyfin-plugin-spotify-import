@@ -55,13 +55,6 @@
                             <span>Enable creating files that list any tracks of a playlist that are missing from this server.</span>
                         </label>
                     </div>
-                    <div class="verticalSection">
-                        <p>Available files:</p>
-                        <div class="missingTracks readOnlyContent">
-                            <p>-</p>
-                        </div>
-                    </div>
-                    
 
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block emby-button">
@@ -69,6 +62,16 @@
                         </button>
                     </div>
                 </form>
+
+                <div class="verticalSection">
+                    <p>Available files listing missing tracks:</p>
+                    <div class="missingTracks readOnlyContent">
+                        <p>None</p>
+                    </div>
+                    <button is="emby-button" type="button" id="removeMissingTracksFiles" class="raised block readOnlyContent hide">
+                        <span>Clear Files</span>
+                    </button>
+                </div>
             </div>
         </div>
         <script type="text/javascript">
@@ -95,15 +98,15 @@
                         }
 
                         document.querySelector('#GenerateMissingTrackLists').checked = config.GenerateMissingTrackLists;
-                        if (config.GenerateMissingTrackLists) {
+                        if (config.GenerateMissingTrackLists && config.MissingTrackListPaths && config.MissingTrackListPaths.length) {
                             let missingTracksHtml = '';
                             missingTracksHtml += '<div class="paperList">';
                             missingTracksHtml += config.MissingTrackListPaths.map(function(path) {
                                 const fileName = path.split('\\').pop().split('/').pop();
-                                let apiUrl = ApiClient.getUrl(pluginApiBaseUrl + '/MissingTracksFile', {
-                                    name: fileName
+                                const apiUrl = ApiClient.getUrl(pluginApiBaseUrl + '/MissingTracksFile', {
+                                    name: fileName,
+                                    'api_key': ApiClient.accessToken()
                                 });
-                                apiUrl += '&api_key=' + ApiClient.accessToken();
                                 let pathHtml = '';
                                 pathHtml += '<a is="emby-linkbutton" href="' + apiUrl + '" target="_blank" class="listItem listItem-border" style="color:inherit;">';
                                 pathHtml += '<div class="listItemBody two-line">';
@@ -115,6 +118,22 @@
                             }).join('');
                             missingTracksHtml += '</div>';
                             document.querySelector('.missingTracks').innerHTML = missingTracksHtml;
+
+                            const clearFilesButton = document.querySelector('#removeMissingTracksFiles');
+                            clearFilesButton.classList.remove('hide');
+                            clearFilesButton.addEventListener('click', function () {
+                                const apiUrl = ApiClient.getUrl(pluginApiBaseUrl + '/MissingTracksFile', {
+                                    'api_key': ApiClient.accessToken()
+                                });
+                                fetch(apiUrl, { method: 'DELETE' }).then(function (res) {
+                                    if (!res || !res.ok) {
+                                        throw "invalid response";
+                                    }
+                                    document.querySelector('.missingTracks').innerHTML = 'None';
+                                }).catch(function (error) {
+                                    console.error(error);
+                                });
+                            });
                         }
 
                         Dashboard.hideLoadingMsg();
