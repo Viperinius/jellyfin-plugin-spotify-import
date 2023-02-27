@@ -107,7 +107,7 @@ namespace Viperinius.Plugin.SpotifyImport
 
             await _playlistManager.AddToPlaylistAsync(playlist.Id, newTracks, user.Id).ConfigureAwait(false);
 
-            if (Plugin.Instance?.Configuration.GenerateMissingTrackLists ?? false)
+            if (Plugin.Instance?.Configuration.GenerateMissingTrackLists ?? false && missingTracks.Any())
             {
                 var missingFilePath = MissingTrackStore.GetFilePath(playlist.Name);
                 await MissingTrackStore.WriteFile(missingFilePath, missingTracks).ConfigureAwait(false);
