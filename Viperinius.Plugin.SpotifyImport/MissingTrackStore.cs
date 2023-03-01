@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -22,8 +23,16 @@ namespace Viperinius.Plugin.SpotifyImport
         {
             CreateCurrentTmpDir();
             var trimmedPlaylistName = RemoveIllegalCharacters(playlistName);
+
+            var dateFormat = "yyyy-MM-dd_HH-mm";
+            var dateFormatSetting = Plugin.Instance?.Configuration.MissingTrackListsDateFormat ?? string.Empty;
+            if (CheckDateFormatValid(dateFormatSetting))
+            {
+                dateFormat = dateFormatSetting;
+            }
+
             var fullPath = Path.Combine(CurrentTmpDir!, FilenameTemplate.Replace("{%PLAYLIST%}", trimmedPlaylistName, StringComparison.InvariantCulture)
-                                                                        .Replace("{%TS%}", DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm", null), StringComparison.InvariantCulture));
+                                                                        .Replace("{%TS%}", DateTime.UtcNow.ToString(dateFormat, CultureInfo.InvariantCulture), StringComparison.InvariantCulture));
             return fullPath;
         }
 
@@ -61,6 +70,23 @@ namespace Viperinius.Plugin.SpotifyImport
             var invalidChars = new string(Path.GetInvalidFileNameChars());
             var regex = new Regex($"[{Regex.Escape(invalidChars)}]");
             return regex.Replace(raw, string.Empty);
+        }
+
+        private static bool CheckDateFormatValid(string format)
+        {
+            try
+            {
+                var now = DateTime.ParseExact(
+                    DateTime.UtcNow.ToString(format, CultureInfo.InvariantCulture),
+                    format,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.NoCurrentDateDefault);
+                return !now.Equals(default);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

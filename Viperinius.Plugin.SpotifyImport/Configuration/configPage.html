@@ -55,6 +55,12 @@
                             <span>Enable creating files that list any tracks of a playlist that are missing from this server.</span>
                         </label>
                     </div>
+                    <div class="inputContainer">
+                        <input id="MissingTrackListsDateFormat" type="text" is="emby-input" label="Date Format (for missing track file names)" />
+                        <div class="fieldDescription">
+                            Should follow <a href="https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings">this</a> guideline.
+                        </div>
+                    </div>
 
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block emby-button">
@@ -98,6 +104,7 @@
                         }
 
                         document.querySelector('#GenerateMissingTrackLists').checked = config.GenerateMissingTrackLists;
+                        document.querySelector('#MissingTrackListsDateFormat').value = config.MissingTrackListsDateFormat;
                         if (config.GenerateMissingTrackLists && config.MissingTrackListPaths && config.MissingTrackListPaths.length) {
                             let missingTracksHtml = '';
                             missingTracksHtml += '<div class="paperList">';
@@ -164,6 +171,7 @@
                         }
 
                         config.GenerateMissingTrackLists = document.querySelector('#GenerateMissingTrackLists').checked;
+                        config.MissingTrackListsDateFormat = document.querySelector('#MissingTrackListsDateFormat').value;
 
                         ApiClient.updatePluginConfiguration(SpotifyImportConfig.pluginUniqueId, config).then(function (result) {
                             Dashboard.processPluginConfigurationUpdateResult(result);

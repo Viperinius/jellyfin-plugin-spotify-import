@@ -19,6 +19,7 @@ public class PluginConfiguration : BasePluginConfiguration
     {
         SpotifyClientId = string.Empty;
         PlaylistIds = Array.Empty<string>();
+        MissingTrackListsDateFormat = "yyyy-MM-dd_HH-mm";
     }
 
     /// <summary>
@@ -40,6 +41,11 @@ public class PluginConfiguration : BasePluginConfiguration
     /// Gets or sets a value indicating whether to enable the creation of files containing missing tracks on the server.
     /// </summary>
     public bool GenerateMissingTrackLists { get; set; }
+
+    /// <summary>
+    /// Gets or sets the date time format for the filenames of missing tracks.
+    /// </summary>
+    public string MissingTrackListsDateFormat { get; set; }
 
     /// <summary>
     /// Gets the list of existing files with missing tracks.
