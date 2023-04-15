@@ -2,7 +2,7 @@
 name: "Spotify Import"
 guid: "F03D0ADB-289F-4986-BD6F-2468025249B3"
 imageUrl: "https://github.com/Viperinius/jellyfin-plugin-spotify-import/raw/master/viperinius-plugin-spotifyimport.png"
-version: "1.0.0.0"
+version: "1.1.0.0"
 targetAbi: "10.8.0.0"
 framework: "net6.0"
 overview: "This plugin imports playlists from Spotify."
@@ -16,6 +16,18 @@ artifacts:
 - "SpotifyAPI.Web.dll"
 changelog: |2-
   # Changelog
+
+  ## [1.1.0.0] - 2023-04-15
+
+  ### Added
+
+  - New button to delete all generated missing tracks files
+  - New option to specify the date format used for missing tracks file names
+
+  ### Fixed
+
+  - A missing tracks file is created even though the playlist is not missing any tracks
+  - Fix exception if a song has no artists, album name or album artists set
 
   ## [1.0.0.0] - 2023-02-26
 
