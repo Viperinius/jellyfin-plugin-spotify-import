@@ -39,11 +39,11 @@ https://raw.githubusercontent.com/Viperinius/jellyfin-plugins/master/manifest.js
 
 To connect to Spotify, you need to be authenticated. In order to do this, the plugin needs to know a `Client ID` and will ask you for authorisation (needed for reading private or collaborative playlists).
 
-This procedure needs a little bit of setup from your end (basically the same as described in the official [docs](https://developer.spotify.com/documentation/general/guides/authorization/app-settings/)):
+This procedure needs a little bit of setup from your end (basically the same as described in the official [docs](https://developer.spotify.com/documentation/web-api/concepts/apps)):
 1. Head over to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) and sign in
 2. Create an app (name and description do not matter really, pick whatever you want)
 3. Copy the Client ID, you will need it in a second when configuring the plugin
-4. Go to `Edit Settings`
+4. Go to the `Settings` page
 5. There, add a redirect URL in `Redirect URIs`. This URL is called after you grant the plugin read access to your playlists and must be the following value:\
    `https://<YOUR JELLYFIN IP OR DOMAIN>/Viperinius.Plugin.SpotifyImport/SpotifyAuthCallback`, e.g. `http://localhost:8096/Viperinius.Plugin.SpotifyImport/SpotifyAuthCallback`\
    The IP or domain must match the one you are using when configuring the plugin
