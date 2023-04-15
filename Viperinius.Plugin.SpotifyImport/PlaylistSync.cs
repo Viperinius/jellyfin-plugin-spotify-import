@@ -194,10 +194,25 @@ namespace Viperinius.Plugin.SpotifyImport
         private static bool ItemMatchesTrackInfo(Audio audioItem, ProviderTrackInfo trackInfo)
         {
             // TODO: check for track number as well?
-            return audioItem.Name == trackInfo.Name &&
-                   audioItem.AlbumEntity.Name == trackInfo.AlbumName &&
-                   audioItem.AlbumEntity.Artists.Contains(trackInfo.AlbumArtistName) &&
-                   audioItem.Artists.Contains(trackInfo.ArtistName);
+
+            var matches = audioItem.Name == trackInfo.Name;
+
+            if (audioItem.AlbumEntity != null)
+            {
+                matches &= audioItem.AlbumEntity.Name == trackInfo.AlbumName;
+
+                if (audioItem.AlbumEntity.Artists != null)
+                {
+                    matches &= audioItem.AlbumEntity.Artists.Contains(trackInfo.AlbumArtistName);
+                }
+            }
+
+            if (audioItem.Artists != null)
+            {
+                matches &= audioItem.Artists.Contains(trackInfo.ArtistName);
+            }
+
+            return matches;
         }
     }
 }
