@@ -107,9 +107,15 @@ namespace Viperinius.Plugin.SpotifyImport
 
             await _playlistManager.AddToPlaylistAsync(playlist.Id, newTracks, user.Id).ConfigureAwait(false);
 
-            if (Plugin.Instance?.Configuration.GenerateMissingTrackLists ?? false && missingTracks.Any())
+            if ((Plugin.Instance?.Configuration.GenerateMissingTrackLists ?? false) && missingTracks.Any())
             {
                 var missingFilePath = MissingTrackStore.GetFilePath(playlist.Name);
+
+                if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
+                {
+                    _logger.LogInformation("Write missing tracks file with {Count} entries to {Path}", missingTracks.Count, missingFilePath);
+                }
+
                 await MissingTrackStore.WriteFile(missingFilePath, missingTracks).ConfigureAwait(false);
             }
         }
