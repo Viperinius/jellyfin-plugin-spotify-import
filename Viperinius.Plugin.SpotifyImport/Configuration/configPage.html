@@ -82,15 +82,15 @@
         </div>
         <script type="text/javascript">
             var SpotifyImportConfig = {
-                pluginUniqueId: 'F03D0ADB-289F-4986-BD6F-2468025249B3'
+                pluginUniqueId: 'F03D0ADB-289F-4986-BD6F-2468025249B3',
+                pluginApiBaseUrl: 'Viperinius.Plugin.SpotifyImport'
             };
-            const pluginApiBaseUrl = 'Viperinius.Plugin.SpotifyImport';
 
             document.querySelector('#SpotifyImportConfigPage')
                 .addEventListener('pageshow', function() {
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(SpotifyImportConfig.pluginUniqueId).then(function (config) {
-                        document.querySelector('#SpotifyAuthRedirectUri').innerText = ApiClient.getUrl(pluginApiBaseUrl + '/SpotifyAuthCallback');
+                        document.querySelector('#SpotifyAuthRedirectUri').innerText = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/SpotifyAuthCallback');
                         if (config.SpotifyAuthToken && 'CreatedAt' in config.SpotifyAuthToken) {
                             document.querySelector('#authSpotifyAlreadyDesc').classList.remove('hide');
                             document.querySelector('#authSpotifyCreatedAt').innerText = config.SpotifyAuthToken['CreatedAt'].split('T')[0];
@@ -110,7 +110,7 @@
                             missingTracksHtml += '<div class="paperList">';
                             missingTracksHtml += config.MissingTrackListPaths.map(function(path) {
                                 const fileName = path.split('\\').pop().split('/').pop();
-                                const apiUrl = ApiClient.getUrl(pluginApiBaseUrl + '/MissingTracksFile', {
+                                const apiUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/MissingTracksFile', {
                                     name: fileName,
                                     'api_key': ApiClient.accessToken()
                                 });
@@ -129,7 +129,7 @@
                             const clearFilesButton = document.querySelector('#removeMissingTracksFiles');
                             clearFilesButton.classList.remove('hide');
                             clearFilesButton.addEventListener('click', function () {
-                                const apiUrl = ApiClient.getUrl(pluginApiBaseUrl + '/MissingTracksFile', {
+                                const apiUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/MissingTracksFile', {
                                     'api_key': ApiClient.accessToken()
                                 });
                                 fetch(apiUrl, { method: 'DELETE' }).then(function (res) {
@@ -184,7 +184,7 @@
 
             document.querySelector('#authSpotify')
                 .addEventListener('click', function () {
-                    const fullAuthUrl = ApiClient.getUrl(pluginApiBaseUrl + '/SpotifyAuth', {
+                    const fullAuthUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/SpotifyAuth', {
                         'baseUrl': ApiClient._serverAddress,
                         'api_key': ApiClient.accessToken()
                     });
