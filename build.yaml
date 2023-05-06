@@ -2,7 +2,7 @@
 name: "Spotify Import"
 guid: "F03D0ADB-289F-4986-BD6F-2468025249B3"
 imageUrl: "https://github.com/Viperinius/jellyfin-plugin-spotify-import/raw/master/viperinius-plugin-spotifyimport.png"
-version: "1.1.0.0"
+version: "1.1.1.0"
 targetAbi: "10.8.0.0"
 framework: "net6.0"
 overview: "This plugin imports playlists from Spotify."
@@ -16,6 +16,14 @@ artifacts:
 - "SpotifyAPI.Web.dll"
 changelog: |2-
   # Changelog
+
+  ## [1.1.1.0] - 2023-05-06
+
+  ### Fixed
+
+  - Fix exception if a Spotify playlist contains "ghost" items / null tracks
+  - A missing tracks file is created even though the playlist is not missing any tracks
+  - Fix config page not loading values when revisiting without a full page reload
 
   ## [1.1.0.0] - 2023-04-15
 
