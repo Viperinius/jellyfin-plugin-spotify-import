@@ -77,6 +77,10 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                         {
                             tracks.Add(trackInfo);
                         }
+                        else if ((Plugin.Instance?.Configuration.EnableVerboseLogging ?? false) && track != null)
+                        {
+                            _logger.LogWarning("Encountered invalid track in Spotify playlist ({PlaylistId}) added at: {AddedAt}", playlistId, track.AddedAt);
+                        }
                     }
                 }
 
@@ -105,6 +109,11 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
 
         private static ProviderTrackInfo? GetTrackInfo(PlaylistTrack<IPlayableItem> track)
         {
+            if (track == null || track.Track == null)
+            {
+                return null;
+            }
+
             switch (track.Track.Type)
             {
                 case ItemType.Track:
