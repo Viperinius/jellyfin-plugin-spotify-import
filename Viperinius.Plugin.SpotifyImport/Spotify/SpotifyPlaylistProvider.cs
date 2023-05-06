@@ -14,7 +14,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
         private readonly ILogger<SpotifyPlaylistProvider> _logger;
         private readonly ILogger<SpotifyLogger> _apiLogger;
         private SpotifyClient? _spotifyClient;
-        private static SpotifyClientConfig _defaultSpotifyConfig = SpotifyClientConfig.CreateDefault();
+        private static readonly SpotifyClientConfig _defaultSpotifyConfig = SpotifyClientConfig.CreateDefault();
 
         public SpotifyPlaylistProvider(
             ILogger<SpotifyPlaylistProvider> logger,

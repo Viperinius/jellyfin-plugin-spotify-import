@@ -39,7 +39,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                 return NotFound();
             }
 
-            var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+            using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             return File(stream, "application/json; charset=utf-8");
         }
 
@@ -60,12 +60,9 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                 files = files.Where(f => Path.GetFileName(f) == name).ToList();
             }
 
-            foreach (var file in files)
+            foreach (var file in files.Where(f => System.IO.File.Exists(f)))
             {
-                if (System.IO.File.Exists(file))
-                {
-                    System.IO.File.Delete(file);
-                }
+                System.IO.File.Delete(file);
             }
 
             return NoContent();
