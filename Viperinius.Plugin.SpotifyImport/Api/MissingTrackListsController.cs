@@ -39,7 +39,9 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                 return NotFound();
             }
 
-            using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+#pragma warning disable CA2000 // filestream gets disposed by File()
+            var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+#pragma warning restore CA2000
             return File(stream, "application/json; charset=utf-8");
         }
 
