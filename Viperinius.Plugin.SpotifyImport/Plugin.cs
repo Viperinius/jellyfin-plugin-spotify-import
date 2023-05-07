@@ -50,6 +50,11 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
             {
                 Name = this.Name,
                 EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.Configuration.configPage.html", GetType().Namespace)
+            },
+            new PluginPageInfo
+            {
+                Name = "playlistconfigjs",
+                EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.Configuration.playlistConfig.js", GetType().Namespace)
             }
         };
     }
