@@ -6,6 +6,11 @@
 </head>
 <body>
     <div id="SpotifyImportConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-select,emby-checkbox,emby-textarea" data-controller="__plugin/playlistconfigjs">
+        <style>
+            .playlistContainer {
+                margin-bottom: 1.8em;
+            }
+        </style>
         <div data-role="content">
             <div class="content-primary">
                 <form id="SpotifyImportConfigForm">
@@ -47,6 +52,27 @@
                             <p>ID (ex.: 4cOdK2wGLETKBW3PvgPWqT)</p>
                             <p>URI (ex.: spotify:playlist:4cOdK2wGLETKBW3PvgPWqT)</p>
                             <p>URL (ex.: https://open.spotify.com/playlist/4cOdK2wGLETKBW3PvgPWqT)</p>
+                        </div>
+                    </div>
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h3 class="sectionTitle">Playlist Configuration</h3>
+                    </div>
+                    <div class="playlistContainer">
+                        <div class="innerPlaylistContainer">
+                            <table id="playlistTable" class="stripedTable ui-responsive table-stroke detailTable" data-role="table">
+                                <thead>
+                                    <th class="detailTableHeaderCell" data-priority="persist">Spotify ID</th>
+                                    <th class="detailTableHeaderCell" data-priority="persist">Target Name</th>
+                                    <th class="detailTableHeaderCell" data-priority="persist">Target User</th>
+                                    <th></th>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                            <button is="emby-button" type="button" id="addPlaylistId" class="raised block" style="display: flex;">
+                                <span class="material-icons playlist_add" style="margin-right: 1em;"></span>
+                                <span>Add new playlist</span>
+                            </button>
                         </div>
                     </div>
                     <div class="checkboxContainer checkboxContainer-withDescription">
