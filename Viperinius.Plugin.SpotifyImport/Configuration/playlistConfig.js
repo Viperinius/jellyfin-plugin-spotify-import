@@ -152,6 +152,7 @@ export default function (view) {
             }
 
             ApiClient.getJSON(ApiClient.getUrl('Users'), apiQueryOpts).then(function (result) {
+                users.length = 0;
                 result.forEach(user => {
                     users.push({
                         name: user['Name'],
