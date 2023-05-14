@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
@@ -210,7 +211,7 @@ namespace Viperinius.Plugin.SpotifyImport
                 return _userManager.GetUserByName(username);
             }
 
-            return _userManager.Users.FirstOrDefault((User?)null);
+            return _userManager.Users.FirstOrDefault(u => u?.HasPermission(PermissionKind.IsAdministrator) ?? false, null);
         }
 
         private static bool ItemMatchesTrackInfo(Audio audioItem, ProviderTrackInfo trackInfo)
