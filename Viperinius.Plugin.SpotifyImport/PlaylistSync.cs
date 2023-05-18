@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
@@ -36,22 +37,38 @@ namespace Viperinius.Plugin.SpotifyImport
 
         public async Task Execute(CancellationToken cancellationToken = default)
         {
-            var user = GetUser();
-            if (user == null)
-            {
-                _logger.LogError("Failed to determine user");
-                return;
-            }
-
             foreach (var providerPlaylist in _providerPlaylists)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var playlist = await GetOrCreatePlaylistByName(providerPlaylist.Name, user).ConfigureAwait(false);
+                // get the targeted playlist configuration
+                var targetConfig = Plugin.Instance?.Configuration.Playlists.FirstOrDefault(p => p.Id == providerPlaylist.Id);
+                if (targetConfig == null || string.IsNullOrEmpty(targetConfig.Id))
+                {
+                    _logger.LogError("Failed to get target playlist configuration for playlist {Id}", providerPlaylist.Id);
+                    continue;
+                }
+
+                // get the targeted user
+                var user = GetUser(targetConfig.UserName);
+                if (user == null)
+                {
+                    _logger.LogError("Failed to get user {Name}", targetConfig.UserName);
+                    continue;
+                }
+
+                // determine jellyfin playlist name
+                var jfPlaylistName = targetConfig.Name;
+                if (string.IsNullOrEmpty(jfPlaylistName))
+                {
+                    jfPlaylistName = providerPlaylist.Name;
+                }
+
+                var playlist = await GetOrCreatePlaylistByName(jfPlaylistName, user).ConfigureAwait(false);
 
                 if (playlist == null)
                 {
-                    _logger.LogError("Failed to get Jellyfin playlist with name {Name}", providerPlaylist.Name);
+                    _logger.LogError("Failed to get Jellyfin playlist with name {Name}", jfPlaylistName);
                     continue;
                 }
 
@@ -194,7 +211,7 @@ namespace Viperinius.Plugin.SpotifyImport
                 return _userManager.GetUserByName(username);
             }
 
-            return _userManager.Users.FirstOrDefault((User?)null);
+            return _userManager.Users.FirstOrDefault(u => u?.HasPermission(PermissionKind.IsAdministrator) ?? false, null);
         }
 
         private static bool ItemMatchesTrackInfo(Audio audioItem, ProviderTrackInfo trackInfo)

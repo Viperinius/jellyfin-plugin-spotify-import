@@ -26,7 +26,9 @@
 
   <ItemGroup>
     <None Remove="Configuration\configPage.html" />
+    <None Remove="Configuration\playlistConfig.js" />
     <EmbeddedResource Include="Configuration\configPage.html" />
+    <EmbeddedResource Include="Configuration\playlistConfig.js" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">

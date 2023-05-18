@@ -57,9 +57,12 @@ After installing the plugin, visit its configuration page and add your Spotify C
 
 When the authorisation is done, you can continue with the plugin configuration page.
 
-Go to the field `Spotify Playlist IDs` and paste the identifier of the Spotify playlists that you want to import.
+Go to the section `Playlist Configuration` and click on `Add new playlist`. This creates a new row with three fields:
+- `Spotify ID`: Paste the identifier of the Spotify playlists that you want to import in here.
+- `Target Name`: Jellyfin playlist name. Keep this empty if the original name from Spotify should be used.
+- `Target User`: If you want to set another user as the playlist owner, select them here.
 
-Following identifier formats work:
+Following "Spotify ID" formats work:
 - The raw ID, e.g. `4cOdK2wGLETKBW3PvgPWqT`
 - The Spotify URI, e.g. `spotify:playlist:4cOdK2wGLETKBW3PvgPWqT`
 - The full Spotify playlist URL, e.g. `https://open.spotify.com/playlist/4cOdK2wGLETKBW3PvgPWqT`
@@ -71,7 +74,4 @@ If you want to change this or want to let it run immediately, head to the schedu
 
 A few things that are not implemented yet:
 
-- Expand configuration to allow more customisation than just pasting in Spotify IDs
-    - Set name of the Jellyfin playlist
-    - Specify target user that owns the Jellyfin playlist
 - Allow (optional) synchronisation by also removing items that are not present in the Spotify playlist

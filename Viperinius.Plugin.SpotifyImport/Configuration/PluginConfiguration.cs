@@ -19,6 +19,7 @@ public class PluginConfiguration : BasePluginConfiguration
     {
         SpotifyClientId = string.Empty;
         PlaylistIds = Array.Empty<string>();
+        Playlists = Array.Empty<TargetPlaylistConfiguration>();
         MissingTrackListsDateFormat = "yyyy-MM-dd_HH-mm";
     }
 
@@ -34,8 +35,14 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>
     /// Gets or sets the targeted playlist IDs.
+    /// Only used for compatibility purposes for old versions.
     /// </summary>
     public string[] PlaylistIds { get; set; }
+
+    /// <summary>
+    /// Gets or sets the targeted playlists.
+    /// </summary>
+    public TargetPlaylistConfiguration[] Playlists { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to enable the creation of files containing missing tracks on the server.
@@ -58,29 +65,4 @@ public class PluginConfiguration : BasePluginConfiguration
     /// </summary>
     [XmlElement(IsNullable = true)]
     public SpotifyAPI.Web.PKCETokenResponse? SpotifyAuthToken { get; set; }
-
-    /// <summary>
-    /// Adds a new playlist ID.
-    /// </summary>
-    /// <param name="id">The targeted ID.</param>
-    public void AddPlaylistId(string id)
-    {
-        if (!PlaylistIds.Contains(id))
-        {
-            var list = PlaylistIds.ToList();
-            list.Add(id);
-            PlaylistIds = list.ToArray();
-        }
-    }
-
-    /// <summary>
-    /// Removes a playlist ID.
-    /// </summary>
-    /// <param name="id">The targeted ID.</param>
-    public void RemovePlaylistId(string id)
-    {
-        var list = PlaylistIds.ToList();
-        list.Remove(id);
-        PlaylistIds = list.ToArray();
-    }
 }
