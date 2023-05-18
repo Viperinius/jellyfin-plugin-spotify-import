@@ -4,22 +4,26 @@ VisualStudioVersion = 17.2.32526.322
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Viperinius.Plugin.SpotifyImport", "Viperinius.Plugin.SpotifyImport\Viperinius.Plugin.SpotifyImport.csproj", "{BA9E83B7-D9E2-4256-B0EB-554487837579}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Viperinius.Plugin.SpotifyImport.Tests", "Viperinius.Plugin.SpotifyImport.Tests\Viperinius.Plugin.SpotifyImport.Tests.csproj", "{1CAA2A70-8A9A-4197-A73C-1E91FB7591C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Viperinius.Plugin.SpotifyImport.Tests", "Viperinius.Plugin.SpotifyImport.Tests\Viperinius.Plugin.SpotifyImport.Tests.csproj", "{1CAA2A70-8A9A-4197-A73C-1E91FB7591C2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		ReleaseNoTest|Any CPU = ReleaseNoTest|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{BA9E83B7-D9E2-4256-B0EB-554487837579}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BA9E83B7-D9E2-4256-B0EB-554487837579}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BA9E83B7-D9E2-4256-B0EB-554487837579}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA9E83B7-D9E2-4256-B0EB-554487837579}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA9E83B7-D9E2-4256-B0EB-554487837579}.ReleaseNoTest|Any CPU.ActiveCfg = ReleaseNoTest|Any CPU
+		{BA9E83B7-D9E2-4256-B0EB-554487837579}.ReleaseNoTest|Any CPU.Build.0 = ReleaseNoTest|Any CPU
 		{1CAA2A70-8A9A-4197-A73C-1E91FB7591C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1CAA2A70-8A9A-4197-A73C-1E91FB7591C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1CAA2A70-8A9A-4197-A73C-1E91FB7591C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1CAA2A70-8A9A-4197-A73C-1E91FB7591C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1CAA2A70-8A9A-4197-A73C-1E91FB7591C2}.ReleaseNoTest|Any CPU.ActiveCfg = ReleaseNoTest|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

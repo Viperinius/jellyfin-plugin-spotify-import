@@ -10,6 +10,7 @@
     <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <Configurations>Debug;Release;ReleaseNoTest</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,8 +34,8 @@
 
   <!-- make internal parts visible to test project -->
   <ItemGroup>
-    <InternalsVisibleTo Include="Viperinius.Plugin.SpotifyImport.Tests"/>
-    <InternalsVisibleTo Include="DynamicProxyGenAssembly2"/>
+    <InternalsVisibleTo Include="Viperinius.Plugin.SpotifyImport.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
