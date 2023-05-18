@@ -16,3 +16,5 @@ on:
 jobs:
   call:
     uses: viperinius/jellyfin-plugins/.github/workflows/build.yaml@master
+    with:
+      dotnet-config: "ReleaseNoTest"
