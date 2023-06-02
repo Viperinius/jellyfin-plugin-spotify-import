@@ -39,7 +39,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
         public void CreateInstance()
         {
             var mock = new Mock<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
-            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock.Object);
+            _ = new SpotifyImport.Spotify.SpotifyLogger(mock.Object);
         }
 
         [Fact]
