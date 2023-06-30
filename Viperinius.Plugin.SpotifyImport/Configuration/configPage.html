@@ -47,7 +47,7 @@
                     <div class="sectionTitleContainer flex align-items-center">
                         <h3 class="sectionTitle">Playlist Configuration</h3>
                     </div>
-                    <div class="playlistContainer">
+                    <div class="verticalSection playlistContainer">
                         <span>
                             You can use the following formats for the Spotify ID field:
                             <ul>
@@ -84,6 +84,45 @@
                         <input id="MissingTrackListsDateFormat" type="text" is="emby-input" label="Date Format (for missing track file names)" />
                         <div class="fieldDescription">
                             Should follow <a href="https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings">this</a> guideline.
+                        </div>
+                    </div>
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h3 class="sectionTitle">Playlist Track Matching</h3>
+                    </div>
+                    <div class="verticalSection">
+                        <div class="selectContainer">
+                            <select id="ItemMatchLevel" is="emby-select" label="Match Type:">
+                                <option value="Default">Default / Equality Check</option>
+                                <option value="IgnoreCase">Ignore Case</option>
+                                <option value="IgnorePunctuationAndCase">Ignore Case + Punctuation</option>
+                            </select>
+                            <div class="fieldDescription">
+                                Choose how strict the comparison between Spotify and Jellyfin tracks is.
+                            </div>
+                        </div>
+                        <div class="checkboxContainer checkboxContainer-withDescription">
+                            <label class="emby-checkbox-label">
+                                <input id="ItemMatchCriteriaTrack" name="ItemMatchCriteriaTrack" type="checkbox" is="emby-checkbox" />
+                                <span>Enable track name comparison.</span>
+                            </label>
+                        </div>
+                        <div class="checkboxContainer checkboxContainer-withDescription">
+                            <label class="emby-checkbox-label">
+                                <input id="ItemMatchCriteriaAlbum" name="ItemMatchCriteriaAlbum" type="checkbox" is="emby-checkbox" />
+                                <span>Enable album name comparison.</span>
+                            </label>
+                        </div>
+                        <div class="checkboxContainer checkboxContainer-withDescription">
+                            <label class="emby-checkbox-label">
+                                <input id="ItemMatchCriteriaAlbumArtist" name="ItemMatchCriteriaAlbumArtist" type="checkbox" is="emby-checkbox" />
+                                <span>Enable album artist comparison.</span>
+                            </label>
+                        </div>
+                        <div class="checkboxContainer checkboxContainer-withDescription">
+                            <label class="emby-checkbox-label">
+                                <input id="ItemMatchCriteriaArtist" name="ItemMatchCriteriaArtist" type="checkbox" is="emby-checkbox" />
+                                <span>Enable artist comparison.</span>
+                            </label>
                         </div>
                     </div>
 
