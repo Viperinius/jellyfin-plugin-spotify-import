@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Xml.Serialization;
 using MediaBrowser.Model.Plugins;
+using Viperinius.Plugin.SpotifyImport.Matchers;
 
 namespace Viperinius.Plugin.SpotifyImport.Configuration;
 
@@ -20,6 +21,8 @@ public class PluginConfiguration : BasePluginConfiguration
         SpotifyClientId = string.Empty;
         PlaylistIds = Array.Empty<string>();
         Playlists = Array.Empty<TargetPlaylistConfiguration>();
+        ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.TrackName | ItemMatchCriteria.AlbumName | ItemMatchCriteria.AlbumArtists | ItemMatchCriteria.Artists);
+        ItemMatchLevel = ItemMatchLevel.Default;
         MissingTrackListsDateFormat = "yyyy-MM-dd_HH-mm";
     }
 
@@ -43,6 +46,21 @@ public class PluginConfiguration : BasePluginConfiguration
     /// Gets or sets the targeted playlists.
     /// </summary>
     public TargetPlaylistConfiguration[] Playlists { get; set; }
+
+    /// <summary>
+    /// Gets the track comparison criteria.
+    /// </summary>
+    internal ItemMatchCriteria ItemMatchCriteria => (ItemMatchCriteria)ItemMatchCriteriaRaw;
+
+    /// <summary>
+    /// Gets or sets the track comparison criteria.
+    /// </summary>
+    public int ItemMatchCriteriaRaw { get; set; }
+
+    /// <summary>
+    /// Gets or sets the track comparison level.
+    /// </summary>
+    public ItemMatchLevel ItemMatchLevel { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to enable the creation of files containing missing tracks on the server.

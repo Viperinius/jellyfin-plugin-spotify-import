@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using Microsoft.Extensions.Logging;
+using Viperinius.Plugin.SpotifyImport.Matchers;
 
 namespace Viperinius.Plugin.SpotifyImport
 {
@@ -214,28 +215,50 @@ namespace Viperinius.Plugin.SpotifyImport
             return _userManager.Users.FirstOrDefault(u => u?.HasPermission(PermissionKind.IsAdministrator) ?? false, null);
         }
 
-        private static bool ItemMatchesTrackInfo(Audio audioItem, ProviderTrackInfo trackInfo)
+        protected static bool ItemMatchesTrackInfo(Audio audioItem, ProviderTrackInfo trackInfo)
         {
             // TODO: check for track number as well?
 
-            var matches = audioItem.Name == trackInfo.Name;
+            var level = Plugin.Instance?.Configuration.ItemMatchLevel ?? ItemMatchLevel.Default;
+            var result = false;
 
-            if (audioItem.AlbumEntity != null)
+            if (Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.TrackName) ?? false)
             {
-                matches &= audioItem.AlbumEntity.Name == trackInfo.AlbumName;
-
-                if (audioItem.AlbumEntity.Artists != null)
+                result = TrackComparison.TrackNameEqual(audioItem, trackInfo, level);
+                if (!result)
                 {
-                    matches &= audioItem.AlbumEntity.Artists.Contains(trackInfo.AlbumArtistName);
+                    return result;
                 }
             }
 
-            if (audioItem.Artists != null)
+            if (Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.AlbumName) ?? false)
             {
-                matches &= audioItem.Artists.Contains(trackInfo.ArtistName);
+                result = TrackComparison.AlbumNameEqual(audioItem, trackInfo, level);
+                if (!result)
+                {
+                    return result;
+                }
             }
 
-            return matches;
+            if (Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.AlbumArtists) ?? false)
+            {
+                result = TrackComparison.AlbumArtistContained(audioItem, trackInfo, level);
+                if (!result)
+                {
+                    return result;
+                }
+            }
+
+            if (Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.Artists) ?? false)
+            {
+                result = TrackComparison.ArtistContained(audioItem, trackInfo, level);
+                if (!result)
+                {
+                    return result;
+                }
+            }
+
+            return result;
         }
     }
 }

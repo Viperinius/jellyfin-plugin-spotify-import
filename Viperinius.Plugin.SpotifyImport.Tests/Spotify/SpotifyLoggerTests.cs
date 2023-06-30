@@ -25,6 +25,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
 
                 _ = new Plugin(mockAppPaths.Object, mockXmlSerializer.Object);
             }
+            System.Threading.Thread.Sleep(100);
         }
 
         private void SetNullPluginInstance()
@@ -33,13 +34,14 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
             {
                 Plugin.SetInstance(null);
             }
+            System.Threading.Thread.Sleep(100);
         }
 
         [Fact]
         public void CreateInstance()
         {
             var mock = new Mock<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
-            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock.Object);
+            _ = new SpotifyImport.Spotify.SpotifyLogger(mock.Object);
         }
 
         [Fact]

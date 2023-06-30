@@ -87,6 +87,23 @@ function getPlaylistTableData(page) {
     return [];
 }
 
+function mapItemMatchCriteriaToCheckboxes(config) {
+    document.querySelector('#ItemMatchCriteriaTrack').checked = (config.ItemMatchCriteriaRaw & (1 << 0)) > 0;
+    document.querySelector('#ItemMatchCriteriaAlbum').checked = (config.ItemMatchCriteriaRaw & (1 << 1)) > 0;
+    document.querySelector('#ItemMatchCriteriaArtist').checked = (config.ItemMatchCriteriaRaw & (1 << 2)) > 0;
+    document.querySelector('#ItemMatchCriteriaAlbumArtist').checked = (config.ItemMatchCriteriaRaw & (1 << 3)) > 0;
+}
+
+function getItemMatchCriteriaFromCheckboxes() {
+    let result = 0;
+    if (document.querySelector('#ItemMatchCriteriaTrack').checked) result |= 1 << 0;
+    if (document.querySelector('#ItemMatchCriteriaAlbum').checked) result |= 1 << 1;
+    if (document.querySelector('#ItemMatchCriteriaArtist').checked) result |= 1 << 2;
+    if (document.querySelector('#ItemMatchCriteriaAlbumArtist').checked) result |= 1 << 3;
+
+    return result;
+}
+
 export default function (view) {
     view.dispatchEvent(new CustomEvent('create'));
 
@@ -151,6 +168,9 @@ export default function (view) {
                 });
             }
 
+            document.querySelector('#ItemMatchLevel').value = config.ItemMatchLevel;
+            mapItemMatchCriteriaToCheckboxes(config);
+
             ApiClient.getJSON(ApiClient.getUrl('Users'), apiQueryOpts).then(function (result) {
                 users.length = 0;
                 result.forEach(user => {
@@ -188,6 +208,13 @@ export default function (view) {
 
             config.GenerateMissingTrackLists = document.querySelector('#GenerateMissingTrackLists').checked;
             config.MissingTrackListsDateFormat = document.querySelector('#MissingTrackListsDateFormat').value;
+            config.ItemMatchLevel = document.querySelector('#ItemMatchLevel').value;
+            config.ItemMatchCriteriaRaw = getItemMatchCriteriaFromCheckboxes();
+            if (config.ItemMatchCriteriaRaw == 0) {
+                Dashboard.alert('Could not save settings, please select at least one track match criterium.');
+                Dashboard.hideLoadingMsg();
+                return;
+            }
 
             ApiClient.updatePluginConfiguration(SpotifyImportConfig.pluginUniqueId, config).then(function (result) {
                 Dashboard.processPluginConfigurationUpdateResult(result);
