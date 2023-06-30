@@ -23,6 +23,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.TestHelpers
             _libManagerMock.Setup(m => m.GetItemById(It.IsAny<Guid>())).Returns((Guid guid) => _albums.ContainsKey(guid) ? _albums[guid] : null);
 #pragma warning restore CS8603 // null return
             BaseItem.LibraryManager = _libManagerMock.Object;
+            System.Threading.Thread.Sleep(100);
         }
 
         public static void ClearAlbums()
@@ -72,7 +73,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.TestHelpers
 
         public static string GetErrorString(Audio audio)
         {
-            return $"at Audio{{Name='{audio.Name}',Album='{audio.AlbumEntity?.Name}',AlbumArtist=[{audio.AlbumEntity?.Artists}],Artists=[{audio.Artists}]}}";
+            return $"at Audio{{Name='{audio.Name}',Album='{audio.AlbumEntity?.Name}',AlbumArtist=[{audio.AlbumEntity?.Artists?.Count}],Artists=[{audio.Artists?.Count}]}}";
         }
     }
 }
