@@ -7,6 +7,8 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using Moq;
+using Xunit;
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Viperinius.Plugin.SpotifyImport.Tests.TestHelpers
 {
