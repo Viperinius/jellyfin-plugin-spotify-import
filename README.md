@@ -70,6 +70,19 @@ Following "Spotify ID" formats work:
 When done, save these settings and you're set. The plugin will do its thing periodically (default: daily at 03:00).
 If you want to change this or want to let it run immediately, head to the scheduled tasks page and look for the task `Import Spotify playlists`.
 
+### Track match tweaking
+
+By default, the plugin will accept a Jellyfin track as equal to a Spotify track if these conditions are met:
+- Same track name
+- Same album name
+- Jellyfin album artists contain Spotify album artist
+- Jellyfin artists contain Spotify artist
+
+If you experience issues with tracks not matching even if they exist, you can "relax" these settings:
+
+1. `Match Type` determines how strict the individual comparison is (e.g. if case differences are ignored)
+2. `Enable * comparison` fully enables or disables the comparison of the respective condition
+
 ## To do
 
 A few things that are not implemented yet:
