@@ -22,7 +22,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.TestHelpers
             _albums = new Dictionary<Guid, MusicAlbum>();
             _libManagerMock = new Mock<ILibraryManager>();
 #pragma warning disable CS8603 // null return
-            _libManagerMock.Setup(m => m.GetItemById(It.IsAny<Guid>())).Returns((Guid guid) => _albums.ContainsKey(guid) ? _albums[guid] : null);
+            _libManagerMock.Setup(m => m.GetItemById(It.IsAny<Guid>())).Returns((Guid guid) => _albums.TryGetValue(guid, out var result) ? result : null);
 #pragma warning restore CS8603 // null return
             BaseItem.LibraryManager = _libManagerMock.Object;
             System.Threading.Thread.Sleep(100);
