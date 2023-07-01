@@ -80,7 +80,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
 
                 if (!string.IsNullOrEmpty(response.Error))
                 {
-                    _logger.LogError("Failed to authenticate with Spotify, received error '{Error}'!", response.Error);
+                    _logger.LogError("Failed to authenticate with Spotify, received error '{Error}'!", response.Error.Replace(Environment.NewLine, " ", StringComparison.InvariantCulture));
                     return;
                 }
 
