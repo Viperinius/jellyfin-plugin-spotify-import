@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Viperinius.Plugin.SpotifyImport.Matchers;
 using Viperinius.Plugin.SpotifyImport.Tests.TestHelpers;
 using Xunit;
@@ -35,14 +35,14 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         {
             if (Plugin.Instance == null)
             {
-                var mockAppPaths = new Mock<MediaBrowser.Common.Configuration.IApplicationPaths>();
-                mockAppPaths.SetupGet(m => m.PluginsPath).Returns(() => string.Empty);
-                mockAppPaths.SetupGet(m => m.PluginConfigurationsPath).Returns(() => string.Empty);
-                var mockXmlSerializer = new Mock<MediaBrowser.Model.Serialization.IXmlSerializer>();
-                mockXmlSerializer.Setup(m => m.DeserializeFromFile(It.IsAny<Type>(), It.IsAny<string>()))
-                                 .Returns(() => new Configuration.PluginConfiguration());
+                var mockAppPaths = Substitute.For<MediaBrowser.Common.Configuration.IApplicationPaths>();
+                mockAppPaths.PluginsPath.Returns(string.Empty);
+                mockAppPaths.PluginConfigurationsPath.Returns(string.Empty);
+                var mockXmlSerializer = Substitute.For<MediaBrowser.Model.Serialization.IXmlSerializer>();
+                mockXmlSerializer.DeserializeFromFile(Arg.Any<Type>(), Arg.Any<string>())
+                                 .Returns(_ => new Configuration.PluginConfiguration());
 
-                _ = new Plugin(mockAppPaths.Object, mockXmlSerializer.Object);
+                _ = new Plugin(mockAppPaths, mockXmlSerializer);
             }
             System.Threading.Thread.Sleep(100);
         }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
-using Moq;
+using NSubstitute;
 using Xunit;
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
@@ -15,16 +15,16 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.TestHelpers
     internal static class TrackHelper
     {
         private static readonly Dictionary<Guid, MusicAlbum> _albums;
-        private static readonly Mock<ILibraryManager> _libManagerMock;
+        private static readonly ILibraryManager _libManagerMock;
 
         static TrackHelper()
         {
             _albums = new Dictionary<Guid, MusicAlbum>();
-            _libManagerMock = new Mock<ILibraryManager>();
+            _libManagerMock = Substitute.For<ILibraryManager>();
 #pragma warning disable CS8603 // null return
-            _libManagerMock.Setup(m => m.GetItemById(It.IsAny<Guid>())).Returns((Guid guid) => _albums.TryGetValue(guid, out var result) ? result : null);
+            _libManagerMock.GetItemById(Arg.Any<Guid>()).Returns(args => _albums.TryGetValue((Guid)args[0], out var result) ? result : null);
 #pragma warning restore CS8603 // null return
-            BaseItem.LibraryManager = _libManagerMock.Object;
+            BaseItem.LibraryManager = _libManagerMock;
             System.Threading.Thread.Sleep(100);
         }
 

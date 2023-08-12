@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
-using Moq;
 using Viperinius.Plugin.SpotifyImport.Matchers;
 using Viperinius.Plugin.SpotifyImport.Tests.TestHelpers;
 using Xunit;

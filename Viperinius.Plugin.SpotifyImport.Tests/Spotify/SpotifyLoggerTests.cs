@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
@@ -16,14 +16,14 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
         {
             if (Plugin.Instance == null)
             {
-                var mockAppPaths = new Mock<MediaBrowser.Common.Configuration.IApplicationPaths>();
-                mockAppPaths.SetupGet(m => m.PluginsPath).Returns(() => string.Empty);
-                mockAppPaths.SetupGet(m => m.PluginConfigurationsPath).Returns(() => string.Empty);
-                var mockXmlSerializer = new Mock<MediaBrowser.Model.Serialization.IXmlSerializer>();
-                mockXmlSerializer.Setup(m => m.DeserializeFromFile(It.IsAny<Type>(), It.IsAny<string>()))
-                                 .Returns(() => new Configuration.PluginConfiguration());
+                var mockAppPaths = Substitute.For<MediaBrowser.Common.Configuration.IApplicationPaths>();
+                mockAppPaths.PluginsPath.Returns(string.Empty);
+                mockAppPaths.PluginConfigurationsPath.Returns(string.Empty);
+                var mockXmlSerializer = Substitute.For<MediaBrowser.Model.Serialization.IXmlSerializer>();
+                mockXmlSerializer.DeserializeFromFile(Arg.Any<Type>(), Arg.Any<string>())
+                                 .Returns(_ => new Configuration.PluginConfiguration());
 
-                _ = new Plugin(mockAppPaths.Object, mockXmlSerializer.Object);
+                _ = new Plugin(mockAppPaths, mockXmlSerializer);
             }
             System.Threading.Thread.Sleep(100);
         }
@@ -40,8 +40,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
         [Fact]
         public void CreateInstance()
         {
-            var mock = new Mock<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
-            _ = new SpotifyImport.Spotify.SpotifyLogger(mock.Object);
+            var mock = Substitute.For<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
+            _ = new SpotifyImport.Spotify.SpotifyLogger(mock);
         }
 
         [Fact]
@@ -50,14 +50,14 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
             SetValidPluginInstance();
             Plugin.Instance!.Configuration.EnableVerboseLogging = true;
 
-            var mock = new Mock<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
-            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock.Object);
+            var mock = Substitute.For<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
+            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock);
 
 #pragma warning disable CS8625
             spotifyLogger.OnRequest(null);
 #pragma warning restore CS8625
 
-            mock.VerifyNoOtherCalls();
+            Assert.Empty(mock.ReceivedCalls());
         }
 
         [Fact]
@@ -65,8 +65,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
         {
             SetNullPluginInstance();
 
-            var mock = new Mock<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
-            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock.Object);
+            var mock = Substitute.For<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
+            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock);
 
             var request = new SpotifyAPI.Web.Http.Request(
                 new Uri("http://example.com"),
@@ -75,7 +75,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
 
             spotifyLogger.OnRequest(request);
 
-            mock.VerifyNoOtherCalls();
+            Assert.Empty(mock.ReceivedCalls());
         }
 
         [Fact]
@@ -84,8 +84,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
             SetValidPluginInstance();
             Plugin.Instance!.Configuration.EnableVerboseLogging = false;
 
-            var mock = new Mock<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
-            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock.Object);
+            var mock = Substitute.For<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
+            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock);
 
             var request = new SpotifyAPI.Web.Http.Request(
                 new Uri("http://example.com"),
@@ -94,7 +94,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
 
             spotifyLogger.OnRequest(request);
 
-            mock.VerifyNoOtherCalls();
+            Assert.Empty(mock.ReceivedCalls());
         }
 
         [Fact]
@@ -107,25 +107,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
             var expectedReqEndpoint = "/abc";
             var expectedMsg = $"GET {expectedReqEndpoint} [] (null)";
 
-            var actualMsg = string.Empty;
-
-            var mock = new Mock<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
-            mock.Setup(m => m.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()))
-                .Callback(new InvocationAction(invocation =>
-                {
-                    var state = invocation.Arguments[2];
-                    var exception = invocation.Arguments[3];
-                    var formatter = invocation.Arguments[4];
-                    var formattingMethod = formatter.GetType().GetMethod("Invoke");
-                    actualMsg = (string)formattingMethod!.Invoke(formatter, new[] { state, exception })!;
-                }));
-
-            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock.Object);
+            var mock = Substitute.For<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
+            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock);
 
             var request = new SpotifyAPI.Web.Http.Request(
                 new Uri(expectedReqUri),
@@ -134,9 +117,20 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
 
             spotifyLogger.OnRequest(request);
 
+            var call = mock.ReceivedCalls().First();
+            var callArgs = call.GetArguments();
+
+            Assert.Equal(callArgs[0], LogLevel.Information);
+
+            var state = callArgs[2];
+            var exception = callArgs[3];
+            var formatter = callArgs[4];
+            var formattingMethod = formatter!.GetType().GetMethod("Invoke");
+            var actualMsg = (string)formattingMethod!.Invoke(formatter, new[] { state, exception })!;
+
             Assert.Equal(expectedMsg, actualMsg);
         }
-
+        
         [Fact]
         public void Log_OnRequest_WithParamsAndBody()
         {
@@ -155,25 +149,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
             var expectedReqBody = "hello";
             var expectedMsg = $"POST {expectedReqEndpoint} [{expectedReqParams}] {expectedReqBody}";
 
-            var actualMsg = string.Empty;
-
-            var mock = new Mock<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
-            mock.Setup(m => m.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()))
-                .Callback(new InvocationAction(invocation =>
-                {
-                    var state = invocation.Arguments[2];
-                    var exception = invocation.Arguments[3];
-                    var formatter = invocation.Arguments[4];
-                    var formattingMethod = formatter.GetType().GetMethod("Invoke");
-                    actualMsg = (string)formattingMethod!.Invoke(formatter, new[] { state, exception })!;
-                }));
-
-            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock.Object);
+            var mock = Substitute.For<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
+            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock);
 
             var request = new SpotifyAPI.Web.Http.Request(
                 new Uri(expectedReqUri),
@@ -185,6 +162,17 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
 
             spotifyLogger.OnRequest(request);
 
+            var call = mock.ReceivedCalls().First();
+            var callArgs = call.GetArguments();
+
+            Assert.Equal(callArgs[0], LogLevel.Information);
+
+            var state = callArgs[2];
+            var exception = callArgs[3];
+            var formatter = callArgs[4];
+            var formattingMethod = formatter!.GetType().GetMethod("Invoke");
+            var actualMsg = (string)formattingMethod!.Invoke(formatter, new[] { state, exception })!;
+
             Assert.Equal(expectedMsg, actualMsg);
         }
 
@@ -194,14 +182,14 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
             SetValidPluginInstance();
             Plugin.Instance!.Configuration.EnableVerboseLogging = true;
 
-            var mock = new Mock<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
-            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock.Object);
+            var mock = Substitute.For<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
+            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock);
 
 #pragma warning disable CS8625
             spotifyLogger.OnResponse(null);
 #pragma warning restore CS8625
 
-            mock.VerifyNoOtherCalls();
+            Assert.Empty(mock.ReceivedCalls());
         }
 
         [Fact]
@@ -209,14 +197,14 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
         {
             SetNullPluginInstance();
 
-            var mock = new Mock<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
-            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock.Object);
+            var mock = Substitute.For<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
+            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock);
 
             var response = new SpotifyAPI.Web.Http.Response(new Dictionary<string, string>());
 
             spotifyLogger.OnResponse(response);
 
-            mock.VerifyNoOtherCalls();
+            Assert.Empty(mock.ReceivedCalls());
         }
 
         [Fact]
@@ -225,14 +213,14 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
             SetValidPluginInstance();
             Plugin.Instance!.Configuration.EnableVerboseLogging = false;
 
-            var mock = new Mock<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
-            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock.Object);
+            var mock = Substitute.For<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
+            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock);
 
             var response = new SpotifyAPI.Web.Http.Response(new Dictionary<string, string>());
 
             spotifyLogger.OnResponse(response);
 
-            mock.VerifyNoOtherCalls();
+            Assert.Empty(mock.ReceivedCalls());
         }
 
         [Fact]
@@ -245,31 +233,25 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
             var expectedContentType = "application/json";
             var expectedMsg = $"--> {expectedCode} {expectedContentType} (null)";
 
-            var actualMsg = string.Empty;
-
-            var mock = new Mock<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
-            mock.Setup(m => m.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()))
-                .Callback(new InvocationAction(invocation =>
-                {
-                    var state = invocation.Arguments[2];
-                    var exception = invocation.Arguments[3];
-                    var formatter = invocation.Arguments[4];
-                    var formattingMethod = formatter.GetType().GetMethod("Invoke");
-                    actualMsg = (string)formattingMethod!.Invoke(formatter, new[] { state, exception })!;
-                }));
-
-            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock.Object);
+            var mock = Substitute.For<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
+            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock);
 
             var response = new SpotifyAPI.Web.Http.Response(new Dictionary<string, string>());
             response.StatusCode = expectedCode;
             response.ContentType = expectedContentType;
 
             spotifyLogger.OnResponse(response);
+
+            var call = mock.ReceivedCalls().First();
+            var callArgs = call.GetArguments();
+
+            Assert.Equal(callArgs[0], LogLevel.Information);
+
+            var state = callArgs[2];
+            var exception = callArgs[3];
+            var formatter = callArgs[4];
+            var formattingMethod = formatter!.GetType().GetMethod("Invoke");
+            var actualMsg = (string)formattingMethod!.Invoke(formatter, new[] { state, exception })!;
 
             Assert.Equal(expectedMsg, actualMsg);
         }
@@ -286,25 +268,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
             var expectedBody = "oh hi, have some \t.";
             var expectedMsg = $"--> {expectedCode} {expectedContentType} {expectedBody}";
 
-            var actualMsg = string.Empty;
-
-            var mock = new Mock<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
-            mock.Setup(m => m.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()))
-                .Callback(new InvocationAction(invocation =>
-                {
-                    var state = invocation.Arguments[2];
-                    var exception = invocation.Arguments[3];
-                    var formatter = invocation.Arguments[4];
-                    var formattingMethod = formatter.GetType().GetMethod("Invoke");
-                    actualMsg = (string)formattingMethod!.Invoke(formatter, new[] { state, exception })!;
-                }));
-
-            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock.Object);
+            var mock = Substitute.For<ILogger<SpotifyImport.Spotify.SpotifyLogger>>();
+            var spotifyLogger = new SpotifyImport.Spotify.SpotifyLogger(mock);
 
             var response = new SpotifyAPI.Web.Http.Response(new Dictionary<string, string>());
             response.StatusCode = expectedCode;
@@ -312,6 +277,17 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
             response.Body = rawBody;
 
             spotifyLogger.OnResponse(response);
+
+            var call = mock.ReceivedCalls().First();
+            var callArgs = call.GetArguments();
+
+            Assert.Equal(callArgs[0], LogLevel.Information);
+
+            var state = callArgs[2];
+            var exception = callArgs[3];
+            var formatter = callArgs[4];
+            var formattingMethod = formatter!.GetType().GetMethod("Invoke");
+            var actualMsg = (string)formattingMethod!.Invoke(formatter, new[] { state, exception })!;
 
             Assert.Equal(expectedMsg, actualMsg);
 
@@ -321,8 +297,20 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Spotify
             expectedMsg = $"--> {expectedCode} {expectedContentType} {expectedBody}";
 
             response.Body = rawBody;
+            mock.ClearReceivedCalls();
 
             spotifyLogger.OnResponse(response);
+
+            call = mock.ReceivedCalls().First();
+            callArgs = call.GetArguments();
+
+            Assert.Equal(callArgs[0], LogLevel.Information);
+
+            state = callArgs[2];
+            exception = callArgs[3];
+            formatter = callArgs[4];
+            formattingMethod = formatter!.GetType().GetMethod("Invoke");
+            actualMsg = (string)formattingMethod!.Invoke(formatter, new[] { state, exception })!;
 
             Assert.Equal(expectedMsg, actualMsg);
         }
