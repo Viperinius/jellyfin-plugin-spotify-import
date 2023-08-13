@@ -7,6 +7,22 @@ using System.Threading.Tasks;
 namespace Viperinius.Plugin.SpotifyImport.Configuration
 {
     /// <summary>
+    /// Type the configuration describes.
+    /// </summary>
+    public enum TargetConfigurationType
+    {
+        /// <summary>
+        /// Configuration contains a playlist id.
+        /// </summary>
+        Playlist,
+
+        /// <summary>
+        /// Configuration contains a user id.
+        /// </summary>
+        User,
+    }
+
+    /// <summary>
     /// Holds the information about a configured playlist.
     /// </summary>
     public class TargetPlaylistConfiguration
@@ -35,5 +51,10 @@ namespace Viperinius.Plugin.SpotifyImport.Configuration
         /// Gets or sets the targeted Jellyfin user name.
         /// </summary>
         public string UserName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the configured id.
+        /// </summary>
+        public TargetConfigurationType Type { get; set; }
     }
 }

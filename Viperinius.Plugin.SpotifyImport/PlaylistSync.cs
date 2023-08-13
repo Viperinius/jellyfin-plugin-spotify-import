@@ -21,19 +21,22 @@ namespace Viperinius.Plugin.SpotifyImport
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly List<ProviderPlaylistInfo> _providerPlaylists;
+        private readonly Dictionary<string, string> _userPlaylistIds;
 
         public PlaylistSync(
             ILogger<PlaylistSync> logger,
             IPlaylistManager playlistManager,
             ILibraryManager libraryManager,
             IUserManager userManager,
-            List<ProviderPlaylistInfo> playlists)
+            List<ProviderPlaylistInfo> playlists,
+            Dictionary<string, string> userPlaylistIds)
         {
             _logger = logger;
             _playlistManager = playlistManager;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _providerPlaylists = playlists;
+            _userPlaylistIds = userPlaylistIds;
         }
 
         public async Task Execute(CancellationToken cancellationToken = default)
@@ -46,8 +49,18 @@ namespace Viperinius.Plugin.SpotifyImport
                 var targetConfig = Plugin.Instance?.Configuration.Playlists.FirstOrDefault(p => p.Id == providerPlaylist.Id);
                 if (targetConfig == null || string.IsNullOrEmpty(targetConfig.Id))
                 {
-                    _logger.LogError("Failed to get target playlist configuration for playlist {Id}", providerPlaylist.Id);
-                    continue;
+                    // is this a playlist specified by user?
+                    var userId = _userPlaylistIds.GetValueOrDefault(providerPlaylist.Id);
+                    targetConfig = Plugin.Instance?.Configuration.Playlists.FirstOrDefault(p => p.Type == Configuration.TargetConfigurationType.User && p.Id == userId);
+
+                    if (targetConfig == null || string.IsNullOrEmpty(targetConfig.Id))
+                    {
+                        _logger.LogError("Failed to get target playlist configuration for playlist {Id}", providerPlaylist.Id);
+                        continue;
+                    }
+
+                    // custom name not supported in this case
+                    targetConfig.Name = string.Empty;
                 }
 
                 // get the targeted user
