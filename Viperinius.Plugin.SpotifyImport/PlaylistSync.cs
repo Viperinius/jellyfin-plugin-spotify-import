@@ -58,6 +58,9 @@ namespace Viperinius.Plugin.SpotifyImport
                         _logger.LogError("Failed to get target playlist configuration for playlist {Id}", providerPlaylist.Id);
                         continue;
                     }
+
+                    // custom name not supported in this case
+                    targetConfig.Name = string.Empty;
                 }
 
                 // get the targeted user
