@@ -40,6 +40,12 @@ namespace Viperinius.Plugin.SpotifyImport
 
         public abstract void SetUpProvider();
 
+        public virtual async Task<List<string>?> GetUserPlaylistIds(string userId, CancellationToken? cancellationToken = null)
+        {
+            var playlistsInfo = await GetUserPlaylistsInfo(userId, cancellationToken).ConfigureAwait(false);
+            return playlistsInfo?.Select(p => p.Id).ToList();
+        }
+
         public virtual async Task PopulatePlaylists(List<string> playlistIds, CancellationToken? cancellationToken = null)
         {
             _logger.LogInformation("Starting to query {Amount} playlists from {Name}", playlistIds.Count, Name);
@@ -57,6 +63,8 @@ namespace Viperinius.Plugin.SpotifyImport
                 }
             }
         }
+
+        protected abstract Task<List<ProviderPlaylistInfo>?> GetUserPlaylistsInfo(string userId, CancellationToken? cancellationToken = null);
 
         protected abstract Task<ProviderPlaylistInfo?> GetPlaylist(string playlistId, CancellationToken? cancellationToken = null);
 

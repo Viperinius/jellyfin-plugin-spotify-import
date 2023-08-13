@@ -54,6 +54,47 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             _spotifyClient = new SpotifyClient(config);
         }
 
+        protected override async Task<List<ProviderPlaylistInfo>?> GetUserPlaylistsInfo(string userId, CancellationToken? cancellationToken = null)
+        {
+            if (_spotifyClient == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                var playlists = new List<ProviderPlaylistInfo>();
+                var spotifyPlaylists = await _spotifyClient.Playlists.GetUsers(userId, cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
+                await foreach (var playlist in _spotifyClient.Paginate(spotifyPlaylists))
+                {
+                    var ownerId = playlist.Owner != null ? playlist.Owner.Id : string.Empty;
+                    if (ownerId != userId)
+                    {
+                        continue;
+                    }
+
+                    var rawImageUrl = playlist.Images?.FirstOrDefault((Image?)null)?.Url;
+
+                    playlists.Add(new ProviderPlaylistInfo
+                    {
+                        Id = playlist.Id ?? string.Empty,
+                        Name = playlist.Name ?? string.Empty,
+                        ImageUrl = string.IsNullOrWhiteSpace(rawImageUrl) ? null : new Uri(rawImageUrl),
+                        Description = playlist.Description ?? string.Empty,
+                        OwnerId = ownerId
+                    });
+                }
+
+                return playlists;
+            }
+            catch (APIException e)
+            {
+                _logger.LogError(e, "Failed to get user playlists for user {Id}", userId);
+            }
+
+            return null;
+        }
+
         protected override async Task<ProviderPlaylistInfo?> GetPlaylist(string playlistId, CancellationToken? cancellationToken = null)
         {
             if (_spotifyClient == null)
