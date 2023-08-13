@@ -172,7 +172,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                             IsrcId = hasIsrc ? isrc : null,
                             TrackNumber = (uint)fullTrack.TrackNumber,
                             AlbumName = fullTrack.Album.Name,
-                            AlbumArtistName = fullTrack.Album.Artists.First().Name,
+                            AlbumArtistName = fullTrack.Album.Artists.FirstOrDefault()?.Name ?? string.Empty,
                             ArtistName = fullTrack.Artists.First().Name,
                         };
                     }
