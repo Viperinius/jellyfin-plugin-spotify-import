@@ -1,5 +1,9 @@
 const apiQueryOpts = {};
 const users = [];
+const idTypes = [
+    'Playlist',
+    'User'
+];
 
 function getPlaylistIdElementHtml(id) {
     let value = id;
@@ -28,11 +32,21 @@ function getUserSelectHtml(selectedUser) {
     return `<td class="detailTableBodyCell cellPlaylistUser"><select class="emby-select-withcolor emby-select" is="emby-select">${userOptionsHtml}</select></td>`;
 }
 
-function getRowHtml(playlistId, name, user) {
+function getIdTypeSelectHtml(selectedType) {
+    let typeOptionsHtml = '';
+    idTypes.forEach(type => {
+        typeOptionsHtml += `<option value="${type}" ${type === selectedType ? 'selected' : ''}>${type}</option>`;
+    });
+
+    return `<td class="detailTableBodyCell cellPlaylistType"><select class="emby-select-withcolor emby-select" is="emby-select">${typeOptionsHtml}</select></td>`;
+}
+
+function getRowHtml(playlistId, name, user, idType) {
     const row = `<tr class="detailTableBodyRow detailTableBodyRow-shaded">
         ${getPlaylistIdElementHtml(playlistId)}
         ${getNameElementHtml(name)}
         ${getUserSelectHtml(user)}
+        ${getIdTypeSelectHtml(idType)}
         <td>
             <button class="paper-icon-button-light" type="button" onclick="this.closest('tr').remove()">
                 <span class="material-icons delete"></span>
@@ -51,7 +65,7 @@ function loadPlaylistTable(page, config) {
         config.Playlists.forEach(pl => {
             const user = users.find(u => u.name === pl.UserName);
             const userId = user?.id || '';
-            rowsHtml += getRowHtml(pl.Id, pl.Name, userId);
+            rowsHtml += getRowHtml(pl.Id, pl.Name, userId, pl.Type);
         });
 
         tableBody.innerHTML = rowsHtml;
@@ -72,12 +86,14 @@ function getPlaylistTableData(page) {
     const tableRows = page.querySelectorAll('#playlistTable > tbody > tr');
     if (tableRows) {
         const playlistData = [...tableRows].map(r => {
-            const select = r.querySelector('td.cellPlaylistUser > select');
+            const userSelect = r.querySelector('td.cellPlaylistUser > select');
+            const typeSelect = r.querySelector('td.cellPlaylistType > select');
 
             return {
                 Id: r.querySelector('td.cellPlaylistId').innerText.trim(),
                 Name: r.querySelector('td.cellPlaylistName').innerText.trim(),
-                UserName: select.options[select.selectedIndex].text.trim(),
+                UserName: userSelect.options[userSelect.selectedIndex].text.trim(),
+                Type: typeSelect.options[typeSelect.selectedIndex].text.trim()
             };
         });
 
@@ -199,9 +215,9 @@ export default function (view) {
             const playlists = getPlaylistTableData(view) || [];
             playlists.forEach(pl => {
                 // match a given spotify id with or without a prepended url or uri part
-                const match = /^(https?:\/\/open.spotify.com\/playlist\/|spotify:playlist:)?([a-zA-Z0-9]+)$/gm.exec(pl.Id);
-                if (match !== null && match.length > 2) {
-                    pl.Id = match[2];
+                const match = /^(https?:\/\/open.spotify.com\/(playlist|user)\/|spotify:playlist:)?([a-zA-Z0-9]+)$/gm.exec(pl.Id);
+                if (match !== null && match.length > 3) {
+                    pl.Id = match[3];
                     config.Playlists.push(pl);
                 }
             });
