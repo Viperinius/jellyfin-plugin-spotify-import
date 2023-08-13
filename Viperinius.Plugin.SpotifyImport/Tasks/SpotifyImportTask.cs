@@ -60,15 +60,34 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
         {
             MigratePlaylistIds();
 
-            var playlistIds = Plugin.Instance?.Configuration.Playlists.Select(p => p.Id).ToList() ?? new List<string>();
+            var userIds = Plugin.Instance?.Configuration.Playlists.Where(p => p.Type == Configuration.TargetConfigurationType.User).Select(p => p.Id).ToList() ?? new List<string>();
+            var playlistIds = Plugin.Instance?.Configuration.Playlists.Where(p => p.Type == Configuration.TargetConfigurationType.Playlist).Select(p => p.Id).ToList() ?? new List<string>();
 
-            if (!playlistIds.Any())
+            if (!userIds.Any() && !playlistIds.Any())
             {
                 return;
             }
 
             var spotify = new SpotifyPlaylistProvider(_loggerFactory.CreateLogger<SpotifyPlaylistProvider>(), _loggerFactory.CreateLogger<SpotifyLogger>());
             spotify.SetUpProvider();
+
+            // check if any users are given whose playlists need to be included
+            var userPlaylistMapping = new Dictionary<string, string>();
+            if (userIds.Any())
+            {
+                foreach (var userId in userIds)
+                {
+                    var userPlaylists = await spotify.GetUserPlaylistIds(userId, cancellationToken).ConfigureAwait(false);
+                    if (userPlaylists != null)
+                    {
+                        playlistIds.AddRange(userPlaylists);
+                        userPlaylists.ForEach(id => userPlaylistMapping.Add(id, userId));
+                    }
+                }
+
+                playlistIds = playlistIds.Distinct().ToList();
+            }
+
             await spotify.PopulatePlaylists(playlistIds, cancellationToken).ConfigureAwait(false);
 
             var playlistSync = new PlaylistSync(
@@ -76,7 +95,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
                                                 _playlistManager,
                                                 _libraryManager,
                                                 _userManager,
-                                                spotify.Playlists);
+                                                spotify.Playlists,
+                                                userPlaylistMapping);
             await playlistSync.Execute(cancellationToken).ConfigureAwait(false);
         }
 
