@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using Viperinius.Plugin.SpotifyImport.Configuration;
 using Viperinius.Plugin.SpotifyImport.Spotify;
 
 namespace Viperinius.Plugin.SpotifyImport.Tasks
@@ -60,10 +61,12 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
         {
             MigratePlaylistIds();
 
-            var userIds = Plugin.Instance?.Configuration.Playlists.Where(p => p.Type == Configuration.TargetConfigurationType.User).Select(p => p.Id).ToList() ?? new List<string>();
-            var playlistIds = Plugin.Instance?.Configuration.Playlists.Where(p => p.Type == Configuration.TargetConfigurationType.Playlist).Select(p => p.Id).ToList() ?? new List<string>();
+            var followedUsers = Plugin.Instance?.Configuration.Users
+                ?? Array.Empty<TargetUserConfiguration>();
+            var playlistIds = Plugin.Instance?.Configuration.Playlists
+                .Select(p => p.Id).ToList() ?? new List<string>();
 
-            if (!userIds.Any() && !playlistIds.Any())
+            if (!followedUsers.Any() && !playlistIds.Any())
             {
                 return;
             }
@@ -73,30 +76,33 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
 
             // check if any users are given whose playlists need to be included
             var userPlaylistMapping = new Dictionary<string, string>();
-            if (userIds.Any())
+            if (followedUsers.Any())
             {
-                foreach (var userId in userIds)
+                foreach (var user in followedUsers)
                 {
-                    var userPlaylists = await spotify.GetUserPlaylistIds(userId, cancellationToken).ConfigureAwait(false);
+                    var userPlaylists = await spotify.GetUserPlaylistIds(
+                            user, cancellationToken)
+                        .ConfigureAwait(false);
                     if (userPlaylists != null)
                     {
                         playlistIds.AddRange(userPlaylists);
-                        userPlaylists.ForEach(id => userPlaylistMapping.Add(id, userId));
+                        userPlaylists.ForEach(id => userPlaylistMapping.Add(id, user.Id));
                     }
                 }
 
                 playlistIds = playlistIds.Distinct().ToList();
             }
 
-            await spotify.PopulatePlaylists(playlistIds, cancellationToken).ConfigureAwait(false);
+            await spotify.PopulatePlaylists(playlistIds, cancellationToken)
+                .ConfigureAwait(false);
 
             var playlistSync = new PlaylistSync(
-                                                _loggerFactory.CreateLogger<PlaylistSync>(),
-                                                _playlistManager,
-                                                _libraryManager,
-                                                _userManager,
-                                                spotify.Playlists,
-                                                userPlaylistMapping);
+                    _loggerFactory.CreateLogger<PlaylistSync>(),
+                    _playlistManager,
+                    _libraryManager,
+                    _userManager,
+                    spotify.Playlists,
+                    userPlaylistMapping);
             await playlistSync.Execute(cancellationToken).ConfigureAwait(false);
         }
 
