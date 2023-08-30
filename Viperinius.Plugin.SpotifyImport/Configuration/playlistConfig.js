@@ -124,7 +124,7 @@ function getPlaylistTableData(page) {
                 .innerText.trim();
             const userSelect = r.querySelector('td.cellPlaylistUser > select');
             const jellyfinUser = userSelect
-                .options[userSelect.selectedIndex].value.trim();
+                .options[userSelect.selectedIndex].text.trim();
 
             return {
                 Id: spotifyId,
@@ -150,7 +150,7 @@ function getUsersTableData(page) {
             .innerText.trim();
         const userSelect = r.querySelector('td.cellPlaylistUser > select')
         const jellyfinUser = userSelect
-            .options[userSelect.selectedIndex].value.trim();
+            .options[userSelect.selectedIndex].text.trim();
         const onlyOwn = r.querySelector('td.cellPlaylistOnlyOwn > input').checked;
 
         return {
