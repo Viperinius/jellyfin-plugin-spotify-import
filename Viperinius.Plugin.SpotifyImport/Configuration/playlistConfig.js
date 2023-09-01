@@ -157,7 +157,7 @@ function getUsersTableData(page) {
         const userSelect = r.querySelector('td.cellPlaylistUser > select')
         const jellyfinUser = userSelect
             .options[userSelect.selectedIndex].text.trim();
-        const onlyOwn = r.querySelector('td.cellPlaylistOnlyOwn > input').checked;
+        const onlyOwn = r.querySelector('td.cellPlaylistOnlyOwn > * input').checked;
 
         return {
             Id: spotifyUser,
