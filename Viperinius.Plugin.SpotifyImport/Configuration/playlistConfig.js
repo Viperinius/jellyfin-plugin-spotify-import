@@ -280,8 +280,8 @@ export default function (view) {
             const playlists = getPlaylistTableData(view) || [];
 
             playlists.forEach(pl => {
-                // match a given spotify id with or without a prepended url or uri part
-                const match = /^(https?:\/\/open.spotify.com\/playlist\/|spotify:playlist:)?([a-zA-Z0-9]+)$/gm.exec(pl.Id);
+                // match a given spotify id with or without a prepended url or uri part, ignore url params
+                const match = /^(https?:\/\/open\.spotify\.com\/playlist\/|spotify:playlist:)?([a-zA-Z0-9]+)(\?si=.*)?$/gm.exec(pl.Id);
                 if (match !== null && match.length > 2) {
                     pl.Id = match[2];
                     config.Playlists.push(pl);
@@ -292,7 +292,8 @@ export default function (view) {
             const users = getUsersTableData(view) || [];
 
             users.forEach(user => {
-                const match = /^(https?:\/\/open.spotify.com\/user\/|spotify:user:)?([a-zA-Z0-9]+)$/gm.exec(user.Id);
+                // match a given spotify id with or without a prepended url or uri part, ignore url params
+                const match = /^(https?:\/\/open\.spotify\.com\/user\/|spotify:user:)?([a-zA-Z0-9]+)(\?si=.*)?$/gm.exec(user.Id);
                 if (match !== null && match.length > 2) {
                     user.Id = match[2];
                     config.Users.push(user);
