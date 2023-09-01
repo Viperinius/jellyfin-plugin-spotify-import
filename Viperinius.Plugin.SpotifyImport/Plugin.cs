@@ -32,6 +32,11 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     public override Guid Id => Guid.Parse("F03D0ADB-289F-4986-BD6F-2468025249B3");
 
     /// <summary>
+    /// Gets or sets a value indicating whether the plugin instance was fully initialised during server start.
+    /// </summary>
+    public bool IsInitialised { get; set; }
+
+    /// <summary>
     /// Gets the base path for the plugin API.
     /// </summary>
     public static string PluginApiBase => $"{nameof(Viperinius)}.{nameof(Viperinius.Plugin)}.{nameof(SpotifyImport)}";
