@@ -29,7 +29,12 @@ function getUserSelectHtml(selectedUser) {
 }
 
 function getOnlyOwnHtml(onlyOwn) {
-    return `<td class="detailTableBodyCell cellPlaylistOnlyOwn"><input type="checkbox" ${onlyOwn ? 'checked' : ''}></td>`;
+    return `<td class="detailTableBodyCell cellPlaylistOnlyOwn">
+        <label class="emby-checkbox-label">
+            <input type="checkbox" is="emby-checkbox" ${onlyOwn ? 'checked' : ''}/>
+            <span></span>
+        </label>
+    </td>`;
 
 }
 
@@ -97,10 +102,11 @@ function loadUsersTable(page, config) {
 
         config.Users.forEach(user => {
             const spotifyUser = user.Id;
-            const jellyfinUser = user.UserName;
+            const jellyfinUser = users.find(u => u.name === user.UserName);
+            const jellyfinUserId = jellyfinUser?.id || '';
             const onlyOwn = user.OnlyOwnPlaylists;
 
-            rowsHtml += createUserRowHtml(spotifyUser, jellyfinUser, onlyOwn);
+            rowsHtml += createUserRowHtml(spotifyUser, jellyfinUserId, onlyOwn);
         });
 
         tableBody.innerHTML = rowsHtml;

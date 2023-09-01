@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Viperinius.Plugin.SpotifyImport.Configuration
 {
     /// <summary>
-    /// Holds the information about a configured playlist.
+    /// Holds the information about a configured user.
     /// </summary>
     public class TargetUserConfiguration
     {
@@ -21,7 +21,7 @@ namespace Viperinius.Plugin.SpotifyImport.Configuration
         }
 
         /// <summary>
-        /// Gets or sets the playlist ID.
+        /// Gets or sets the user ID.
         /// </summary>
         public string Id { get; set; }
 
