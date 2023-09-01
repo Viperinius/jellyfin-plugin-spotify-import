@@ -38,7 +38,7 @@ function getOnlyOwnHtml(onlyOwn) {
 
 }
 
-function getRowHtml(playlistId, name, user, idType) {
+function getRowHtml(playlistId, name, user) {
     const row = `<tr class="detailTableBodyRow detailTableBodyRow-shaded">
         ${getPlaylistIdElementHtml(playlistId)}
         ${getNameElementHtml(name)}
@@ -78,7 +78,7 @@ function loadPlaylistTable(page, config) {
         config.Playlists.forEach(pl => {
             const user = users.find(u => u.name === pl.UserName);
             const userId = user?.id || '';
-            rowsHtml += getRowHtml(pl.Id, pl.Name, userId, pl.Type);
+            rowsHtml += getRowHtml(pl.Id, pl.Name, userId);
         });
 
         tableBody.innerHTML = rowsHtml;
