@@ -287,8 +287,8 @@ export default function (view) {
             playlists.forEach(pl => {
                 // match a given spotify id with or without a prepended url or uri part
                 const match = /^(https?:\/\/open.spotify.com\/playlist\/|spotify:playlist:)?([a-zA-Z0-9]+)$/gm.exec(pl.Id);
-                if (match !== null && match.length > 3) {
-                    pl.Id = match[3];
+                if (match !== null && match.length > 2) {
+                    pl.Id = match[2];
                     config.Playlists.push(pl);
                 }
             });
@@ -298,8 +298,8 @@ export default function (view) {
 
             users.forEach(user => {
                 const match = /^(https?:\/\/open.spotify.com\/user\/|spotify:user:)?([a-zA-Z0-9]+)$/gm.exec(user.Id);
-                if (match !== null && match.length > 3) {
-                    user.Id = match[3];
+                if (match !== null && match.length > 2) {
+                    user.Id = match[2];
                     config.Users.push(user);
                 }
             });
