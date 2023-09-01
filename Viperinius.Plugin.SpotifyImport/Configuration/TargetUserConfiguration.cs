@@ -7,33 +7,32 @@ using System.Threading.Tasks;
 namespace Viperinius.Plugin.SpotifyImport.Configuration
 {
     /// <summary>
-    /// Holds the information about a configured playlist.
+    /// Holds the information about a configured user.
     /// </summary>
-    public class TargetPlaylistConfiguration
+    public class TargetUserConfiguration
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="TargetPlaylistConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="TargetUserConfiguration"/> class.
         /// </summary>
-        public TargetPlaylistConfiguration()
+        public TargetUserConfiguration()
         {
             Id = string.Empty;
-            Name = string.Empty;
             UserName = string.Empty;
         }
 
         /// <summary>
-        /// Gets or sets the playlist ID.
+        /// Gets or sets the user ID.
         /// </summary>
         public string Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the targeted Jellyfin playlist name.
-        /// </summary>
-        public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the targeted Jellyfin user name.
         /// </summary>
         public string UserName { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether only original playlists should be collected.
+        /// </summary>
+        public bool OnlyOwnPlaylists { get; set; }
     }
 }

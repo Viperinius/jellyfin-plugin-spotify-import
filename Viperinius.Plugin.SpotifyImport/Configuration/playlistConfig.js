@@ -1,9 +1,5 @@
 const apiQueryOpts = {};
 const users = [];
-const idTypes = [
-    'Playlist',
-    'User'
-];
 
 function getPlaylistIdElementHtml(id) {
     let value = id;
@@ -32,21 +28,21 @@ function getUserSelectHtml(selectedUser) {
     return `<td class="detailTableBodyCell cellPlaylistUser"><select class="emby-select-withcolor emby-select" is="emby-select">${userOptionsHtml}</select></td>`;
 }
 
-function getIdTypeSelectHtml(selectedType) {
-    let typeOptionsHtml = '';
-    idTypes.forEach(type => {
-        typeOptionsHtml += `<option value="${type}" ${type === selectedType ? 'selected' : ''}>${type}</option>`;
-    });
+function getOnlyOwnHtml(onlyOwn) {
+    return `<td class="detailTableBodyCell cellPlaylistOnlyOwn">
+        <label class="emby-checkbox-label">
+            <input type="checkbox" is="emby-checkbox" ${onlyOwn ? 'checked' : ''}/>
+            <span></span>
+        </label>
+    </td>`;
 
-    return `<td class="detailTableBodyCell cellPlaylistType"><select class="emby-select-withcolor emby-select" is="emby-select">${typeOptionsHtml}</select></td>`;
 }
 
-function getRowHtml(playlistId, name, user, idType) {
+function createPlaylistRowHtml(playlistId, name, user) {
     const row = `<tr class="detailTableBodyRow detailTableBodyRow-shaded">
         ${getPlaylistIdElementHtml(playlistId)}
         ${getNameElementHtml(name)}
         ${getUserSelectHtml(user)}
-        ${getIdTypeSelectHtml(idType)}
         <td>
             <button class="paper-icon-button-light" type="button" onclick="this.closest('tr').remove()">
                 <span class="material-icons delete"></span>
@@ -57,6 +53,23 @@ function getRowHtml(playlistId, name, user, idType) {
     return row;
 }
 
+function createUserRowHtml(spotifyUser, jellyfinUser, onlyOwn) {
+    const row = `<tr class="detailTableBodyRow detailTableBodyRow-shaded">
+        ${getPlaylistIdElementHtml(spotifyUser)}
+        ${getUserSelectHtml(jellyfinUser)}
+        ${getOnlyOwnHtml(onlyOwn)}
+        <td>
+            <button class="paper-icon-button-light" type="button" onclick="this.closest('tr').remove()">
+                <span class="material-icons delete"></span>
+            </button>
+        </td>
+    </tr>`;
+
+    return row;
+}
+
+
+
 function loadPlaylistTable(page, config) {
     const tableBody = page.querySelector('#playlistTable > tbody');
     if (tableBody && config && config.Playlists) {
@@ -65,7 +78,7 @@ function loadPlaylistTable(page, config) {
         config.Playlists.forEach(pl => {
             const user = users.find(u => u.name === pl.UserName);
             const userId = user?.id || '';
-            rowsHtml += getRowHtml(pl.Id, pl.Name, userId, pl.Type);
+            rowsHtml += createPlaylistRowHtml(pl.Id, pl.Name, userId);
         });
 
         tableBody.innerHTML = rowsHtml;
@@ -76,24 +89,50 @@ function loadPlaylistTable(page, config) {
         addBtn.addEventListener('click', function () {
             const tableBody = page.querySelector('#playlistTable > tbody');
             if (tableBody) {
-                tableBody.innerHTML += getRowHtml();
+                tableBody.innerHTML += createPlaylistRowHtml();
             }
         });
     }
+}
+
+function loadUsersTable(page, config) {
+    const tableBody = page.querySelector('#userlistTable > tbody');
+    if (tableBody && config && config.Users) {
+        let rowsHtml = '';
+
+        config.Users.forEach(user => {
+            const spotifyUser = user.Id;
+            const jellyfinUser = users.find(u => u.name === user.UserName);
+            const jellyfinUserId = jellyfinUser?.id || '';
+            const onlyOwn = user.OnlyOwnPlaylists;
+
+            rowsHtml += createUserRowHtml(spotifyUser, jellyfinUserId, onlyOwn);
+        });
+
+        tableBody.innerHTML = rowsHtml;
+    }
+
+    const addBtn = page.querySelector('#addUser');
+    addBtn.addEventListener('click', function () {
+        const tableBody = page.querySelector('#userlistTable > tbody');
+
+        tableBody.innerHTML += createUserRowHtml();
+    });
 }
 
 function getPlaylistTableData(page) {
     const tableRows = page.querySelectorAll('#playlistTable > tbody > tr');
     if (tableRows) {
         const playlistData = [...tableRows].map(r => {
+            const spotifyId = r.querySelector('td.cellPlaylistId').innerText.trim();
+            const renameTo = r.querySelector('td.cellPlaylistName').innerText.trim();
             const userSelect = r.querySelector('td.cellPlaylistUser > select');
-            const typeSelect = r.querySelector('td.cellPlaylistType > select');
+            const jellyfinUser = userSelect.options[userSelect.selectedIndex].text.trim();
 
             return {
-                Id: r.querySelector('td.cellPlaylistId').innerText.trim(),
-                Name: r.querySelector('td.cellPlaylistName').innerText.trim(),
-                UserName: userSelect.options[userSelect.selectedIndex].text.trim(),
-                Type: typeSelect.options[typeSelect.selectedIndex].text.trim()
+                Id: spotifyId,
+                Name: renameTo,
+                UserName: jellyfinUser,
             };
         });
 
@@ -102,6 +141,30 @@ function getPlaylistTableData(page) {
 
     return [];
 }
+
+function getUsersTableData(page) {
+    const tableRows = page.querySelectorAll('#userlistTable > tbody > tr');
+    if (!tableRows) {
+        return [];
+    }
+
+    const userData = [...tableRows].map(r => {
+        const spotifyUser = r.querySelector('td.cellPlaylistId').innerText.trim();
+        const userSelect = r.querySelector('td.cellPlaylistUser > select');
+        const jellyfinUser = userSelect.options[userSelect.selectedIndex].text.trim();
+        const onlyOwn = r.querySelector('td.cellPlaylistOnlyOwn > * input').checked;
+
+        return {
+            Id: spotifyUser,
+            UserName: jellyfinUser,
+            OnlyOwnPlaylists: onlyOwn
+        };
+
+    });
+
+    return userData;
+}
+
 
 function mapItemMatchCriteriaToCheckboxes(config) {
     document.querySelector('#ItemMatchCriteriaTrack').checked = (config.ItemMatchCriteriaRaw & (1 << 0)) > 0;
@@ -149,7 +212,7 @@ export default function (view) {
             if (config.GenerateMissingTrackLists && config.MissingTrackListPaths && config.MissingTrackListPaths.length) {
                 let missingTracksHtml = '';
                 missingTracksHtml += '<div class="paperList">';
-                missingTracksHtml += config.MissingTrackListPaths.map(function(path) {
+                missingTracksHtml += config.MissingTrackListPaths.map(function (path) {
                     const fileName = path.split('\\').pop().split('/').pop();
                     const apiUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/MissingTracksFile', {
                         name: fileName,
@@ -197,15 +260,16 @@ export default function (view) {
                     })
                 });
                 users.sort((a, b) => b.isAdmin - a.isAdmin);
-    
+
                 loadPlaylistTable(view, config);
+                loadUsersTable(view, config);
 
                 Dashboard.hideLoadingMsg();
             });
         });
     });
 
-    document.querySelector('#SpotifyImportConfigForm').addEventListener('submit', function(e) {
+    document.querySelector('#SpotifyImportConfigForm').addEventListener('submit', function (e) {
         Dashboard.showLoadingMsg();
         ApiClient.getPluginConfiguration(SpotifyImportConfig.pluginUniqueId).then(function (config) {
             config.EnableVerboseLogging = document.querySelector('#EnableVerboseLogging').checked;
@@ -213,12 +277,24 @@ export default function (view) {
 
             config.Playlists = [];
             const playlists = getPlaylistTableData(view) || [];
+
             playlists.forEach(pl => {
                 // match a given spotify id with or without a prepended url or uri part
-                const match = /^(https?:\/\/open.spotify.com\/(playlist|user)\/|spotify:playlist:)?([a-zA-Z0-9]+)$/gm.exec(pl.Id);
-                if (match !== null && match.length > 3) {
-                    pl.Id = match[3];
+                const match = /^(https?:\/\/open.spotify.com\/playlist\/|spotify:playlist:)?([a-zA-Z0-9]+)$/gm.exec(pl.Id);
+                if (match !== null && match.length > 2) {
+                    pl.Id = match[2];
                     config.Playlists.push(pl);
+                }
+            });
+
+            config.Users = [];
+            const users = getUsersTableData(view) || [];
+
+            users.forEach(user => {
+                const match = /^(https?:\/\/open.spotify.com\/user\/|spotify:user:)?([a-zA-Z0-9]+)$/gm.exec(user.Id);
+                if (match !== null && match.length > 2) {
+                    user.Id = match[2];
+                    config.Users.push(user);
                 }
             });
 

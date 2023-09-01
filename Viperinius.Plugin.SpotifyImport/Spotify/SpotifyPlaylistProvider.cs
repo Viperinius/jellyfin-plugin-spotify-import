@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
+using Viperinius.Plugin.SpotifyImport.Configuration;
 
 namespace Viperinius.Plugin.SpotifyImport.Spotify
 {
@@ -54,7 +55,9 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             _spotifyClient = new SpotifyClient(config);
         }
 
-        protected override async Task<List<ProviderPlaylistInfo>?> GetUserPlaylistsInfo(string userId, CancellationToken? cancellationToken = null)
+        protected override async Task<List<ProviderPlaylistInfo>?> GetUserPlaylistsInfo(
+            TargetUserConfiguration target,
+            CancellationToken? cancellationToken = null)
         {
             if (_spotifyClient == null)
             {
@@ -64,11 +67,12 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             try
             {
                 var playlists = new List<ProviderPlaylistInfo>();
-                var spotifyPlaylists = await _spotifyClient.Playlists.GetUsers(userId, cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
+                var spotifyPlaylists = await _spotifyClient.Playlists.GetUsers(target.Id, cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
                 await foreach (var playlist in _spotifyClient.Paginate(spotifyPlaylists))
                 {
                     var ownerId = playlist.Owner != null ? playlist.Owner.Id : string.Empty;
-                    if (ownerId != userId)
+
+                    if (target.OnlyOwnPlaylists && ownerId != target.Id)
                     {
                         continue;
                     }
@@ -89,13 +93,15 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             }
             catch (APIException e)
             {
-                _logger.LogError(e, "Failed to get user playlists for user {Id}", userId);
+                _logger.LogError(e, "Failed to get user playlists for user {Id}", target.Id);
             }
 
             return null;
         }
 
-        protected override async Task<ProviderPlaylistInfo?> GetPlaylist(string playlistId, CancellationToken? cancellationToken = null)
+        protected override async Task<ProviderPlaylistInfo?> GetPlaylist(
+            string playlistId,
+            CancellationToken? cancellationToken = null)
         {
             if (_spotifyClient == null)
             {

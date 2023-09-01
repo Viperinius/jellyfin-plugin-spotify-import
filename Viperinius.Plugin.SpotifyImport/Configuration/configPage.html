@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <title>Spotify Import</title>
 </head>
+
 <body>
-    <div id="SpotifyImportConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-select,emby-checkbox,emby-textarea" data-controller="__plugin/playlistconfigjs">
+    <div id="SpotifyImportConfigPage" data-role="page" class="page type-interior pluginConfigurationPage"
+        data-require="emby-input,emby-button,emby-select,emby-checkbox,emby-textarea"
+        data-controller="__plugin/playlistconfigjs">
         <style>
-            .playlistContainer {
+            .playlistContainer, .usersContainer {
                 margin-bottom: 1.8em;
             }
         </style>
@@ -56,8 +60,6 @@
                                 <li>URL (ex.: https://open.spotify.com/playlist/4cOdK2wGLETKBW3PvgPWqT)</li>
                             </ul>
                             If you want to keep the Spotify playlist name, leave the Target Name field empty.
-                            <br>
-                            Instead of a single playlist ID, you can also use a user ID to include all of their playlists automatically. This requires the "ID Type" to be set to "User".
                         </span>
                         <div class="innerPlaylistContainer">
                             <table id="playlistTable" class="stripedTable ui-responsive table-stroke detailTable" data-role="table">
@@ -65,7 +67,6 @@
                                     <th class="detailTableHeaderCell" data-priority="persist">Spotify ID</th>
                                     <th class="detailTableHeaderCell" data-priority="persist">Target Name</th>
                                     <th class="detailTableHeaderCell" data-priority="persist">Target User</th>
-                                    <th class="detailTableHeaderCell" data-priority="persist">ID Type</th>
                                     <th></th>
                                 </thead>
                                 <tbody>
@@ -77,6 +78,39 @@
                             </button>
                         </div>
                     </div>
+
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h3 class="sectionTitle">Users Configuration</h3>
+                    </div>
+                    <div class="verticalSection usersContainer">
+                        <span>
+                            You can use the following formats for the Spotify ID field:
+                            <ul>
+                                <li>ID (ex.: acoolusername)</li>
+                                <li>URI (ex.: spotify:user:acoolusername)</li>
+                                <li>URL (ex.: https://open.spotify.com/user/acoolusername)</li>
+                            </ul>
+                            To ignore any playlists not owned by the given user, check Only Original Playlists.
+                        </span>
+                        <div class="innerUsersContainer">
+                            <table id="userlistTable" class="stripedTable ui-responsive table-stroke detailTable" data-role="table">
+                                <thead>
+                                    <th class="detailTableHeaderCell" data-priority="persist">Spotify ID</th>
+                                    <th class="detailTableHeaderCell" data-priority="persist">Target User</th>
+                                    <th class="detailTableHeaderCell" data-priority="persist">Only Original Playlists
+                                    </th>
+                                    <th></th>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                            <button is="emby-button" type="button" id="addUser" class="raised block" style="display: flex;">
+                                <span class="material-icons playlist_add" style="margin-right: 1em;"></span>
+                                <span>Add new user</span>
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label class="emby-checkbox-label">
                             <input id="GenerateMissingTrackLists" name="GenerateMissingTrackLists" type="checkbox" is="emby-checkbox" />
@@ -86,7 +120,8 @@
                     <div class="inputContainer">
                         <input id="MissingTrackListsDateFormat" type="text" is="emby-input" label="Date Format (for missing track file names)" />
                         <div class="fieldDescription">
-                            Should follow <a href="https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings">this</a> guideline.
+                            Should follow <a href="https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings">this</a>
+                            guideline.
                         </div>
                     </div>
                     <div class="sectionTitleContainer flex align-items-center">
@@ -149,4 +184,5 @@
         </div>
     </div>
 </body>
+
 </html>

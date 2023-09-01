@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Viperinius.Plugin.SpotifyImport.Configuration;
 
 namespace Viperinius.Plugin.SpotifyImport
 {
@@ -40,9 +41,11 @@ namespace Viperinius.Plugin.SpotifyImport
 
         public abstract void SetUpProvider();
 
-        public virtual async Task<List<string>?> GetUserPlaylistIds(string userId, CancellationToken? cancellationToken = null)
+        public virtual async Task<List<string>?> GetUserPlaylistIds(
+            TargetUserConfiguration target,
+            CancellationToken? cancellationToken = null)
         {
-            var playlistsInfo = await GetUserPlaylistsInfo(userId, cancellationToken).ConfigureAwait(false);
+            var playlistsInfo = await GetUserPlaylistsInfo(target, cancellationToken).ConfigureAwait(false);
             return playlistsInfo?.Select(p => p.Id).ToList();
         }
 
@@ -64,7 +67,9 @@ namespace Viperinius.Plugin.SpotifyImport
             }
         }
 
-        protected abstract Task<List<ProviderPlaylistInfo>?> GetUserPlaylistsInfo(string userId, CancellationToken? cancellationToken = null);
+        protected abstract Task<List<ProviderPlaylistInfo>?> GetUserPlaylistsInfo(
+            TargetUserConfiguration target,
+            CancellationToken? cancellationToken = null);
 
         protected abstract Task<ProviderPlaylistInfo?> GetPlaylist(string playlistId, CancellationToken? cancellationToken = null);
 

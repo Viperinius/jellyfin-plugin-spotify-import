@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using Microsoft.Extensions.Logging;
+using Viperinius.Plugin.SpotifyImport.Configuration;
 using Viperinius.Plugin.SpotifyImport.Matchers;
 
 namespace Viperinius.Plugin.SpotifyImport
@@ -47,20 +48,25 @@ namespace Viperinius.Plugin.SpotifyImport
 
                 // get the targeted playlist configuration
                 var targetConfig = Plugin.Instance?.Configuration.Playlists.FirstOrDefault(p => p.Id == providerPlaylist.Id);
+
                 if (targetConfig == null || string.IsNullOrEmpty(targetConfig.Id))
                 {
                     // is this a playlist specified by user?
                     var userId = _userPlaylistIds.GetValueOrDefault(providerPlaylist.Id);
-                    targetConfig = Plugin.Instance?.Configuration.Playlists.FirstOrDefault(p => p.Type == Configuration.TargetConfigurationType.User && p.Id == userId);
+                    var targetUser = Plugin.Instance?.Configuration.Users.FirstOrDefault(u => u.Id == userId);
 
-                    if (targetConfig == null || string.IsNullOrEmpty(targetConfig.Id))
+                    if (targetUser == null || string.IsNullOrEmpty(targetUser.Id))
                     {
                         _logger.LogError("Failed to get target playlist configuration for playlist {Id}", providerPlaylist.Id);
                         continue;
                     }
 
-                    // custom name not supported in this case
-                    targetConfig.Name = string.Empty;
+                    targetConfig = new TargetPlaylistConfiguration
+                    {
+                        Id = targetUser.Id,
+                        Name = string.Empty,
+                        UserName = targetUser.UserName
+                    };
                 }
 
                 // get the targeted user
