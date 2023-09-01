@@ -89,7 +89,7 @@ function loadPlaylistTable(page, config) {
         addBtn.addEventListener('click', function () {
             const tableBody = page.querySelector('#playlistTable > tbody');
             if (tableBody) {
-                tableBody.innerHTML += createPlaylistRowHtml();
+                tableBody.insertAdjacentHTML('beforeend', createPlaylistRowHtml());
             }
         });
     }
@@ -115,8 +115,9 @@ function loadUsersTable(page, config) {
     const addBtn = page.querySelector('#addUser');
     addBtn.addEventListener('click', function () {
         const tableBody = page.querySelector('#userlistTable > tbody');
-
-        tableBody.innerHTML += createUserRowHtml();
+        if (tableBody) {
+            tableBody.insertAdjacentHTML('beforeend', createUserRowHtml());
+        }
     });
 }
 
