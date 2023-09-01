@@ -47,16 +47,13 @@ namespace Viperinius.Plugin.SpotifyImport
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // get the targeted playlist configuration
-                var targetConfig = Plugin.Instance?.Configuration.Playlists
-                    .FirstOrDefault(p => p.Id == providerPlaylist.Id);
+                var targetConfig = Plugin.Instance?.Configuration.Playlists.FirstOrDefault(p => p.Id == providerPlaylist.Id);
 
                 if (targetConfig == null || string.IsNullOrEmpty(targetConfig.Id))
                 {
                     // is this a playlist specified by user?
-                    var userId = _userPlaylistIds
-                        .GetValueOrDefault(providerPlaylist.Id);
-                    var targetUser = Plugin.Instance?.Configuration.Users
-                        .FirstOrDefault(u => u.Id == userId);
+                    var userId = _userPlaylistIds.GetValueOrDefault(providerPlaylist.Id);
+                    var targetUser = Plugin.Instance?.Configuration.Users.FirstOrDefault(u => u.Id == userId);
 
                     if (targetUser == null || string.IsNullOrEmpty(targetUser.Id))
                     {
@@ -87,9 +84,7 @@ namespace Viperinius.Plugin.SpotifyImport
                     jfPlaylistName = providerPlaylist.Name;
                 }
 
-                var playlist = await GetOrCreatePlaylistByName(
-                        jfPlaylistName, user)
-                    .ConfigureAwait(false);
+                var playlist = await GetOrCreatePlaylistByName(jfPlaylistName, user).ConfigureAwait(false);
 
                 if (playlist == null)
                 {

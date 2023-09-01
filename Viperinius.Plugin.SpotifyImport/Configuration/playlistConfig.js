@@ -38,7 +38,7 @@ function getOnlyOwnHtml(onlyOwn) {
 
 }
 
-function getRowHtml(playlistId, name, user) {
+function createPlaylistRowHtml(playlistId, name, user) {
     const row = `<tr class="detailTableBodyRow detailTableBodyRow-shaded">
         ${getPlaylistIdElementHtml(playlistId)}
         ${getNameElementHtml(name)}
@@ -78,7 +78,7 @@ function loadPlaylistTable(page, config) {
         config.Playlists.forEach(pl => {
             const user = users.find(u => u.name === pl.UserName);
             const userId = user?.id || '';
-            rowsHtml += getRowHtml(pl.Id, pl.Name, userId);
+            rowsHtml += createPlaylistRowHtml(pl.Id, pl.Name, userId);
         });
 
         tableBody.innerHTML = rowsHtml;
@@ -89,7 +89,7 @@ function loadPlaylistTable(page, config) {
         addBtn.addEventListener('click', function () {
             const tableBody = page.querySelector('#playlistTable > tbody');
             if (tableBody) {
-                tableBody.innerHTML += getRowHtml();
+                tableBody.innerHTML += createPlaylistRowHtml();
             }
         });
     }
@@ -124,13 +124,10 @@ function getPlaylistTableData(page) {
     const tableRows = page.querySelectorAll('#playlistTable > tbody > tr');
     if (tableRows) {
         const playlistData = [...tableRows].map(r => {
-            const spotifyId = r.querySelector('td.cellPlaylistId')
-                .innerText.trim();
-            const renameTo = r.querySelector('td.cellPlaylistName')
-                .innerText.trim();
+            const spotifyId = r.querySelector('td.cellPlaylistId').innerText.trim();
+            const renameTo = r.querySelector('td.cellPlaylistName').innerText.trim();
             const userSelect = r.querySelector('td.cellPlaylistUser > select');
-            const jellyfinUser = userSelect
-                .options[userSelect.selectedIndex].text.trim();
+            const jellyfinUser = userSelect.options[userSelect.selectedIndex].text.trim();
 
             return {
                 Id: spotifyId,
@@ -152,11 +149,9 @@ function getUsersTableData(page) {
     }
 
     const userData = [...tableRows].map(r => {
-        const spotifyUser = r.querySelector('td.cellPlaylistId')
-            .innerText.trim();
-        const userSelect = r.querySelector('td.cellPlaylistUser > select')
-        const jellyfinUser = userSelect
-            .options[userSelect.selectedIndex].text.trim();
+        const spotifyUser = r.querySelector('td.cellPlaylistId').innerText.trim();
+        const userSelect = r.querySelector('td.cellPlaylistUser > select');
+        const jellyfinUser = userSelect.options[userSelect.selectedIndex].text.trim();
         const onlyOwn = r.querySelector('td.cellPlaylistOnlyOwn > * input').checked;
 
         return {
@@ -276,14 +271,13 @@ export default function (view) {
 
     document.querySelector('#SpotifyImportConfigForm').addEventListener('submit', function (e) {
         Dashboard.showLoadingMsg();
-        ApiClient.getPluginConfiguration(SpotifyImportConfig.pluginUniqueId)
-        .then(function (config) {
+        ApiClient.getPluginConfiguration(SpotifyImportConfig.pluginUniqueId).then(function (config) {
             config.EnableVerboseLogging = document.querySelector('#EnableVerboseLogging').checked;
             config.SpotifyClientId = document.querySelector('#SpotifyClientId').value;
 
             config.Playlists = [];
             const playlists = getPlaylistTableData(view) || [];
-            
+
             playlists.forEach(pl => {
                 // match a given spotify id with or without a prepended url or uri part
                 const match = /^(https?:\/\/open.spotify.com\/playlist\/|spotify:playlist:)?([a-zA-Z0-9]+)$/gm.exec(pl.Id);

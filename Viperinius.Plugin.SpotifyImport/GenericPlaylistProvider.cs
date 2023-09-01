@@ -45,10 +45,7 @@ namespace Viperinius.Plugin.SpotifyImport
             TargetUserConfiguration target,
             CancellationToken? cancellationToken = null)
         {
-            var playlistsInfo = await GetUserPlaylistsInfo(
-                    target,
-                    cancellationToken)
-                .ConfigureAwait(false);
+            var playlistsInfo = await GetUserPlaylistsInfo(target, cancellationToken).ConfigureAwait(false);
             return playlistsInfo?.Select(p => p.Id).ToList();
         }
 

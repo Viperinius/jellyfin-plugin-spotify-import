@@ -61,10 +61,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
         {
             MigratePlaylistIds();
 
-            var followedUsers = Plugin.Instance?.Configuration.Users
-                ?? Array.Empty<TargetUserConfiguration>();
-            var playlistIds = Plugin.Instance?.Configuration.Playlists
-                .Select(p => p.Id).ToList() ?? new List<string>();
+            var followedUsers = Plugin.Instance?.Configuration.Users ?? Array.Empty<TargetUserConfiguration>();
+            var playlistIds = Plugin.Instance?.Configuration.Playlists.Select(p => p.Id).ToList() ?? new List<string>();
 
             if (!followedUsers.Any() && !playlistIds.Any())
             {
@@ -80,9 +78,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
             {
                 foreach (var user in followedUsers)
                 {
-                    var userPlaylists = await spotify.GetUserPlaylistIds(
-                            user, cancellationToken)
-                        .ConfigureAwait(false);
+                    var userPlaylists = await spotify.GetUserPlaylistIds(user, cancellationToken).ConfigureAwait(false);
                     if (userPlaylists != null)
                     {
                         playlistIds.AddRange(userPlaylists);
@@ -93,8 +89,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
                 playlistIds = playlistIds.Distinct().ToList();
             }
 
-            await spotify.PopulatePlaylists(playlistIds, cancellationToken)
-                .ConfigureAwait(false);
+            await spotify.PopulatePlaylists(playlistIds, cancellationToken).ConfigureAwait(false);
 
             var playlistSync = new PlaylistSync(
                     _loggerFactory.CreateLogger<PlaylistSync>(),

@@ -55,8 +55,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             _spotifyClient = new SpotifyClient(config);
         }
 
-        protected override async Task<List<ProviderPlaylistInfo>?>
-        GetUserPlaylistsInfo(
+        protected override async Task<List<ProviderPlaylistInfo>?> GetUserPlaylistsInfo(
             TargetUserConfiguration target,
             CancellationToken? cancellationToken = null)
         {
@@ -68,10 +67,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             try
             {
                 var playlists = new List<ProviderPlaylistInfo>();
-                var spotifyPlaylists = await _spotifyClient.Playlists.GetUsers(
-                        target.Id,
-                        cancellationToken ?? CancellationToken.None)
-                    .ConfigureAwait(false);
+                var spotifyPlaylists = await _spotifyClient.Playlists.GetUsers(target.Id, cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
                 await foreach (var playlist in _spotifyClient.Paginate(spotifyPlaylists))
                 {
                     var ownerId = playlist.Owner != null ? playlist.Owner.Id : string.Empty;
