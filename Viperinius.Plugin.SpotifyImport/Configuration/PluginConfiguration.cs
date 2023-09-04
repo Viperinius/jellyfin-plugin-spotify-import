@@ -18,6 +18,7 @@ public class PluginConfiguration : BasePluginConfiguration
     /// </summary>
     public PluginConfiguration()
     {
+        Version = string.Empty;
         SpotifyClientId = string.Empty;
         PlaylistIds = Array.Empty<string>();
         Playlists = Array.Empty<TargetPlaylistConfiguration>();
@@ -26,6 +27,11 @@ public class PluginConfiguration : BasePluginConfiguration
         ItemMatchLevel = ItemMatchLevel.Default;
         MissingTrackListsDateFormat = "yyyy-MM-dd_HH-mm";
     }
+
+    /// <summary>
+    /// Gets or sets the config version.
+    /// </summary>
+    public string Version { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to enable verbose logging (ex: spotify requests).

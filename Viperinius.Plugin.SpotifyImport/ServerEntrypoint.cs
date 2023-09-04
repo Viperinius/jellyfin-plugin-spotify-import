@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
@@ -32,7 +33,27 @@ namespace Viperinius.Plugin.SpotifyImport
             {
                 try
                 {
-                    RunMigrations();
+                    if (Plugin.Instance.Configuration.EnableVerboseLogging)
+                    {
+                        _logger.LogInformation("Checking for any needed migrations...");
+                    }
+
+                    var thisVersion = Version.Parse(typeof(Plugin).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()!.Version);
+                    var configVersion = new Version(0, 0, 0, 0);
+                    if (!string.IsNullOrWhiteSpace(Plugin.Instance.Configuration.Version))
+                    {
+                        configVersion = Version.Parse(Plugin.Instance.Configuration.Version);
+                    }
+
+                    if (configVersion < thisVersion)
+                    {
+                        RunMigrations(configVersion);
+
+                        // update config version
+                        Plugin.Instance.Configuration.Version = thisVersion.ToString();
+
+                        Plugin.Instance.SaveConfiguration();
+                    }
 
                     Plugin.Instance.IsInitialised = true;
                 }
@@ -60,17 +81,22 @@ namespace Viperinius.Plugin.SpotifyImport
         {
         }
 
-        private void RunMigrations()
+        private void RunMigrations(Version configVersion)
         {
-            MigratePlaylistIds();
+            MigratePlaylistIds(configVersion);
         }
 
         /// <summary>
         /// Reference: 2023-05-14 [Commit: 0f7374b608f0e2a6287250ffa12731020fb4e40d]
         /// Convert any existing legacy playlist IDs to full playlist configurations.
         /// </summary>
-        private void MigratePlaylistIds()
+        private void MigratePlaylistIds(Version configVersion)
         {
+            if (configVersion >= new Version(1, 1, 1, 0))
+            {
+                return;
+            }
+
             if (!(Plugin.Instance?.Configuration.PlaylistIds.Any() ?? false))
             {
                 return;
@@ -93,7 +119,6 @@ namespace Viperinius.Plugin.SpotifyImport
             Plugin.Instance.Configuration.Playlists = playlists.ToArray();
             Plugin.Instance.Configuration.PlaylistIds = Array.Empty<string>();
 
-            Plugin.Instance.SaveConfiguration();
             _logger.LogInformation("Migrated {Count} legacy playlist configurations", legacyPlaylistCount);
         }
     }
