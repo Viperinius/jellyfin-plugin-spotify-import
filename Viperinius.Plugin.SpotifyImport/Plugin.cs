@@ -65,6 +65,15 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     }
 
     /// <summary>
+    /// Get the xml serialiser.
+    /// </summary>
+    /// <returns>Xml Serialiser.</returns>
+    public IXmlSerializer GetInternalXmlSerializer()
+    {
+        return XmlSerializer;
+    }
+
+    /// <summary>
     /// Sets the plugin instance.
     /// </summary>
     /// <param name="instance">New Instance.</param>

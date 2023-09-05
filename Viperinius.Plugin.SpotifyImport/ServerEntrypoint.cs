@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Plugins;
 using Microsoft.Extensions.Logging;
+using Viperinius.Plugin.SpotifyImport.Migrations;
 
 namespace Viperinius.Plugin.SpotifyImport
 {
@@ -47,15 +48,17 @@ namespace Viperinius.Plugin.SpotifyImport
 
                     if (configVersion < thisVersion)
                     {
-                        RunMigrations(configVersion);
+                        Plugin.Instance.IsInitialised = RunMigrations(configVersion);
 
                         // update config version
                         Plugin.Instance.Configuration.Version = thisVersion.ToString();
 
                         Plugin.Instance.SaveConfiguration();
                     }
-
+                    else
+                    {
                     Plugin.Instance.IsInitialised = true;
+                }
                 }
                 catch (Exception)
                 {
@@ -81,45 +84,15 @@ namespace Viperinius.Plugin.SpotifyImport
         {
         }
 
-        private void RunMigrations(Version configVersion)
+        private bool RunMigrations(Version configVersion)
         {
-            MigratePlaylistIds(configVersion);
-        }
+            var path = Plugin.Instance!.ConfigurationFilePath;
+            var xmlSeraliser = Plugin.Instance.GetInternalXmlSerializer();
+            var result = true;
 
-        /// <summary>
-        /// Reference: 2023-05-14 [Commit: 0f7374b608f0e2a6287250ffa12731020fb4e40d]
-        /// Convert any existing legacy playlist IDs to full playlist configurations.
-        /// </summary>
-        private void MigratePlaylistIds(Version configVersion)
-        {
-            if (configVersion >= new Version(1, 1, 1, 0))
-            {
-                return;
-            }
+            result &= new PlaylistIdMigration(path, xmlSeraliser, _logger).Execute(configVersion);
 
-            if (!(Plugin.Instance?.Configuration.PlaylistIds.Any() ?? false))
-            {
-                return;
-            }
-
-            var legacyPlaylistCount = Plugin.Instance.Configuration.PlaylistIds.Length;
-
-            var playlists = Plugin.Instance.Configuration.Playlists.ToList();
-            foreach (var playlistId in Plugin.Instance.Configuration.PlaylistIds)
-            {
-                if (!playlists.Where(p => p.Id == playlistId).Any())
-                {
-                    playlists.Add(new Configuration.TargetPlaylistConfiguration()
-                    {
-                        Id = playlistId
-                    });
-                }
-            }
-
-            Plugin.Instance.Configuration.Playlists = playlists.ToArray();
-            Plugin.Instance.Configuration.PlaylistIds = Array.Empty<string>();
-
-            _logger.LogInformation("Migrated {Count} legacy playlist configurations", legacyPlaylistCount);
+            return result;
         }
     }
 }
