@@ -20,7 +20,6 @@ public class PluginConfiguration : BasePluginConfiguration
     {
         Version = string.Empty;
         SpotifyClientId = string.Empty;
-        PlaylistIds = Array.Empty<string>();
         Playlists = Array.Empty<TargetPlaylistConfiguration>();
         Users = Array.Empty<TargetUserConfiguration>();
         ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.TrackName | ItemMatchCriteria.AlbumName | ItemMatchCriteria.AlbumArtists | ItemMatchCriteria.Artists);
@@ -42,12 +41,6 @@ public class PluginConfiguration : BasePluginConfiguration
     /// Gets or sets the Spotify client ID.
     /// </summary>
     public string SpotifyClientId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the targeted playlist IDs.
-    /// Only used for compatibility purposes for old versions.
-    /// </summary>
-    public string[] PlaylistIds { get; set; }
 
     /// <summary>
     /// Gets or sets the targeted playlists.

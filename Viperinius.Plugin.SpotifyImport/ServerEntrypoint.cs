@@ -57,12 +57,12 @@ namespace Viperinius.Plugin.SpotifyImport
                     }
                     else
                     {
-                    Plugin.Instance.IsInitialised = true;
+                        Plugin.Instance.IsInitialised = true;
+                    }
                 }
-                }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    throw;
+                    _logger.LogError(e, "Failed to perform tasks on server start");
                 }
             }
 
@@ -90,7 +90,16 @@ namespace Viperinius.Plugin.SpotifyImport
             var xmlSeraliser = Plugin.Instance.GetInternalXmlSerializer();
             var result = true;
 
-            result &= new PlaylistIdMigration(path, xmlSeraliser, _logger).Execute(configVersion);
+            var migrations = new List<BaseMigration>
+            {
+                new UserPlaylistsMigration(path, xmlSeraliser, _logger),
+                new PlaylistIdMigration(path, xmlSeraliser, _logger)
+            }.OrderBy(m => m.LatestWorkingRelease);
+
+            foreach (var migration in migrations)
+            {
+                result &= migration.Execute(configVersion);
+            }
 
             return result;
         }
