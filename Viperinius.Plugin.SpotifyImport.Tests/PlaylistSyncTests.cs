@@ -24,9 +24,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         {
         }
 
-        public static bool WrapItemMatchesTrackInfo(MediaBrowser.Controller.Entities.Audio.Audio audioItem, ProviderTrackInfo trackInfo)
+        public static bool WrapItemMatchesTrackInfo(MediaBrowser.Controller.Entities.Audio.Audio audioItem, ProviderTrackInfo trackInfo, out ItemMatchCriteria failedCriterium)
         {
-            return ItemMatchesTrackInfo(audioItem, trackInfo);
+            return ItemMatchesTrackInfo(audioItem, trackInfo, out failedCriterium);
         }
     }
 
@@ -69,7 +69,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
             foreach (var item in jfItems)
             {
-                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov, out var failedCrit) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                Assert.True(item.IsMatch ? failedCrit == ItemMatchCriteria.None : failedCrit != ItemMatchCriteria.None);
             }
         }
 
@@ -89,7 +90,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
             foreach (var item in jfItems)
             {
-                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov, out var failedCrit) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                Assert.True(item.IsMatch ? failedCrit == ItemMatchCriteria.None : failedCrit != ItemMatchCriteria.None);
             }
         }
 
@@ -109,7 +111,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
             foreach (var item in jfItems)
             {
-                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov, out var failedCrit) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                Assert.True(item.IsMatch ? failedCrit == ItemMatchCriteria.None : failedCrit != ItemMatchCriteria.None);
             }
         }
 
@@ -128,7 +131,15 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
             foreach (var item in jfItems)
             {
-                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov, out var failedCrit) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                if (item.IsMatch)
+                {
+                    Assert.True(failedCrit == ItemMatchCriteria.None);
+                }
+                else
+                {
+                    Assert.True(failedCrit == ItemMatchCriteria.TrackName);
+                }
             }
 
             Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)ItemMatchCriteria.Artists;
@@ -140,7 +151,15 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
             foreach (var item in jfItems)
             {
-                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov, out var failedCrit) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                if (item.IsMatch)
+                {
+                    Assert.True(failedCrit == ItemMatchCriteria.None);
+                }
+                else
+                {
+                    Assert.True(failedCrit == ItemMatchCriteria.TrackName);
+                }
             }
         }
 
@@ -159,7 +178,15 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
             foreach (var item in jfItems)
             {
-                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov, out var failedCrit) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                if (item.IsMatch)
+                {
+                    Assert.True(failedCrit == ItemMatchCriteria.None);
+                }
+                else
+                {
+                    Assert.True(failedCrit == ItemMatchCriteria.AlbumName);
+                }
             }
 
             Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)ItemMatchCriteria.Artists;
@@ -171,7 +198,15 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
             foreach (var item in jfItems)
             {
-                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov, out var failedCrit) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                if (item.IsMatch)
+                {
+                    Assert.True(failedCrit == ItemMatchCriteria.None);
+                }
+                else
+                {
+                    Assert.True(failedCrit == ItemMatchCriteria.AlbumName);
+                }
             }
         }
 
@@ -190,7 +225,15 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
             foreach (var item in jfItems)
             {
-                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov, out var failedCrit) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                if (item.IsMatch)
+                {
+                    Assert.True(failedCrit == ItemMatchCriteria.None);
+                }
+                else
+                {
+                    Assert.True(failedCrit == ItemMatchCriteria.Artists);
+                }
             }
 
             Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)ItemMatchCriteria.AlbumName;
@@ -202,7 +245,15 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
             foreach (var item in jfItems)
             {
-                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov, out var failedCrit) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                if (item.IsMatch)
+                {
+                    Assert.True(failedCrit == ItemMatchCriteria.None);
+                }
+                else
+                {
+                    Assert.True(failedCrit == ItemMatchCriteria.Artists);
+                }
             }
         }
 
@@ -221,7 +272,15 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
             foreach (var item in jfItems)
             {
-                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov, out var failedCrit) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                if (item.IsMatch)
+                {
+                    Assert.True(failedCrit == ItemMatchCriteria.None);
+                }
+                else
+                {
+                    Assert.True(failedCrit == ItemMatchCriteria.AlbumArtists);
+                }
             }
 
             Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)ItemMatchCriteria.Artists;
@@ -233,7 +292,15 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
             foreach (var item in jfItems)
             {
-                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov, out var failedCrit) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                if (item.IsMatch)
+                {
+                    Assert.True(failedCrit == ItemMatchCriteria.None);
+                }
+                else
+                {
+                    Assert.True(failedCrit == ItemMatchCriteria.AlbumArtists);
+                }
             }
         }
     }
