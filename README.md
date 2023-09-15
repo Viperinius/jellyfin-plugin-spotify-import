@@ -104,6 +104,31 @@ If you experience issues with tracks not matching even if they exist, you can "r
 1. `Match Type` determines how strict the individual comparison is (e.g. if case differences are ignored)
 2. `Enable * comparison` fully enables or disables the comparison of the respective condition
 
+## Troubleshooting
+
+If you encounter issues with playlists / tracks not matching when they definitely should, you can enable the logging of some more information from the playlist importer.
+
+There are two verbosity levels to this:
+1. Checking `Enable verbose logging for this plugin.` in the plugin settings
+    - With this setting things like the Spotify API calls are logged.
+2. Additionally changing the Jellyfin log level to `Debug`
+    - How to do this is described [here](https://jellyfin.org/docs/general/administration/troubleshooting/#debug-logging)
+    - Instead of just setting the general `MinimumSetting` to `Debug`, you should add an override just for the plugin's namespace (to avoid inflating the log size too much): `"Viperinius": "Debug"`
+    - The `Serilog` entry might look like this afterwards:
+      ```json
+        "Serilog": {
+            "MinimumLevel": {
+                "Default": "Information",
+                "Override": {
+                    "Microsoft": "Warning",
+                    "System": "Warning",
+                    "Viperinius": "Debug"
+                }
+            }
+        }
+      ```
+    - With this enabled you will see log entries for every track that did not get matched and added to a playlist
+ 
 
 ## To do
 

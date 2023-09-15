@@ -172,10 +172,20 @@ namespace Viperinius.Plugin.SpotifyImport
                     continue;
                 }
 
-                if (ItemMatchesTrackInfo(audioItem, providerTrackInfo))
+                if (ItemMatchesTrackInfo(audioItem, providerTrackInfo, out var failedCriterium))
                 {
                     return audioItem;
                 }
+
+                if (failedCriterium != ItemMatchCriteria.None && (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false))
+                {
+                    _logger.LogDebug("{Criterium} did not match for track {Name} [{Artist}]", failedCriterium, providerTrackInfo.Name, providerTrackInfo.ArtistName);
+                }
+            }
+
+            if (queryResult.Items.Count == 0 && (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false))
+            {
+                _logger.LogDebug("Did not find any tracks containing the name {Name}", providerTrackInfo.Name);
             }
 
             return null;
@@ -190,7 +200,7 @@ namespace Viperinius.Plugin.SpotifyImport
                     continue;
                 }
 
-                if (ItemMatchesTrackInfo(audioItem, providerTrackInfo))
+                if (ItemMatchesTrackInfo(audioItem, providerTrackInfo, out _))
                 {
                     return true;
                 }
@@ -234,11 +244,12 @@ namespace Viperinius.Plugin.SpotifyImport
             return _userManager.Users.FirstOrDefault(u => u?.HasPermission(PermissionKind.IsAdministrator) ?? false, null);
         }
 
-        protected static bool ItemMatchesTrackInfo(Audio audioItem, ProviderTrackInfo trackInfo)
+        protected static bool ItemMatchesTrackInfo(Audio audioItem, ProviderTrackInfo trackInfo, out ItemMatchCriteria failedCriterium)
         {
             // TODO: check for track number as well?
 
             var level = Plugin.Instance?.Configuration.ItemMatchLevel ?? ItemMatchLevel.Default;
+            failedCriterium = ItemMatchCriteria.None;
             var result = false;
 
             if (Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.TrackName) ?? false)
@@ -246,6 +257,7 @@ namespace Viperinius.Plugin.SpotifyImport
                 result = TrackComparison.TrackNameEqual(audioItem, trackInfo, level);
                 if (!result)
                 {
+                    failedCriterium = ItemMatchCriteria.TrackName;
                     return result;
                 }
             }
@@ -255,6 +267,7 @@ namespace Viperinius.Plugin.SpotifyImport
                 result = TrackComparison.AlbumNameEqual(audioItem, trackInfo, level);
                 if (!result)
                 {
+                    failedCriterium = ItemMatchCriteria.AlbumName;
                     return result;
                 }
             }
@@ -264,6 +277,7 @@ namespace Viperinius.Plugin.SpotifyImport
                 result = TrackComparison.AlbumArtistContained(audioItem, trackInfo, level);
                 if (!result)
                 {
+                    failedCriterium = ItemMatchCriteria.AlbumArtists;
                     return result;
                 }
             }
@@ -273,6 +287,7 @@ namespace Viperinius.Plugin.SpotifyImport
                 result = TrackComparison.ArtistContained(audioItem, trackInfo, level);
                 if (!result)
                 {
+                    failedCriterium = ItemMatchCriteria.Artists;
                     return result;
                 }
             }
