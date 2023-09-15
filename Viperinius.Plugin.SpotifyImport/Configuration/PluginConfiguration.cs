@@ -18,14 +18,19 @@ public class PluginConfiguration : BasePluginConfiguration
     /// </summary>
     public PluginConfiguration()
     {
+        Version = string.Empty;
         SpotifyClientId = string.Empty;
-        PlaylistIds = Array.Empty<string>();
         Playlists = Array.Empty<TargetPlaylistConfiguration>();
         Users = Array.Empty<TargetUserConfiguration>();
         ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.TrackName | ItemMatchCriteria.AlbumName | ItemMatchCriteria.AlbumArtists | ItemMatchCriteria.Artists);
         ItemMatchLevel = ItemMatchLevel.Default;
         MissingTrackListsDateFormat = "yyyy-MM-dd_HH-mm";
     }
+
+    /// <summary>
+    /// Gets or sets the config version.
+    /// </summary>
+    public string Version { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to enable verbose logging (ex: spotify requests).
@@ -36,12 +41,6 @@ public class PluginConfiguration : BasePluginConfiguration
     /// Gets or sets the Spotify client ID.
     /// </summary>
     public string SpotifyClientId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the targeted playlist IDs.
-    /// Only used for compatibility purposes for old versions.
-    /// </summary>
-    public string[] PlaylistIds { get; set; }
 
     /// <summary>
     /// Gets or sets the targeted playlists.

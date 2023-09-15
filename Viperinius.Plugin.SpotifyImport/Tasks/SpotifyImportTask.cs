@@ -59,7 +59,12 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
         /// <inheritdoc/>
         public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            MigratePlaylistIds();
+            if (!(Plugin.Instance?.IsInitialised ?? false))
+            {
+                const string ErrorMsg = "Plugin was not initialised correctly, aborting task!";
+                _logger.LogError(ErrorMsg);
+                throw new Exceptions.TaskAbortedException(ErrorMsg);
+            }
 
             var followedUsers = Plugin.Instance?.Configuration.Users ?? Array.Empty<TargetUserConfiguration>();
             var playlistIds = Plugin.Instance?.Configuration.Playlists.Select(p => p.Id).ToList() ?? new List<string>();
@@ -113,37 +118,6 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
                     MaxRuntimeTicks = TimeSpan.FromHours(1).Ticks,
                 }
             };
-        }
-
-        /// <summary>
-        /// Convert any existing legacy playlist IDs to full playlist configurations.
-        /// </summary>
-        private void MigratePlaylistIds()
-        {
-            if (!(Plugin.Instance?.Configuration.PlaylistIds.Any() ?? false))
-            {
-                return;
-            }
-
-            var legacyPlaylistCount = Plugin.Instance.Configuration.PlaylistIds.Length;
-
-            var playlists = Plugin.Instance.Configuration.Playlists.ToList();
-            foreach (var playlistId in Plugin.Instance.Configuration.PlaylistIds)
-            {
-                if (!playlists.Where(p => p.Id == playlistId).Any())
-                {
-                    playlists.Add(new Configuration.TargetPlaylistConfiguration()
-                    {
-                        Id = playlistId
-                    });
-                }
-            }
-
-            Plugin.Instance.Configuration.Playlists = playlists.ToArray();
-            Plugin.Instance.Configuration.PlaylistIds = Array.Empty<string>();
-
-            Plugin.Instance.SaveConfiguration();
-            _logger.LogInformation("Migrated {Count} legacy playlist configurations", legacyPlaylistCount);
         }
     }
 }
