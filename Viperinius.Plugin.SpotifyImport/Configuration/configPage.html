@@ -11,8 +11,14 @@
         data-require="emby-input,emby-button,emby-select,emby-checkbox,emby-textarea"
         data-controller="__plugin/playlistconfigjs">
         <style>
-            .playlistContainer, .usersContainer {
+            .playlistContainer, .usersContainer, .multiCheckboxContainer {
                 margin-bottom: 1.8em;
+            }
+            .multiCheckboxContainer .emby-checkbox-label {
+                margin-bottom: 0.25em;
+            }
+            .multiCheckboxContainerTitle {
+                margin-bottom: 0.25em;
             }
         </style>
         <div data-role="content">
@@ -138,25 +144,20 @@
                                 Choose how strict the comparison between Spotify and Jellyfin tracks is.
                             </div>
                         </div>
-                        <div class="checkboxContainer checkboxContainer-withDescription">
+                        <div class="multiCheckboxContainer">
+                            <span class="multiCheckboxContainerTitle">Match Criteria:</span>
                             <label class="emby-checkbox-label">
                                 <input id="ItemMatchCriteriaTrack" name="ItemMatchCriteriaTrack" type="checkbox" is="emby-checkbox" />
                                 <span>Enable track name comparison.</span>
                             </label>
-                        </div>
-                        <div class="checkboxContainer checkboxContainer-withDescription">
                             <label class="emby-checkbox-label">
                                 <input id="ItemMatchCriteriaAlbum" name="ItemMatchCriteriaAlbum" type="checkbox" is="emby-checkbox" />
                                 <span>Enable album name comparison.</span>
                             </label>
-                        </div>
-                        <div class="checkboxContainer checkboxContainer-withDescription">
                             <label class="emby-checkbox-label">
                                 <input id="ItemMatchCriteriaAlbumArtist" name="ItemMatchCriteriaAlbumArtist" type="checkbox" is="emby-checkbox" />
                                 <span>Enable album artist comparison.</span>
                             </label>
-                        </div>
-                        <div class="checkboxContainer checkboxContainer-withDescription">
                             <label class="emby-checkbox-label">
                                 <input id="ItemMatchCriteriaArtist" name="ItemMatchCriteriaArtist" type="checkbox" is="emby-checkbox" />
                                 <span>Enable artist comparison.</span>
