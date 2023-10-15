@@ -59,8 +59,8 @@ When the authorisation is done, you can continue with the plugin configuration p
 
 #### Add Playlist
 
-Go to the section `Playlist Configuration` and click on `Add new playlist`. This creates a new row with four fields:
-- `Spotify ID`: Paste the identifier of the Spotify playlists that you want to import in here.
+Go to the section `Playlist Configuration` and click on `Add new playlist`. This creates a new row with three fields:
+- `Spotify ID`: Paste the identifier of the Spotify playlist that you want to import in here.
 - `Target Name`: Jellyfin playlist name. Keep this empty if the original name from Spotify should be used.
 - `Target User`: If you want to set another user as the playlist owner, select them here.
 
