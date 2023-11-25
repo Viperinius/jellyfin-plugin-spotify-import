@@ -9,6 +9,7 @@ using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
+using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 using Viperinius.Plugin.SpotifyImport.Configuration;
 using Viperinius.Plugin.SpotifyImport.Matchers;
@@ -94,7 +95,7 @@ namespace Viperinius.Plugin.SpotifyImport
 
                 var updateReason = ItemUpdateType.None;
 
-                if (providerPlaylist.ImageUrl != null && !playlist.HasImage(MediaBrowser.Model.Entities.ImageType.Primary, 0))
+                if (providerPlaylist.ImageUrl != null && !playlist.HasImage(ImageType.Primary, 0))
                 {
                     playlist.AddImage(new MediaBrowser.Controller.Entities.ItemImageInfo
                     {
@@ -179,7 +180,13 @@ namespace Viperinius.Plugin.SpotifyImport
 
                 if (failedCriterium != ItemMatchCriteria.None && (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false))
                 {
-                    _logger.LogDebug("{Criterium} did not match for track {Name} [{Artist}]", failedCriterium, providerTrackInfo.Name, providerTrackInfo.ArtistName);
+                    _logger.LogDebug(
+                        "{Criterium} did not match for track {Name} [{Artist}] -> {RefName} [{RefArtist}]",
+                        failedCriterium,
+                        providerTrackInfo.Name,
+                        providerTrackInfo.ArtistName,
+                        audioItem.Name,
+                        audioItem.Artists.FirstOrDefault(string.Empty));
                 }
             }
 
