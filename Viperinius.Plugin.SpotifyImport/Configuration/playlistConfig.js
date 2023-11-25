@@ -293,7 +293,7 @@ export default function (view) {
 
             users.forEach(user => {
                 // match a given spotify id with or without a prepended url or uri part, ignore url params
-                const match = /^(https?:\/\/open\.spotify\.com\/user\/|spotify:user:)?([a-zA-Z0-9]+)(\?si=.*)?$/gm.exec(user.Id);
+                const match = /^(https?:\/\/open\.spotify\.com\/user\/|spotify:user:)?(.+)(\?si=.*)?$/gm.exec(user.Id);
                 if (match !== null && match.length > 2) {
                     user.Id = match[2];
                     config.Users.push(user);
