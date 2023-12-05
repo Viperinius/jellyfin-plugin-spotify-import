@@ -210,6 +210,7 @@ export default function (view) {
 
             document.querySelector('#GenerateMissingTrackLists').checked = config.GenerateMissingTrackLists;
             document.querySelector('#MissingTrackListsDateFormat').value = config.MissingTrackListsDateFormat;
+            document.querySelector('#KeepMissingTrackLists').checked = config.KeepMissingTrackLists;
             if (config.GenerateMissingTrackLists && config.MissingTrackListPaths && config.MissingTrackListPaths.length) {
                 let missingTracksHtml = '';
                 missingTracksHtml += '<div class="paperList">';
@@ -302,6 +303,7 @@ export default function (view) {
 
             config.GenerateMissingTrackLists = document.querySelector('#GenerateMissingTrackLists').checked;
             config.MissingTrackListsDateFormat = document.querySelector('#MissingTrackListsDateFormat').value;
+            config.KeepMissingTrackLists = document.querySelector('#KeepMissingTrackLists').checked;
             config.ItemMatchLevel = document.querySelector('#ItemMatchLevel').value;
             config.ItemMatchCriteriaRaw = getItemMatchCriteriaFromCheckboxes();
             if (config.ItemMatchCriteriaRaw == 0) {

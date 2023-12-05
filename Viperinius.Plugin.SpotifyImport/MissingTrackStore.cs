@@ -61,6 +61,11 @@ namespace Viperinius.Plugin.SpotifyImport
             }
 
             var tmpDir = Path.Combine(Path.GetTempPath(), DirName);
+            if (Plugin.Instance?.Configuration.KeepMissingTrackLists ?? false)
+            {
+                tmpDir = Path.Combine(Plugin.Instance!.DataFolderPath, "missing_tracks");
+            }
+
             Directory.CreateDirectory(tmpDir);
             CurrentTmpDir = tmpDir;
         }

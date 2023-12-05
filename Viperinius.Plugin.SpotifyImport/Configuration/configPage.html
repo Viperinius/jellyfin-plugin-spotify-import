@@ -70,10 +70,10 @@
                         <div class="innerPlaylistContainer">
                             <table id="playlistTable" class="stripedTable ui-responsive table-stroke detailTable" data-role="table">
                                 <thead>
-                                    <th class="detailTableHeaderCell" data-priority="persist">Spotify ID</th>
-                                    <th class="detailTableHeaderCell" data-priority="persist">Target Name</th>
-                                    <th class="detailTableHeaderCell" data-priority="persist">Target User</th>
-                                    <th></th>
+                                <th class="detailTableHeaderCell" data-priority="persist">Spotify ID</th>
+                                <th class="detailTableHeaderCell" data-priority="persist">Target Name</th>
+                                <th class="detailTableHeaderCell" data-priority="persist">Target User</th>
+                                <th></th>
                                 </thead>
                                 <tbody>
                                 </tbody>
@@ -101,11 +101,12 @@
                         <div class="innerUsersContainer">
                             <table id="userlistTable" class="stripedTable ui-responsive table-stroke detailTable" data-role="table">
                                 <thead>
-                                    <th class="detailTableHeaderCell" data-priority="persist">Spotify ID</th>
-                                    <th class="detailTableHeaderCell" data-priority="persist">Target User</th>
-                                    <th class="detailTableHeaderCell" data-priority="persist">Only Original Playlists
-                                    </th>
-                                    <th></th>
+                                <th class="detailTableHeaderCell" data-priority="persist">Spotify ID</th>
+                                <th class="detailTableHeaderCell" data-priority="persist">Target User</th>
+                                <th class="detailTableHeaderCell" data-priority="persist">
+                                    Only Original Playlists
+                                </th>
+                                <th></th>
                                 </thead>
                                 <tbody>
                                 </tbody>
@@ -128,6 +129,15 @@
                         <div class="fieldDescription">
                             Should follow <a href="https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings">this</a>
                             guideline.
+                        </div>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="KeepMissingTrackLists" name="KeepMissingTrackLists" type="checkbox" is="emby-checkbox" />
+                            <span>Save missing track files alongside the plugin (to retain them between server reboots).</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">
+                            Attention: This setting will only apply after restarting Jellyfin.
                         </div>
                     </div>
                     <div class="sectionTitleContainer flex align-items-center">

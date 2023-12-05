@@ -73,6 +73,11 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool GenerateMissingTrackLists { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether to keep created missing track files (instead of storing in tmp dir).
+    /// </summary>
+    public bool KeepMissingTrackLists { get; set; }
+
+    /// <summary>
     /// Gets or sets the date time format for the filenames of missing tracks.
     /// </summary>
     public string MissingTrackListsDateFormat { get; set; }
