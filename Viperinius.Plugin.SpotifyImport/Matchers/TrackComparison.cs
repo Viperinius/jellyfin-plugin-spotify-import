@@ -12,6 +12,7 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
         private static readonly DefaultMatcher<string> _defaultStringMatcher = new DefaultMatcher<string>();
         private static readonly CaseInsensitiveMatcher _caseInsensitiveMatcher = new CaseInsensitiveMatcher();
         private static readonly IgnorePunctuationMatcher _punctuationMatcher = new IgnorePunctuationMatcher();
+        private static readonly IgnoreParensMatcher _parensMatcher = new IgnoreParensMatcher();
 
         private static bool Equal(string? jellyfinName, string? providerName, ItemMatchLevel matchLevel)
         {
@@ -34,6 +35,11 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
             if (!result && matchLevel == ItemMatchLevel.IgnorePunctuationAndCase)
             {
                 result = _punctuationMatcher.Matches(jellyfinName, providerName);
+            }
+
+            if (!result && matchLevel == ItemMatchLevel.IgnoreParensPunctuationAndCase)
+            {
+                result = _parensMatcher.Matches(jellyfinName, providerName);
             }
 
             return result;

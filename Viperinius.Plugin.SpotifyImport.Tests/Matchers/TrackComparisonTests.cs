@@ -140,11 +140,54 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 TrackHelper.CreateJfItem(".$Track", null, null, null),
                 TrackHelper.CreateJfItem("Tr`ack", null, null, null),
                 TrackHelper.CreateJfItem("Tr0ack", null, null, null),
+                TrackHelper.CreateJfItem("Track (x)", null, null, null),
             };
 
             foreach (var jf in items)
             {
                 Assert.False(TrackComparison.TrackNameEqual(jf, prov, ItemMatchLevel.IgnorePunctuationAndCase), TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        [Fact]
+        public void Track_Matches_NoParens()
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var items = new List<Audio>
+            {
+                TrackHelper.CreateJfItem("track", "Album", "Artist On Album", "Just Artist"),
+                TrackHelper.CreateJfItem(".track", null, null, null),
+                TrackHelper.CreateJfItem("tr,ack", null, null, "Just Artist"),
+                TrackHelper.CreateJfItem("tr###ack", null, "Artist On Album", "Just Artist"),
+                TrackHelper.CreateJfItem("track", "Album", null, "Just Artist"),
+                TrackHelper.CreateJfItem("trac!k", "Album", "Artist On Album", null),
+                TrackHelper.CreateJfItem("Track", "album", "Artist On Album", "Just Artist"),
+                TrackHelper.CreateJfItem("Track (abc)", "Album", "Artist on Album", "Just Artist"),
+                TrackHelper.CreateJfItem("(asdkas) track", "Album", "Artist On Album", "Just artist"),
+                TrackHelper.CreateJfItem("Tra (b) ck", "Album", "Artist On Album", "Just artist"),
+            };
+
+            foreach (var jf in items)
+            {
+                Assert.True(TrackComparison.TrackNameEqual(jf, prov, ItemMatchLevel.IgnoreParensPunctuationAndCase), TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        [Fact]
+        public void Track_NoMatches_NoParens()
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var items = new List<Audio>
+            {
+                TrackHelper.CreateJfItem(null, "Album", "Artist On Album", "Just Artist"),
+                TrackHelper.CreateJfItem(null, null, null, null),
+                TrackHelper.CreateJfItem("trac.", "Album", "Artist On Album", "Just Artist"),
+                TrackHelper.CreateJfItem("Trackb (x)", null, null, null),
+            };
+
+            foreach (var jf in items)
+            {
+                Assert.False(TrackComparison.TrackNameEqual(jf, prov, ItemMatchLevel.IgnoreParensPunctuationAndCase), TrackHelper.GetErrorString(jf));
             }
         }
 
@@ -268,6 +311,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 TrackHelper.CreateJfItem(null, ".$Album", null, null),
                 TrackHelper.CreateJfItem(null, "Al`bum", null, null),
                 TrackHelper.CreateJfItem(null, "Al0bum", null, null),
+                TrackHelper.CreateJfItem("Track", "Album (x)", "Artist On Album", "Just artist"),
             };
 
             foreach (var jf in items)
@@ -396,6 +440,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 TrackHelper.CreateJfItem(null, null, ".$Artist On Album", null),
                 TrackHelper.CreateJfItem(null, null, "Artist`On Album", null),
                 TrackHelper.CreateJfItem(null, null, "Artist0On Album", null),
+                TrackHelper.CreateJfItem(null, null, "Artist On Album (y)", null),
             };
 
             foreach (var jf in items)
@@ -524,6 +569,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 TrackHelper.CreateJfItem(null, null, null, ".$Just Artist"),
                 TrackHelper.CreateJfItem(null, null, null, "Just `Artist"),
                 TrackHelper.CreateJfItem(null, null, null, "Just0 Artist"),
+                TrackHelper.CreateJfItem(null, null, null, "Just Artist (z)"),
             };
 
             foreach (var jf in items)

@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Viperinius.Plugin.SpotifyImport.Matchers
 {
-    internal class IgnorePunctuationMatcher : IItemMatcher<string>
+    internal class IgnoreParensMatcher : IItemMatcher<string>
     {
-        private static readonly Regex _regex = new Regex(@"\p{P}");
+        private static readonly Regex _regex = new Regex(@"\s*\([^\)]*\)\s*");
 
         public bool IsStrict => false;
 
@@ -17,7 +17,7 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
         {
             var i = _regex.Replace(item, string.Empty);
             var t = _regex.Replace(target, string.Empty);
-            return new CaseInsensitiveMatcher().Matches(t, i);
+            return new IgnorePunctuationMatcher().Matches(t, i);
         }
     }
 }

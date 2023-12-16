@@ -70,10 +70,10 @@
                         <div class="innerPlaylistContainer">
                             <table id="playlistTable" class="stripedTable ui-responsive table-stroke detailTable" data-role="table">
                                 <thead>
-                                <th class="detailTableHeaderCell" data-priority="persist">Spotify ID</th>
-                                <th class="detailTableHeaderCell" data-priority="persist">Target Name</th>
-                                <th class="detailTableHeaderCell" data-priority="persist">Target User</th>
-                                <th></th>
+                                    <th class="detailTableHeaderCell" data-priority="persist">Spotify ID</th>
+                                    <th class="detailTableHeaderCell" data-priority="persist">Target Name</th>
+                                    <th class="detailTableHeaderCell" data-priority="persist">Target User</th>
+                                    <th></th>
                                 </thead>
                                 <tbody>
                                 </tbody>
@@ -101,12 +101,10 @@
                         <div class="innerUsersContainer">
                             <table id="userlistTable" class="stripedTable ui-responsive table-stroke detailTable" data-role="table">
                                 <thead>
-                                <th class="detailTableHeaderCell" data-priority="persist">Spotify ID</th>
-                                <th class="detailTableHeaderCell" data-priority="persist">Target User</th>
-                                <th class="detailTableHeaderCell" data-priority="persist">
-                                    Only Original Playlists
-                                </th>
-                                <th></th>
+                                    <th class="detailTableHeaderCell" data-priority="persist">Spotify ID</th>
+                                    <th class="detailTableHeaderCell" data-priority="persist">Target User</th>
+                                    <th class="detailTableHeaderCell" data-priority="persist">Only Original Playlists</th>
+                                    <th></th>
                                 </thead>
                                 <tbody>
                                 </tbody>
@@ -149,6 +147,7 @@
                                 <option value="Default">Default / Equality Check</option>
                                 <option value="IgnoreCase">Ignore Case</option>
                                 <option value="IgnorePunctuationAndCase">Ignore Case + Punctuation</option>
+                                <option value="IgnoreParensPunctuationAndCase">Ignore Case + Punctuation + Parentheses Content</option>
                             </select>
                             <div class="fieldDescription">
                                 Choose how strict the comparison between Spotify and Jellyfin tracks is.

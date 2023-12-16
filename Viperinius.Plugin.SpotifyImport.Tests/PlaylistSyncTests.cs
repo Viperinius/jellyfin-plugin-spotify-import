@@ -65,6 +65,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
                 (true, TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just Artist")),
                 (false, TrackHelper.CreateJfItem("track", "album", "artist On Album", "just Artist")),
                 (false, TrackHelper.CreateJfItem("Tra-ck", "Al-bum", "Ar-tist On Album", "Ju-st Artist")),
+                (false, TrackHelper.CreateJfItem("Track (Special Edition)", "Al-bum (Live)", "(AB) Ar-tist On Album", "Ju-st (CD) Artist")),
             };
 
             foreach (var item in jfItems)
@@ -86,6 +87,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
                 (true, TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just Artist")),
                 (true, TrackHelper.CreateJfItem("track", "album", "artist On Album", "just Artist")),
                 (false, TrackHelper.CreateJfItem("Tra-ck", "Al-bum", "Ar-tist On Album", "Ju-st Artist")),
+                (false, TrackHelper.CreateJfItem("Track (Special Edition)", "Al-bum (Live)", "(AB) Ar-tist On Album", "Ju-st (CD) Artist")),
             };
 
             foreach (var item in jfItems)
@@ -107,6 +109,29 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
                 (true, TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just Artist")),
                 (true, TrackHelper.CreateJfItem("track", "album", "artist On Album", "just Artist")),
                 (true, TrackHelper.CreateJfItem("Tra-ck", "Al-bum", "Ar-tist On Album", "Ju-st Artist")),
+                (false, TrackHelper.CreateJfItem("Track (Special Edition)", "Al-bum (Live)", "(AB) Ar-tist On Album", "Ju-st (CD) Artist")),
+            };
+
+            foreach (var item in jfItems)
+            {
+                Assert.True(PlaylistSyncWrapper.WrapItemMatchesTrackInfo(item.Item, prov, out var failedCrit) == item.IsMatch, TrackHelper.GetErrorString(item.Item));
+                Assert.True(item.IsMatch ? failedCrit == ItemMatchCriteria.None : failedCrit != ItemMatchCriteria.None);
+            }
+        }
+
+        [Fact]
+        public void TrackMatching_Respects_Level_IgnoreCasePunctuationParens()
+        {
+            SetValidPluginInstance();
+
+            Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.IgnoreParensPunctuationAndCase;
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var jfItems = new List<(bool IsMatch, MediaBrowser.Controller.Entities.Audio.Audio Item)>
+            {
+                (true, TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just Artist")),
+                (true, TrackHelper.CreateJfItem("track", "album", "artist On Album", "just Artist")),
+                (true, TrackHelper.CreateJfItem("Tra-ck", "Al-bum", "Ar-tist On Album", "Ju-st Artist")),
+                (true, TrackHelper.CreateJfItem("Track (Special Edition)", "Al-bum (Live)", "(AB) Ar-tist On Album", "Ju-st Artist(CD)")),
             };
 
             foreach (var item in jfItems)
@@ -120,6 +145,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         public void TrackMatching_Respects_Criteria_TrackName()
         {
             SetValidPluginInstance();
+            Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.Default;
 
             Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.TrackName | ItemMatchCriteria.Artists);
             var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
@@ -167,6 +193,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         public void TrackMatching_Respects_Criteria_Album()
         {
             SetValidPluginInstance();
+            Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.Default;
 
             Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.AlbumName | ItemMatchCriteria.Artists);
             var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
@@ -214,6 +241,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         public void TrackMatching_Respects_Criteria_Artist()
         {
             SetValidPluginInstance();
+            Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.Default;
 
             Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.AlbumName | ItemMatchCriteria.Artists);
             var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
@@ -261,6 +289,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         public void TrackMatching_Respects_Criteria_AlbumArtist()
         {
             SetValidPluginInstance();
+            Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.Default;
 
             Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.AlbumArtists | ItemMatchCriteria.Artists);
             var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
