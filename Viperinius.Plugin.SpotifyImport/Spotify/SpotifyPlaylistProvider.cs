@@ -145,6 +145,10 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             {
                 _logger.LogError(e, "Failed to get playlist with id {Id}", playlistId);
             }
+            catch (Newtonsoft.Json.JsonException e)
+            {
+                _logger.LogError(e, "Encountered json error trying to get playlist with id {Id}", playlistId);
+            }
 
             return null;
         }
