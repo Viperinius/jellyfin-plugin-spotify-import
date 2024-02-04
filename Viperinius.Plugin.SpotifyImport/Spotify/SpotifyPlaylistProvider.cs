@@ -64,10 +64,12 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 return null;
             }
 
+            Paging<FullPlaylist>? spotifyPlaylists = null;
+
             try
             {
                 var playlists = new List<ProviderPlaylistInfo>();
-                var spotifyPlaylists = await _spotifyClient.Playlists.GetUsers(target.Id, cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
+                spotifyPlaylists = await _spotifyClient.Playlists.GetUsers(target.Id, cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
                 await foreach (var playlist in _spotifyClient.Paginate(spotifyPlaylists))
                 {
                     var ownerId = playlist.Owner != null ? playlist.Owner.Id : string.Empty;
@@ -95,6 +97,10 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             {
                 _logger.LogError(e, "Failed to get user playlists for user {Id}", target.Id);
             }
+            catch (Newtonsoft.Json.JsonException e)
+            {
+                LogApiParseException(e, $"user with id {target.Id}", spotifyPlaylists);
+            }
 
             return null;
         }
@@ -108,9 +114,11 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 return null;
             }
 
+            FullPlaylist? playlist = null;
+
             try
             {
-                var playlist = await _spotifyClient.Playlists.Get(playlistId, cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
+                playlist = await _spotifyClient.Playlists.Get(playlistId, cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
 
                 var rawImageUrl = playlist.Images?.FirstOrDefault((Image?)null)?.Url;
 
@@ -144,6 +152,10 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             catch (APIException e)
             {
                 _logger.LogError(e, "Failed to get playlist with id {Id}", playlistId);
+            }
+            catch (Newtonsoft.Json.JsonException e)
+            {
+                LogApiParseException(e, $"playlist with id {playlistId}", playlist);
             }
 
             return null;
@@ -189,6 +201,29 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             }
 
             return null;
+        }
+
+        private void LogApiParseException(Newtonsoft.Json.JsonException exception, string target, object? obj)
+        {
+            // for some unknown reason the Spotify API sometimes returns data in a different structure,
+            // which currently results in a json parse error in SpotifyAPIWeb
+            // see this issue: https://github.com/Viperinius/jellyfin-plugin-spotify-import/issues/18
+            // also see this issue in the SpotifyAPIWeb repo: https://github.com/JohnnyCrazy/SpotifyAPI-NET/issues/926
+
+            _logger.LogError(exception, "Encountered json error for {Target}", target);
+            string? objString = null;
+            try
+            {
+                if (obj != null)
+                {
+                    objString = Newtonsoft.Json.Linq.JObject.FromObject(obj).ToString();
+                }
+            }
+            catch (Newtonsoft.Json.JsonReaderException)
+            {
+            }
+
+            _logger.LogDebug("Received: \n{Object}", objString);
         }
     }
 }
