@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web.Http;
@@ -17,6 +18,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
     internal class SpotifyLogger : IHTTPLogger
     {
         private readonly ILogger<SpotifyLogger> _logger;
+        private readonly Regex _access_token_regex = new Regex("(\"(?:access|refresh)_token\":\").*?(\")");
 
         public SpotifyLogger(ILogger<SpotifyLogger> logger)
         {
@@ -49,6 +51,14 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             }
 
             string? body = response.Body?.ToString()?.Replace("\n", string.Empty, StringComparison.InvariantCulture);
+            if (body != null)
+            {
+                body = _access_token_regex.Replace(body, (match) =>
+                {
+                    return $"{match.Groups[1].Value}xxxx{match.Groups[2].Value}";
+                });
+            }
+
             body = body?[..Math.Min(50, body.Length)];
 
             _logger.LogInformation("--> {Code} {Type} {Body}", response.StatusCode, response.ContentType, body);
