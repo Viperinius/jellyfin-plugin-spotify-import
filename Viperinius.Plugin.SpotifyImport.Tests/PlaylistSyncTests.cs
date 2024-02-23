@@ -107,11 +107,12 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             SetValidPluginInstance();
 
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.Default;
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist", "Artist 2" });
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "Albtist" }, new List<string> { "Just Artist", "Artist 2" });
             var jfItems = new List<(bool IsMatch, (MediaBrowser.Controller.Entities.Audio.Audio Track, MediaBrowser.Controller.Entities.Audio.MusicAlbum Album, MediaBrowser.Controller.Entities.Audio.MusicArtist Artist) Item)>
             {
                 (true, TrackHelper.CreateAllJfItems("Track", "Album", "Artist On Album", "Just Artist")),
                 (true, TrackHelper.CreateAllJfItems("Track", "Album", "Artist On Album", "Artist 2")),
+                (true, TrackHelper.CreateAllJfItems("Track", "Album", "Albtist", "Just Artist")),
                 (false, TrackHelper.CreateAllJfItems("track", "album", "artist On Album", "just Artist")),
                 (false, TrackHelper.CreateAllJfItems("Tra-ck", "Al-bum", "Ar-tist On Album", "Ju-st Artist")),
                 (false, TrackHelper.CreateAllJfItems("Track (Special Edition)", "Al-bum (Live)", "(AB) Ar-tist On Album", "Ju-st (CD) Artist")),
@@ -129,11 +130,12 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             SetValidPluginInstance();
 
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.IgnoreCase;
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist", "Artist 2" });
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "Albtist" }, new List<string> { "Just Artist", "Artist 2" });
             var jfItems = new List<(bool IsMatch, (MediaBrowser.Controller.Entities.Audio.Audio Track, MediaBrowser.Controller.Entities.Audio.MusicAlbum Album, MediaBrowser.Controller.Entities.Audio.MusicArtist Artist) Item)>
             {
                 (true, TrackHelper.CreateAllJfItems("Track", "Album", "Artist On Album", "Just Artist")),
                 (true, TrackHelper.CreateAllJfItems("track", "album", "artist On Album", "just Artist")),
+                (true, TrackHelper.CreateAllJfItems("Track", "Album", "albtist", "Just Artist")),
                 (false, TrackHelper.CreateAllJfItems("Tra-ck", "Al-bum", "Ar-tist On Album", "Ju-st Artist")),
                 (false, TrackHelper.CreateAllJfItems("Track (Special Edition)", "Al-bum (Live)", "(AB) Ar-tist On Album", "Ju-st (CD) Artist")),
             };
@@ -150,11 +152,12 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             SetValidPluginInstance();
 
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.IgnorePunctuationAndCase;
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist", "Artist 2" });
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "Albtist" }, new List<string> { "Just Artist", "Artist 2" });
             var jfItems = new List<(bool IsMatch, (MediaBrowser.Controller.Entities.Audio.Audio Track, MediaBrowser.Controller.Entities.Audio.MusicAlbum Album, MediaBrowser.Controller.Entities.Audio.MusicArtist Artist) Item)>
             {
                 (true, TrackHelper.CreateAllJfItems("Track", "Album", "Artist On Album", "Just Artist")),
                 (true, TrackHelper.CreateAllJfItems("track", "album", "artist On Album", "just Artist")),
+                (true, TrackHelper.CreateAllJfItems("Track", "Album", "ALB-TIST", "Just Artist")),
                 (true, TrackHelper.CreateAllJfItems("Tra-ck", "Al-bum", "Ar-tist On Album", "Ju-st Artist")),
                 (false, TrackHelper.CreateAllJfItems("Track (Special Edition)", "Al-bum (Live)", "(AB) Ar-tist On Album", "Ju-st (CD) Artist")),
             };
@@ -171,11 +174,12 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             SetValidPluginInstance();
 
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.IgnoreParensPunctuationAndCase;
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist", "Artist 2" });
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "Albtist" }, new List<string> { "Just Artist", "Artist 2" });
             var jfItems = new List<(bool IsMatch, (MediaBrowser.Controller.Entities.Audio.Audio Track, MediaBrowser.Controller.Entities.Audio.MusicAlbum Album, MediaBrowser.Controller.Entities.Audio.MusicArtist Artist) Item)>
             {
                 (true, TrackHelper.CreateAllJfItems("Track", "Album", "Artist On Album", "Just Artist")),
                 (true, TrackHelper.CreateAllJfItems("track", "album", "artist On Album", "just Artist")),
+                (true, TrackHelper.CreateAllJfItems("Track", "Album", "al.btist(b)", "Just Artist")),
                 (true, TrackHelper.CreateAllJfItems("Tra-ck", "Al-bum", "Ar-tist On Album", "Ju-st Artist")),
                 (true, TrackHelper.CreateAllJfItems("Track (Special Edition)", "Al-bum (Live)", "(AB) Ar-tist On Album", "Ju-st Artist(CD)")),
             };
@@ -193,7 +197,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.Default;
 
             Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.TrackName | ItemMatchCriteria.Artists);
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist", "Artist 2" });
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "Albtist" }, new List<string> { "Just Artist", "Artist 2" });
             var jfItems = new List<(bool IsMatch, (MediaBrowser.Controller.Entities.Audio.Audio Track, MediaBrowser.Controller.Entities.Audio.MusicAlbum Album, MediaBrowser.Controller.Entities.Audio.MusicArtist Artist) Item)>
             {
                 (true, TrackHelper.CreateAllJfItems("Track", "Album", "Artist On Album", "Just Artist")),
@@ -225,7 +229,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.Default;
 
             Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.AlbumName | ItemMatchCriteria.Artists);
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist", "Artist 2" });
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "Albtist" }, new List<string> { "Just Artist", "Artist 2" });
             var jfItems = new List<(bool IsMatch, (MediaBrowser.Controller.Entities.Audio.Audio Track, MediaBrowser.Controller.Entities.Audio.MusicAlbum Album, MediaBrowser.Controller.Entities.Audio.MusicArtist Artist) Item)>
             {
                 (true, TrackHelper.CreateAllJfItems("Track", "Album", "Artist On Album", "Just Artist")),
@@ -257,10 +261,11 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.Default;
 
             Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.AlbumName | ItemMatchCriteria.Artists);
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist", "Artist 2" });
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "Albtist" }, new List<string> { "Just Artist", "Artist 2" });
             var jfItems = new List<(bool IsMatch, (MediaBrowser.Controller.Entities.Audio.Audio Track, MediaBrowser.Controller.Entities.Audio.MusicAlbum Album, MediaBrowser.Controller.Entities.Audio.MusicArtist Artist) Item)>
             {
                 (true, TrackHelper.CreateAllJfItems("Track", "Album", "Artist On Album", "Just Artist")),
+                (true, TrackHelper.CreateAllJfItems("Track", "Album", "Artist On Album", "Artist 2")),
                 (false, TrackHelper.CreateAllJfItems("Track", "Album", "Artist On Album", "just Artist")),
             };
 
@@ -273,6 +278,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             jfItems = new List<(bool IsMatch, (MediaBrowser.Controller.Entities.Audio.Audio Track, MediaBrowser.Controller.Entities.Audio.MusicAlbum Album, MediaBrowser.Controller.Entities.Audio.MusicArtist Artist) Item)>
             {
                 (true, TrackHelper.CreateAllJfItems("Track", "Album", "Artist On Album", "Just Artist")),
+                (true, TrackHelper.CreateAllJfItems("Track", "Album", "Artist On Album", "Artist 2")),
                 (true, TrackHelper.CreateAllJfItems("Track", "Album", "Artist On Album", "just Artist")),
             };
 
@@ -289,10 +295,11 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.Default;
 
             Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.AlbumArtists | ItemMatchCriteria.Artists);
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist", "Artist 2" });
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "Albtist" }, new List<string> { "Just Artist", "Artist 2" });
             var jfItems = new List<(bool IsMatch, (MediaBrowser.Controller.Entities.Audio.Audio Track, MediaBrowser.Controller.Entities.Audio.MusicAlbum Album, MediaBrowser.Controller.Entities.Audio.MusicArtist Artist) Item)>
             {
                 (true, TrackHelper.CreateAllJfItems("Track", "Album", "Artist On Album", "Just Artist")),
+                (true, TrackHelper.CreateAllJfItems("Track", "Album", "Albtist", "Just Artist")),
                 (false, TrackHelper.CreateAllJfItems("Track", "Album", "artist On Album", "Just Artist")),
             };
 
@@ -305,6 +312,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             jfItems = new List<(bool IsMatch, (MediaBrowser.Controller.Entities.Audio.Audio Track, MediaBrowser.Controller.Entities.Audio.MusicAlbum Album, MediaBrowser.Controller.Entities.Audio.MusicArtist Artist) Item)>
             {
                 (true, TrackHelper.CreateAllJfItems("Track", "Album", "Artist On Album", "Just Artist")),
+                (true, TrackHelper.CreateAllJfItems("Track", "Album", "Albtist", "Just Artist")),
                 (true, TrackHelper.CreateAllJfItems("Track", "Album", "artist On Album", "Just Artist")),
             };
 
