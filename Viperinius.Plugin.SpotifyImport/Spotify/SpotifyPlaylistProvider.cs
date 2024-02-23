@@ -190,8 +190,8 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                             IsrcId = hasIsrc ? isrc : null,
                             TrackNumber = (uint)fullTrack.TrackNumber,
                             AlbumName = fullTrack.Album.Name,
-                            AlbumArtistName = fullTrack.Album.Artists.FirstOrDefault()?.Name ?? string.Empty,
-                            ArtistName = fullTrack.Artists.First().Name,
+                            AlbumArtistNames = fullTrack.Album.Artists.Where(a => a != null && !string.IsNullOrWhiteSpace(a.Name)).Select(a => a.Name).ToList(),
+                            ArtistNames = fullTrack.Artists.Select(a => a.Name).ToList(),
                         };
                     }
 

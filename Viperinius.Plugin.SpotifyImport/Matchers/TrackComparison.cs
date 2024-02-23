@@ -55,6 +55,11 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
             return jellyfinList.Where(j => Equal(j, providerName, matchLevel)).Any();
         }
 
+        private static bool ListMatchOneItem(IReadOnlyList<string>? jellyfinList, IReadOnlyList<string> providerList, ItemMatchLevel matchLevel)
+        {
+            return (jellyfinList?.Any(j => ListContains(providerList, j, matchLevel)) ?? false) || providerList.Any(p => ListContains(jellyfinList, p, matchLevel));
+        }
+
         public static bool TrackNameEqual(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
             return Equal(jfItem.Name, providerItem.Name, matchLevel);
@@ -65,14 +70,29 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
             return Equal(jfItem.AlbumEntity?.Name, providerItem.AlbumName, matchLevel);
         }
 
-        public static bool AlbumArtistContained(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
+        public static bool AlbumNameEqual(MusicAlbum jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
-            return ListContains(jfItem.AlbumEntity?.Artists, providerItem.AlbumArtistName, matchLevel);
+            return Equal(jfItem.Name, providerItem.AlbumName, matchLevel);
         }
 
-        public static bool ArtistContained(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
+        public static bool AlbumArtistOneContained(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
-            return ListContains(jfItem.Artists, providerItem.ArtistName, matchLevel);
+            return ListMatchOneItem(jfItem.AlbumEntity?.Artists, providerItem.AlbumArtistNames, matchLevel);
+        }
+
+        public static bool AlbumArtistOneContained(MusicAlbum jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
+        {
+            return ListMatchOneItem(jfItem.Artists, providerItem.AlbumArtistNames, matchLevel);
+        }
+
+        public static bool ArtistOneContained(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
+        {
+            return ListMatchOneItem(jfItem.Artists, providerItem.ArtistNames, matchLevel);
+        }
+
+        public static bool ArtistOneContained(MusicArtist jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
+        {
+            return ListMatchOneItem(new List<string> { jfItem.Name }, providerItem.ArtistNames, matchLevel);
         }
     }
 }
