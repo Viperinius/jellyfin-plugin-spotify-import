@@ -55,6 +55,11 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
             return jellyfinList.Where(j => Equal(j, providerName, matchLevel)).Any();
         }
 
+        private static bool ListMatchOneItem(IReadOnlyList<string> jellyfinList, IReadOnlyList<string> providerList, ItemMatchLevel matchLevel)
+        {
+            return jellyfinList.Any(j => ListContains(providerList, j, matchLevel)) || providerList.Any(p => ListContains(jellyfinList, p, matchLevel));
+        }
+
         public static bool TrackNameEqual(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
             return Equal(jfItem.Name, providerItem.Name, matchLevel);
@@ -80,14 +85,14 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
             return ListContains(jfItem.Artists, providerItem.AlbumArtistName, matchLevel);
         }
 
-        public static bool ArtistContained(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
+        public static bool ArtistOneContained(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
-            return ListContains(jfItem.Artists, providerItem.ArtistName, matchLevel);
+            return ListMatchOneItem(jfItem.Artists, providerItem.ArtistNames, matchLevel);
         }
 
-        public static bool ArtistContained(MusicArtist jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
+        public static bool ArtistOneContained(MusicArtist jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
-            return Equal(jfItem.Name, providerItem.ArtistName, matchLevel);
+            return ListMatchOneItem(new List<string> { jfItem.Name }, providerItem.ArtistNames, matchLevel);
         }
     }
 }

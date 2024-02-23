@@ -191,7 +191,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                             TrackNumber = (uint)fullTrack.TrackNumber,
                             AlbumName = fullTrack.Album.Name,
                             AlbumArtistName = fullTrack.Album.Artists.FirstOrDefault()?.Name ?? string.Empty,
-                            ArtistName = fullTrack.Artists.First().Name,
+                            ArtistNames = fullTrack.Artists.Select(a => a.Name).ToList(),
                         };
                     }
 

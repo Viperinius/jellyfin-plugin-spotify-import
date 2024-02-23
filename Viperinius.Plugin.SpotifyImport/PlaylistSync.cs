@@ -18,6 +18,8 @@ namespace Viperinius.Plugin.SpotifyImport
 {
     internal class PlaylistSync
     {
+        private const int MaxSearchChars = 5;
+
         private readonly ILogger<PlaylistSync> _logger;
         private readonly IPlaylistManager _playlistManager;
         private readonly ILibraryManager _libraryManager;
@@ -138,7 +140,7 @@ namespace Viperinius.Plugin.SpotifyImport
                             failedCriterium,
                             providerTrack.Name,
                             providerTrack.AlbumName,
-                            providerTrack.ArtistName);
+                            string.Join("#", providerTrack.ArtistNames));
                     }
 
                     if (track != null)
@@ -167,9 +169,15 @@ namespace Viperinius.Plugin.SpotifyImport
             }
         }
 
-        private Audio? GetMatchingTrack(ProviderTrackInfo providerTrackInfo, out ItemMatchCriteria failedMatchCriterium)
+        protected Audio? GetMatchingTrack(ProviderTrackInfo providerTrackInfo, out ItemMatchCriteria failedMatchCriterium)
         {
             failedMatchCriterium = ItemMatchCriteria.None;
+            _logger.LogDebug(
+                "Now processing provider track {Name} [{Album}][{Artist}]",
+                providerTrackInfo.Name,
+                providerTrackInfo.AlbumName,
+                string.Join("#", providerTrackInfo.ArtistNames));
+
             var artist = GetArtist(providerTrackInfo);
             if (artist == null)
             {
@@ -201,34 +209,37 @@ namespace Viperinius.Plugin.SpotifyImport
 
         private MusicArtist? GetArtist(ProviderTrackInfo providerTrackInfo)
         {
-            var queryResult = _libraryManager.GetArtists(new MediaBrowser.Controller.Entities.InternalItemsQuery
+            foreach (var artistName in providerTrackInfo.ArtistNames)
             {
-                // NameContains = providerTrackInfo.ArtistName,
-                SearchTerm = providerTrackInfo.ArtistName,
-            });
-
-            foreach (var (item, _) in queryResult.Items)
-            {
-                if (item is not MusicArtist artist)
+                // only search for the first few characters to increase the chances of finding artists with slightly differing names between provider and jellyfin
+                var queryResult = _libraryManager.GetArtists(new MediaBrowser.Controller.Entities.InternalItemsQuery
                 {
-                    continue;
-                }
+                    SearchTerm = artistName[0..Math.Min(artistName.Length, MaxSearchChars)],
+                });
 
-                if (Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.Artists) ?? false)
+                foreach (var (item, _) in queryResult.Items)
                 {
-                    var level = Plugin.Instance?.Configuration.ItemMatchLevel ?? ItemMatchLevel.Default;
-                    if (!TrackComparison.ArtistContained(artist, providerTrackInfo, level))
+                    if (item is not MusicArtist artist)
                     {
                         continue;
                     }
+
+                    if (Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.Artists) ?? false)
+                    {
+                        var level = Plugin.Instance?.Configuration.ItemMatchLevel ?? ItemMatchLevel.Default;
+                        if (!TrackComparison.ArtistOneContained(artist, providerTrackInfo, level))
+                        {
+                            continue;
+                        }
+                    }
+
+                    return artist;
                 }
 
-                return artist;
-            }
-
-            if (queryResult.Items.Count == 0 && (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false))
-            {
-                _logger.LogDebug("Did not find any artists for the name {Name}", providerTrackInfo.ArtistName);
+                if (queryResult.Items.Count == 0 && (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false))
+                {
+                    _logger.LogDebug("Did not find any artists for the name {Name}", artistName);
+                }
             }
 
             return null;
@@ -298,7 +309,7 @@ namespace Viperinius.Plugin.SpotifyImport
                     continue;
                 }
 
-                if ((Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.Artists) ?? false) && !TrackComparison.ArtistContained(audioItem, providerTrackInfo, level))
+                if ((Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.Artists) ?? false) && !TrackComparison.ArtistOneContained(audioItem, providerTrackInfo, level))
                 {
                     continue;
                 }
