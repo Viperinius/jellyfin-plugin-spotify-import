@@ -65,14 +65,29 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
             return Equal(jfItem.AlbumEntity?.Name, providerItem.AlbumName, matchLevel);
         }
 
+        public static bool AlbumNameEqual(MusicAlbum jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
+        {
+            return Equal(jfItem.Name, providerItem.AlbumName, matchLevel);
+        }
+
         public static bool AlbumArtistContained(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
             return ListContains(jfItem.AlbumEntity?.Artists, providerItem.AlbumArtistName, matchLevel);
         }
 
+        public static bool AlbumArtistContained(MusicAlbum jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
+        {
+            return ListContains(jfItem.Artists, providerItem.AlbumArtistName, matchLevel);
+        }
+
         public static bool ArtistContained(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
             return ListContains(jfItem.Artists, providerItem.ArtistName, matchLevel);
+        }
+
+        public static bool ArtistContained(MusicArtist jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
+        {
+            return Equal(jfItem.Name, providerItem.ArtistName, matchLevel);
         }
     }
 }
