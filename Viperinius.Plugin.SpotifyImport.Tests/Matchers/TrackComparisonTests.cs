@@ -22,7 +22,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void Track_Matches_Default()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just Artist"),
@@ -45,7 +45,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void Track_NoMatches_Default()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem(null, "Album", "Artist On Album", "Just Artist"),
@@ -65,7 +65,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void Track_Matches_CaseInsensitive()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("track", "Album", "Artist On Album", "Just Artist"),
@@ -88,7 +88,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void Track_NoMatches_CaseInsensitive()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem(null, "Album", "Artist On Album", "Just Artist"),
@@ -108,7 +108,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void Track_Matches_NoPunctuation()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("track", "Album", "Artist On Album", "Just Artist"),
@@ -131,7 +131,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void Track_NoMatches_NoPunctuation()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem(null, "Album", "Artist On Album", "Just Artist"),
@@ -152,7 +152,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void Track_Matches_NoParens()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("track", "Album", "Artist On Album", "Just Artist"),
@@ -176,7 +176,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void Track_NoMatches_NoParens()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem(null, "Album", "Artist On Album", "Just Artist"),
@@ -194,7 +194,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void Album_Matches_Default()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just Artist"),
@@ -217,7 +217,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void Album_NoMatches_Default()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem(null, "album", "Artist On Album", "Just Artist"),
@@ -236,7 +236,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void Album_Matches_CaseInsensitive()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("Track", "album", "Artist On Album", "Just Artist"),
@@ -259,7 +259,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void Album_NoMatches_CaseInsensitive()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("Track", null, "Artist On Album", "Just Artist"),
@@ -279,7 +279,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void Album_Matches_NoPunctuation()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("Track", "album", "Artist On Album", "Just Artist"),
@@ -302,7 +302,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void Album_NoMatches_NoPunctuation()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("Track", null, "Artist On Album", "Just Artist"),
@@ -323,7 +323,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void AlbumArtist_Matches_Default()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just Artist"),
@@ -346,7 +346,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void AlbumArtist_NoMatches_Default()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem(null, "Album", "Artist on Album", "Just Artist"),
@@ -365,7 +365,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void AlbumArtist_Matches_CaseInsensitive()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "Just Artist"),
@@ -388,7 +388,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void AlbumArtist_NoMatches_CaseInsensitive()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("Track", "Album", null, "Just Artist"),
@@ -408,7 +408,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void AlbumArtist_Matches_NoPunctuation()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("Track", "album", "Artist on Album", "Just Artist"),
@@ -431,7 +431,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void AlbumArtist_NoMatches_NoPunctuation()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("Track", "Album", null, "Just Artist"),
@@ -452,7 +452,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Fact]
         public void Artist_Matches_Default()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist", "Artist 2" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just Artist"),
@@ -464,18 +464,19 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 TrackHelper.CreateJfItem("track", "Album", "Artist On Album", "Just Artist"),
                 TrackHelper.CreateJfItem("Track", "album", "Artist On Album", "Just Artist"),
                 TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "Just Artist"),
+                TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "Artist 2"),
             };
 
             foreach (var jf in items)
             {
-                Assert.True(TrackComparison.ArtistContained(jf, prov, ItemMatchLevel.Default), TrackHelper.GetErrorString(jf));
+                Assert.True(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.Default), TrackHelper.GetErrorString(jf));
             }
         }
 
         [Fact]
         public void Artist_NoMatches_Default()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist", "Artist 2" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem(null, "Album", "Artist On Album", "Just artist"),
@@ -487,14 +488,14 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
 
             foreach (var jf in items)
             {
-                Assert.False(TrackComparison.ArtistContained(jf, prov, ItemMatchLevel.Default), TrackHelper.GetErrorString(jf));
+                Assert.False(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.Default), TrackHelper.GetErrorString(jf));
             }
         }
 
         [Fact]
         public void Artist_Matches_CaseInsensitive()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist", "Artist 2" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just artist"),
@@ -506,18 +507,19 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 TrackHelper.CreateJfItem("track", "Album", "Artist On Album", "Just artist"),
                 TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "Just artist"),
                 TrackHelper.CreateJfItem("Track", "album", "Artist On Album", "Just Artist"),
+                TrackHelper.CreateJfItem("Track", "album", "Artist On Album", "Artist 2"),
             };
 
             foreach (var jf in items)
             {
-                Assert.True(TrackComparison.ArtistContained(jf, prov, ItemMatchLevel.IgnoreCase), TrackHelper.GetErrorString(jf));
+                Assert.True(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.IgnoreCase), TrackHelper.GetErrorString(jf));
             }
         }
 
         [Fact]
         public void Artist_NoMatches_CaseInsensitive()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist", "Artist 2" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", null),
@@ -530,14 +532,14 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
 
             foreach (var jf in items)
             {
-                Assert.False(TrackComparison.ArtistContained(jf, prov, ItemMatchLevel.IgnoreCase), TrackHelper.GetErrorString(jf));
+                Assert.False(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.IgnoreCase), TrackHelper.GetErrorString(jf));
             }
         }
 
         [Fact]
         public void Artist_Matches_NoPunctuation()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist", "Artist 2" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just artist"),
@@ -549,18 +551,20 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 TrackHelper.CreateJfItem("track", "Album", "Artist On Album", "Just- Artist"),
                 TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "Just& artist"),
                 TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just Artist"),
+                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Artist 2"),
+                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Artist 2!"),
             };
 
             foreach (var jf in items)
             {
-                Assert.True(TrackComparison.ArtistContained(jf, prov, ItemMatchLevel.IgnorePunctuationAndCase), TrackHelper.GetErrorString(jf));
+                Assert.True(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.IgnorePunctuationAndCase), TrackHelper.GetErrorString(jf));
             }
         }
 
         [Fact]
         public void Artist_NoMatches_NoPunctuation()
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", "Just Artist");
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", "Artist On Album", new List<string> { "Just Artist", "Artist 2" });
             var items = new List<Audio>
             {
                 TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", null),
@@ -570,11 +574,12 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 TrackHelper.CreateJfItem(null, null, null, "Just `Artist"),
                 TrackHelper.CreateJfItem(null, null, null, "Just0 Artist"),
                 TrackHelper.CreateJfItem(null, null, null, "Just Artist (z)"),
+                TrackHelper.CreateJfItem(null, null, null, "Artist 2 (z)"),
             };
 
             foreach (var jf in items)
             {
-                Assert.False(TrackComparison.ArtistContained(jf, prov, ItemMatchLevel.IgnorePunctuationAndCase), TrackHelper.GetErrorString(jf));
+                Assert.False(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.IgnorePunctuationAndCase), TrackHelper.GetErrorString(jf));
             }
         }
     }

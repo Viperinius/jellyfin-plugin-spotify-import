@@ -62,14 +62,22 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.TestHelpers
             return audio;
         }
 
-        public static ProviderTrackInfo CreateProviderItem(string trackName, string albumName, string albumArtist, string artist)
+        public static (Audio, MusicAlbum, MusicArtist) CreateAllJfItems(string? trackName, string? albumName, string? albumArtist, string? artist)
+        {
+            var audioItem = CreateJfItem(trackName, albumName, albumArtist, artist);
+            var albumItem = AlbumHelper.CreateJfItem(albumName, albumArtist, new List<Audio> { audioItem });
+            var artistItem = ArtistHelper.CreateJfItem(artist, new List<MusicAlbum> { albumItem });
+            return (audioItem, albumItem, artistItem);
+        }
+
+        public static ProviderTrackInfo CreateProviderItem(string trackName, string albumName, string albumArtist, List<string> artists)
         {
             return new ProviderTrackInfo()
             {
                 Name = trackName,
                 AlbumName = albumName,
                 AlbumArtistName = albumArtist,
-                ArtistName = artist
+                ArtistNames = artists
             };
         }
 
