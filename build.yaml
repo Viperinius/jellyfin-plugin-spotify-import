@@ -2,7 +2,7 @@
 name: "Spotify Import"
 guid: "F03D0ADB-289F-4986-BD6F-2468025249B3"
 imageUrl: "https://github.com/Viperinius/jellyfin-plugin-spotify-import/raw/master/viperinius-plugin-spotifyimport.png"
-version: "1.5.0.0"
+version: "1.6.0.0"
 targetAbi: "10.8.0.0"
 framework: "net6.0"
 overview: "This plugin imports playlists from Spotify."
@@ -16,6 +16,18 @@ artifacts:
 - "SpotifyAPI.Web.dll"
 changelog: |2-
   # Changelog
+
+  ## [1.6.0.0] - 2024-02-23
+
+  ### Changed
+
+  - Search Jellyfin server for artist instead of individual tracks and narrow track matching down from there
+  - Search Jellyfin server using only the first few characters of an artist name to increase chances of finding matches with slightly different names
+  - Use all (album) artists from Spotify to check whether a matching artist exists in Jellyfin, not just the first one
+
+  ### Fixed
+
+  - Catch exceptions from Spotify API lib when retrieving users / playlists
 
   ## [1.5.0.0] - 2023-12-16
 
