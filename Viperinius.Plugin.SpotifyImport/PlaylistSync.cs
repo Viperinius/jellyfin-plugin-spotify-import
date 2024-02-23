@@ -250,7 +250,7 @@ namespace Viperinius.Plugin.SpotifyImport
             if (Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.AlbumArtists) ?? false)
             {
                 var level = Plugin.Instance?.Configuration.ItemMatchLevel ?? ItemMatchLevel.Default;
-                return TrackComparison.AlbumArtistContained(album, providerTrackInfo, level);
+                return TrackComparison.AlbumArtistOneContained(album, providerTrackInfo, level);
             }
 
             return true;
@@ -319,7 +319,7 @@ namespace Viperinius.Plugin.SpotifyImport
                     continue;
                 }
 
-                if ((Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.AlbumArtists) ?? false) && !TrackComparison.AlbumArtistContained(audioItem, providerTrackInfo, level))
+                if ((Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.AlbumArtists) ?? false) && !TrackComparison.AlbumArtistOneContained(audioItem, providerTrackInfo, level))
                 {
                     continue;
                 }
