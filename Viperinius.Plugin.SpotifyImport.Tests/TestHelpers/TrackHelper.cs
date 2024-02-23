@@ -70,13 +70,13 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.TestHelpers
             return (audioItem, albumItem, artistItem);
         }
 
-        public static ProviderTrackInfo CreateProviderItem(string trackName, string albumName, string albumArtist, List<string> artists)
+        public static ProviderTrackInfo CreateProviderItem(string trackName, string albumName, List<string> albumArtists, List<string> artists)
         {
             return new ProviderTrackInfo()
             {
                 Name = trackName,
                 AlbumName = albumName,
-                AlbumArtistName = albumArtist,
+                AlbumArtistNames = albumArtists,
                 ArtistNames = artists
             };
         }
