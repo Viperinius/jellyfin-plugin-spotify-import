@@ -173,9 +173,10 @@ namespace Viperinius.Plugin.SpotifyImport
         {
             failedMatchCriterium = ItemMatchCriteria.None;
             _logger.LogDebug(
-                "Now processing provider track {Name} [{Album}][{Artist}]",
+                "Now processing provider track {Name} [{Album}][{AlbumArtist}][{Artist}]",
                 providerTrackInfo.Name,
                 providerTrackInfo.AlbumName,
+                string.Join("#", providerTrackInfo.AlbumArtistNames),
                 string.Join("#", providerTrackInfo.ArtistNames));
 
             var artist = GetArtist(providerTrackInfo);
@@ -284,6 +285,13 @@ namespace Viperinius.Plugin.SpotifyImport
         {
             foreach (var item in album.Tracks)
             {
+                _logger.LogDebug(
+                    "> Checking server track {Name} [{Album}][{AlbumArtist}][{Artist}]",
+                    item.Name,
+                    album.Name,
+                    string.Join("#", item.AlbumArtists),
+                    string.Join("#", item.Artists));
+
                 if (Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.TrackName) ?? false)
                 {
                     var level = Plugin.Instance?.Configuration.ItemMatchLevel ?? ItemMatchLevel.Default;

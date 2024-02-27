@@ -28,7 +28,6 @@ namespace Viperinius.Plugin.SpotifyImport
 
         public string AlbumName { get; set; }
 
-        [JsonIgnore]
         public List<string> AlbumArtistNames { get; set; }
 
         public List<string> ArtistNames { get; set; }
