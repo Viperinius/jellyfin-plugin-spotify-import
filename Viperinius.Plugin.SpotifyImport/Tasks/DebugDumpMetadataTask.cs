@@ -15,7 +15,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
     /// <summary>
     /// Scheduled task to import playlists from Spotify.
     /// </summary>
-    public class DebugDumpMetadataTask : IScheduledTask
+    internal class DebugDumpMetadataTask : IScheduledTask // FIXME: set class to public to be usable from jellyfin
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
