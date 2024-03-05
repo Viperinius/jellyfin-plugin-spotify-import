@@ -304,7 +304,18 @@ namespace Viperinius.Plugin.SpotifyImport
 
         private MusicAlbum? GetAlbum(MusicArtist artist, ProviderTrackInfo providerTrackInfo, ref int nextAlbumIndex)
         {
-            var item = artist.Children.ElementAtOrDefault(nextAlbumIndex);
+            var albums = artist.Children;
+            if (!artist.Children.Any())
+            {
+                // for whatever reason albums are apparently not always set as children of the artist... so try to find them using album artist
+                albums = _libraryManager.GetItemList(new MediaBrowser.Controller.Entities.InternalItemsQuery
+                {
+                    AlbumArtistIds = new[] { artist.Id },
+                    IncludeItemTypes = new[] { BaseItemKind.MusicAlbum }
+                });
+            }
+
+            var item = albums.ElementAtOrDefault(nextAlbumIndex);
             nextAlbumIndex++;
             if (item == null)
             {
