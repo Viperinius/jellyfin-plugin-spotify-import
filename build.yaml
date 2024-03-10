@@ -2,7 +2,7 @@
 name: "Spotify Import"
 guid: "F03D0ADB-289F-4986-BD6F-2468025249B3"
 imageUrl: "https://github.com/Viperinius/jellyfin-plugin-spotify-import/raw/master/viperinius-plugin-spotifyimport.png"
-version: "1.6.0.3"
+version: "1.7.0.0"
 targetAbi: "10.8.0.0"
 framework: "net6.0"
 overview: "This plugin imports playlists from Spotify."
@@ -16,6 +16,17 @@ artifacts:
 - "SpotifyAPI.Web.dll"
 changelog: |2-
   # Changelog
+
+  ## [1.7.0.0] - 2024-03-10
+
+  ### Changed
+
+  - If a track / album / artist contains text in parentheses, this content will be used as another match candidate (e.g. to match tracks that have an english translation of a foreign name)
+
+  ### Fixed
+
+  - Fix broken track matching if multiple artists of a track exist in Jellyfin, but the track is not located under the first existing artist
+  - Fix not matching tracks if their album is not a direct child of their artist and (for whatever reason) only detectable via the album artist
 
   ## [1.6.0.3] - 2024-03-05
 
