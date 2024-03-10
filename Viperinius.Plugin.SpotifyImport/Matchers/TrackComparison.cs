@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities.Audio;
 
@@ -14,6 +15,25 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
         private static readonly IgnorePunctuationMatcher _punctuationMatcher = new IgnorePunctuationMatcher();
         private static readonly IgnoreParensMatcher _parensMatcher = new IgnoreParensMatcher();
 
+        private static readonly Regex _parensRegex = new Regex(@"\s*\(([^\)]*)\)\s*");
+
+        private static List<string> TrySplitParensContents(string? raw)
+        {
+            var results = new List<string>();
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return results;
+            }
+
+            results.Add(raw);
+            foreach (Match match in _parensRegex.Matches(raw))
+            {
+                results.Add(match.Groups[1].Value);
+            }
+
+            return results;
+        }
+
         private static bool Equal(string? jellyfinName, string? providerName, ItemMatchLevel matchLevel)
         {
             var result = false;
@@ -22,24 +42,36 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
                 return result;
             }
 
-            if (!result && matchLevel == ItemMatchLevel.Default)
-            {
-                result = _defaultStringMatcher.Matches(jellyfinName, providerName);
-            }
+            var jellyfinCandidates = TrySplitParensContents(jellyfinName);
+            var providerCandidates = TrySplitParensContents(providerName);
 
-            if (!result && matchLevel == ItemMatchLevel.IgnoreCase)
+            foreach (var jellyfinCandidate in jellyfinCandidates)
             {
-                result = _caseInsensitiveMatcher.Matches(jellyfinName, providerName);
-            }
+                foreach (var providerCandidate in providerCandidates)
+                {
+                    switch (matchLevel)
+                    {
+                        case ItemMatchLevel.Default:
+                            result |= _defaultStringMatcher.Matches(jellyfinCandidate, providerCandidate);
+                            break;
+                        case ItemMatchLevel.IgnoreCase:
+                            result |= _caseInsensitiveMatcher.Matches(jellyfinCandidate, providerCandidate);
+                            break;
+                        case ItemMatchLevel.IgnorePunctuationAndCase:
+                            result |= _punctuationMatcher.Matches(jellyfinCandidate, providerCandidate);
+                            break;
+                        case ItemMatchLevel.IgnoreParensPunctuationAndCase:
+                            result |= _parensMatcher.Matches(jellyfinCandidate, providerCandidate);
+                            break;
+                        default:
+                            break;
+                    }
 
-            if (!result && matchLevel == ItemMatchLevel.IgnorePunctuationAndCase)
-            {
-                result = _punctuationMatcher.Matches(jellyfinName, providerName);
-            }
-
-            if (!result && matchLevel == ItemMatchLevel.IgnoreParensPunctuationAndCase)
-            {
-                result = _parensMatcher.Matches(jellyfinName, providerName);
+                    if (result)
+                    {
+                        return result;
+                    }
+                }
             }
 
             return result;

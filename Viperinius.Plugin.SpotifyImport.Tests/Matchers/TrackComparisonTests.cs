@@ -34,6 +34,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 TrackHelper.CreateJfItem("Track", "album", "Artist On Album", "Just Artist"),
                 TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "Just Artist"),
                 TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just artist"),
+                TrackHelper.CreateJfItem("foo (Track)", "Album", "Artist On Album", "Just artist"),
             };
 
             foreach (var jf in items)
@@ -54,6 +55,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 TrackHelper.CreateJfItem(".Track", null, null, null),
                 TrackHelper.CreateJfItem("Tr'ack", null, null, null),
                 TrackHelper.CreateJfItem("Tr####ack", null, null, null),
+                TrackHelper.CreateJfItem("foo (track)", null, null, null),
+                TrackHelper.CreateJfItem("foo (tra) (ck)", null, null, null),
             };
 
             foreach (var jf in items)
@@ -165,6 +168,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 TrackHelper.CreateJfItem("Track (abc)", "Album", "Artist on Album", "Just Artist"),
                 TrackHelper.CreateJfItem("(asdkas) track", "Album", "Artist On Album", "Just artist"),
                 TrackHelper.CreateJfItem("Tra (b) ck", "Album", "Artist On Album", "Just artist"),
+                TrackHelper.CreateJfItem("a (b) (Track)", "Album", "Artist On Album", "Just artist"),
             };
 
             foreach (var jf in items)
@@ -206,6 +210,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 TrackHelper.CreateJfItem("track", "Album", "Artist On Album", "Just Artist"),
                 TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "Just Artist"),
                 TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just artist"),
+                TrackHelper.CreateJfItem("Track", "(Album) here", "Artist On Album", "Just artist"),
             };
 
             foreach (var jf in items)
@@ -225,6 +230,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 TrackHelper.CreateJfItem("Track", ".Album", "Artist On Album", "Just Artist"),
                 TrackHelper.CreateJfItem("Track", "Al'bum", null, null),
                 TrackHelper.CreateJfItem("Track", "albu", null, null),
+                TrackHelper.CreateJfItem("Track", "(Al)(bum) here", "Artist On Album", "Just artist"),
             };
 
             foreach (var jf in items)
@@ -337,6 +343,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 TrackHelper.CreateJfItem("Track", "album", "Artist On Album", "Just Artist"),
                 TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just artist"),
                 TrackHelper.CreateJfItem("Track", "Album", "No one", "Just artist"),
+                TrackHelper.CreateJfItem("Track", "Album", "a (Artist On Album) z", "Just artist"),
+                TrackHelper.CreateJfItem("Track", "Album", "(No one) (ok)", "Just artist"),
             };
 
             foreach (var jf in items)
@@ -473,6 +481,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 TrackHelper.CreateJfItem("Track", "album", "Artist On Album", "Just Artist"),
                 TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "Just Artist"),
                 TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "Artist 2"),
+                TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "ABC (Artist 2)"),
+                TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "%&% (Just Artist) ((("),
             };
 
             foreach (var jf in items)
