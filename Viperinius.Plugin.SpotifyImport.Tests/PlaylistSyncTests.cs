@@ -61,6 +61,11 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
                 .Returns(_ => new MediaBrowser.Model.Querying.QueryResult<(MediaBrowser.Controller.Entities.BaseItem, MediaBrowser.Model.Dto.ItemCounts)>(list));
         }
 
+        private string GetErrorString(ItemMatchCriteria actual, ItemMatchCriteria? expected)
+        {
+            return $"ItemMatchCriteria -> Actual: {actual}; Expected: {expected}";
+        }
+
         private void CheckItem(
             bool shouldMatch,
             ProviderTrackInfo prov,
@@ -88,7 +93,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
             if (expectedFailedCriteria != null)
             {
-                Assert.True(shouldMatch ? failedCrit == ItemMatchCriteria.None : failedCrit == expectedFailedCriteria);
+                Assert.True(
+                    shouldMatch ? failedCrit == ItemMatchCriteria.None : failedCrit.HasFlag(expectedFailedCriteria),
+                    GetErrorString(failedCrit, expectedFailedCriteria));
             }
             else
             {
