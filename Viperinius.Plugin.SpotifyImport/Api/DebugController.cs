@@ -78,6 +78,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
 
             var alreadyIncludedIds = new List<Guid>();
 
+            var itemIndex = 0;
             foreach (var item in queryResult.Items)
             {
                 if (alreadyIncludedIds.Contains(item.Id))
@@ -103,7 +104,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                 };
                 var trackRefs = new Dictionary<string, ItemRef>
                 {
-                    { "Track", trackRef },
+                    { $"{itemIndex}Track", trackRef },
                 };
 
                 // add album entity if set
@@ -118,7 +119,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                         IsTopParent = audio.AlbumEntity.IsTopParent,
                         DisplayParentId = audio.AlbumEntity.DisplayParentId.ToString(),
                     };
-                    trackRefs.Add("TrackAlbumEntity", albumEntityRef);
+                    trackRefs.Add($"{itemIndex}TrackAlbumEntity", albumEntityRef);
                 }
 
                 // get track parents
@@ -137,13 +138,14 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                         IsTopParent = nextParent.IsTopParent,
                         DisplayParentId = nextParent.DisplayParentId.ToString(),
                     };
-                    trackRefs.Add($"Parent{ii}", nextRef);
+                    trackRefs.Add($"{itemIndex}Parent{ii}", nextRef);
                     ii++;
                 }
 
                 // reverse search now
                 var artistNames = audio.Artists;
                 var artistRefs = new Dictionary<string, ArtistRef>();
+                var artistIndex = 0;
                 foreach (var artistName in artistNames)
                 {
                     var artistResult = _libraryManager.GetArtists(new InternalItemsQuery
@@ -186,7 +188,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                                 MediaType = c.MediaType,
                             }).ToList(),
                         };
-                        artistRefs.Add($"Artist{jj}/{resultCount1}/{resultCount2}", artistRef);
+                        artistRefs.Add($"{itemIndex}/{artistIndex}Artist{jj}/{resultCount1}/{resultCount2}", artistRef);
 
                         // album by album artists
                         var albums = _libraryManager.GetItemList(new InternalItemsQuery
@@ -197,7 +199,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                         for (int kk = 0; kk < albums.Count; kk++)
                         {
                             var album = albums[kk];
-                            trackRefs.Add($"AlbumByAlbumArtist{kk}/{jj}/{artistName}", new ItemRef
+                            trackRefs.Add($"{itemIndex}/{artistIndex}AlbumByAlbumArtist{kk}/{jj}/{artistName}", new ItemRef
                             {
                                 Id = album.Id.ToString(),
                                 Name = album.Name,
@@ -210,6 +212,8 @@ namespace Viperinius.Plugin.SpotifyImport.Api
 
                         jj++;
                     }
+
+                    artistIndex++;
                 }
 
                 var options = new JsonSerializerOptions
@@ -227,6 +231,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                 await JsonSerializer.SerializeAsync(writer, artistRefs, options, cancellationToken).ConfigureAwait(false);
                 textWriter.WriteLine("]");
                 alreadyIncludedIds.Add(item.Id);
+                itemIndex++;
             }
 
             return NoContent();
