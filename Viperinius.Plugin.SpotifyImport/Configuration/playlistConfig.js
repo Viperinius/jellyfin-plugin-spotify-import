@@ -255,6 +255,7 @@ export default function (view) {
 
             document.querySelector('#ItemMatchLevel').value = config.ItemMatchLevel;
             mapItemMatchCriteriaToCheckboxes(config);
+            document.querySelector('#UseLegacyMatching').checked = config.UseLegacyMatching;
 
             ApiClient.getJSON(ApiClient.getUrl('Users'), apiQueryOpts).then(function (result) {
                 users.length = 0;
@@ -315,6 +316,7 @@ export default function (view) {
                 Dashboard.hideLoadingMsg();
                 return;
             }
+            config.UseLegacyMatching = document.querySelector('#UseLegacyMatching').checked;
 
             ApiClient.updatePluginConfiguration(SpotifyImportConfig.pluginUniqueId, config).then(function (result) {
                 Dashboard.processPluginConfigurationUpdateResult(result);
@@ -361,6 +363,7 @@ export default function (view) {
             if (!res || !res.ok) {
                 throw "invalid response";
             }
+            console.log('dump done');
         }).catch(function (error) {
             console.error(error);
         });
@@ -380,6 +383,7 @@ export default function (view) {
             if (!res || !res.ok) {
                 throw "invalid response";
             }
+            console.log('dump done');
         }).catch(function (error) {
             console.error(error);
         });
