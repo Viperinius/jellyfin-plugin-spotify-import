@@ -194,7 +194,7 @@ namespace Viperinius.Plugin.SpotifyImport
 
                 if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                 {
-                    _logger.LogDebug("> Found matching artist {Name}", artist.Name);
+                    _logger.LogDebug("> Found matching artist {Name} {Id}", artist.Name, artist.Id);
                 }
 
                 var albumNextIndex = 0;
@@ -209,7 +209,7 @@ namespace Viperinius.Plugin.SpotifyImport
 
                     if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                     {
-                        _logger.LogDebug("> Found matching album {Name}", album.Name);
+                        _logger.LogDebug("> Found matching album {Name} {Id}", album.Name, album.Id);
                     }
 
                     if (!CheckAlbumArtist(album, providerTrackInfo))
@@ -232,7 +232,7 @@ namespace Viperinius.Plugin.SpotifyImport
 
                     if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                     {
-                        _logger.LogDebug("> Found matching track {Name}", track.Name);
+                        _logger.LogDebug("> Found matching track {Name} {Id}", track.Name, track.Id);
                     }
 
                     failedMatchCriterium = ItemMatchCriteria.None;
@@ -305,7 +305,7 @@ namespace Viperinius.Plugin.SpotifyImport
         private MusicAlbum? GetAlbum(MusicArtist artist, ProviderTrackInfo providerTrackInfo, ref int nextAlbumIndex)
         {
             var albums = artist.Children;
-            if (!artist.Children.Any())
+            if (!albums.Any())
             {
                 // for whatever reason albums are apparently not always set as children of the artist... so try to find them using album artist
                 albums = _libraryManager.GetItemList(new MediaBrowser.Controller.Entities.InternalItemsQuery
@@ -321,7 +321,7 @@ namespace Viperinius.Plugin.SpotifyImport
             {
                 if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                 {
-                    _logger.LogInformation("> Reached end of album list");
+                    _logger.LogInformation("> Reached end of album list (has {Count} entries)", albums.Count());
                 }
 
                 nextAlbumIndex = -1;
