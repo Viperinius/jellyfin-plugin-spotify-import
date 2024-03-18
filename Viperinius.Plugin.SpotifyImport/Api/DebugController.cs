@@ -104,7 +104,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                 };
                 var trackRefs = new Dictionary<string, ItemRef>
                 {
-                    { $"{itemIndex}Track", trackRef },
+                    { $"Track[{itemIndex}]", trackRef },
                 };
 
                 // add album entity if set
@@ -119,7 +119,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                         IsTopParent = audio.AlbumEntity.IsTopParent,
                         DisplayParentId = audio.AlbumEntity.DisplayParentId.ToString(),
                     };
-                    trackRefs.Add($"{itemIndex}TrackAlbumEntity", albumEntityRef);
+                    trackRefs.Add($"TrackAlbumEntity[{itemIndex}]", albumEntityRef);
                 }
 
                 // get track parents
@@ -138,7 +138,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                         IsTopParent = nextParent.IsTopParent,
                         DisplayParentId = nextParent.DisplayParentId.ToString(),
                     };
-                    trackRefs.Add($"{itemIndex}Parent{ii}", nextRef);
+                    trackRefs.Add($"TrackParent{ii}[{itemIndex}]", nextRef);
                     ii++;
                 }
 
@@ -156,6 +156,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                     artistResult = artistResult.Concat(_libraryManager.GetItemsResult(new InternalItemsQuery
                     {
                         SearchTerm = artistName[0..Math.Min(artistName.Length, 5)],
+                        MediaTypes = new[] { "MusicArtist" },
                     }).Items);
                     var resultCount2 = artistResult.Count() - resultCount1;
 
@@ -188,7 +189,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                                 MediaType = c.MediaType,
                             }).ToList(),
                         };
-                        artistRefs.Add($"{itemIndex}/{artistIndex}Artist{jj}/{resultCount1}/{resultCount2}", artistRef);
+                        artistRefs.Add($"Artist{jj}[{itemIndex}][{artistIndex}]/{resultCount1}/{resultCount2}", artistRef);
 
                         // album by album artists
                         var albums = _libraryManager.GetItemList(new InternalItemsQuery
@@ -199,7 +200,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                         for (int kk = 0; kk < albums.Count; kk++)
                         {
                             var album = albums[kk];
-                            trackRefs.Add($"{itemIndex}/{artistIndex}AlbumByAlbumArtist{kk}/{jj}/{artistName}", new ItemRef
+                            trackRefs.Add($"AlbumByAlbumArtist{jj}-{kk}[{itemIndex}][{artistIndex}]/{artistName}", new ItemRef
                             {
                                 Id = album.Id.ToString(),
                                 Name = album.Name,
