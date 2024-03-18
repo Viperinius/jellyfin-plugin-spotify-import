@@ -68,6 +68,11 @@ public class PluginConfiguration : BasePluginConfiguration
     public ItemMatchLevel ItemMatchLevel { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether to enable the legacy way of comparing tracks.
+    /// </summary>
+    public bool UseLegacyMatching { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether to enable the creation of files containing missing tracks on the server.
     /// </summary>
     public bool GenerateMissingTrackLists { get; set; }

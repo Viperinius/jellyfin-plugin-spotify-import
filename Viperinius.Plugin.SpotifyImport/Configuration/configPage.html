@@ -38,6 +38,24 @@
                             <span>Enable verbose logging for this plugin.</span>
                         </label>
                     </div>
+                    <div id="dbgSection" class="hide">
+                        <hr>
+                        <div class="sectionTitleContainer flex align-items-center">
+                            <h3 class="sectionTitle">Debugging</h3>
+                        </div>
+                        <div class="verticalSection">
+                            <button is="emby-button" type="button" id="dbgDumpMeta" class="raised block">
+                                <span>Dump Music Metadata To File</span>
+                            </button>
+                            <input id="dbgDumpRefsTrackName" type="text" is="emby-input" label="Track name to dump refs for" />
+                            <button is="emby-button" type="button" id="dbgDumpRefs" class="raised block">
+                                <span>Dump Music Track References To File</span>
+                            </button>
+                        </div>
+                        <hr>
+                        <br>
+                    </div>
+
                     <div class="inputContainer">
                         <input id="SpotifyClientId" type="text" is="emby-input" label="Spotify Client ID" />
                         <div class="fieldDescription">
@@ -171,6 +189,15 @@
                                 <input id="ItemMatchCriteriaArtist" name="ItemMatchCriteriaArtist" type="checkbox" is="emby-checkbox" />
                                 <span>Enable artist comparison.</span>
                             </label>
+                        </div>
+                        <div class="checkboxContainer checkboxContainer-withDescription">
+                            <label class="emby-checkbox-label">
+                                <input id="UseLegacyMatching" name="UseLegacyMatching" type="checkbox" is="emby-checkbox" />
+                                <span>Use legacy track matching (not recommended).</span>
+                            </label>
+                            <div class="fieldDescription checkboxFieldDescription">
+                                If this is enabled the plugin tries to find Jellyfin tracks by searching for the track name instead of hierarchically starting from the artist.
+                            </div>
                         </div>
                     </div>
 

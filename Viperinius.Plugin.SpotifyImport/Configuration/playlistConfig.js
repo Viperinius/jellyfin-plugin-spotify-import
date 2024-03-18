@@ -199,6 +199,10 @@ export default function (view) {
         apiQueryOpts.api_key = ApiClient.accessToken();
 
         ApiClient.getPluginConfiguration(SpotifyImportConfig.pluginUniqueId).then(function (config) {
+            if (config.EnableVerboseLogging) {
+                document.querySelector('#dbgSection').classList.remove('hide');
+            }
+
             document.querySelector('#SpotifyAuthRedirectUri').innerText = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/SpotifyAuthCallback');
             if (config.SpotifyAuthToken && 'CreatedAt' in config.SpotifyAuthToken) {
                 document.querySelector('#authSpotifyAlreadyDesc').classList.remove('hide');
@@ -251,6 +255,7 @@ export default function (view) {
 
             document.querySelector('#ItemMatchLevel').value = config.ItemMatchLevel;
             mapItemMatchCriteriaToCheckboxes(config);
+            document.querySelector('#UseLegacyMatching').checked = config.UseLegacyMatching;
 
             ApiClient.getJSON(ApiClient.getUrl('Users'), apiQueryOpts).then(function (result) {
                 users.length = 0;
@@ -311,6 +316,7 @@ export default function (view) {
                 Dashboard.hideLoadingMsg();
                 return;
             }
+            config.UseLegacyMatching = document.querySelector('#UseLegacyMatching').checked;
 
             ApiClient.updatePluginConfiguration(SpotifyImportConfig.pluginUniqueId, config).then(function (result) {
                 Dashboard.processPluginConfigurationUpdateResult(result);
@@ -339,6 +345,45 @@ export default function (view) {
 
                 window.open(json['login_req_uri'], '_self');
             });
+        }).catch(function (error) {
+            console.error(error);
+        });
+    });
+
+    const dbgDumpMetaBtn = document.querySelector('#dbgDumpMeta');
+    dbgDumpMetaBtn.addEventListener('click', function () {
+        const apiUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/Debug/DumpMetadata', {
+            'api_key': apiQueryOpts.api_key
+        });
+
+        dbgDumpMetaBtn.disabled = true;
+
+        fetch(apiUrl, { method: 'POST' }).then(function (res) {
+            dbgDumpMetaBtn.disabled = false;
+            if (!res || !res.ok) {
+                throw "invalid response";
+            }
+            console.log('dump done');
+        }).catch(function (error) {
+            console.error(error);
+        });
+    });
+    const dbgDumpRefsBtn = document.querySelector('#dbgDumpRefs');
+    dbgDumpRefsBtn.addEventListener('click', function () {
+        const name = document.querySelector('#dbgDumpRefsTrackName').value;
+        const apiUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/Debug/DumpTrackRefs', {
+            name: name,
+            'api_key': apiQueryOpts.api_key
+        });
+
+        dbgDumpRefsBtn.disabled = true;
+
+        fetch(apiUrl, { method: 'POST' }).then(function (res) {
+            dbgDumpRefsBtn.disabled = false;
+            if (!res || !res.ok) {
+                throw "invalid response";
+            }
+            console.log('dump done');
         }).catch(function (error) {
             console.error(error);
         });

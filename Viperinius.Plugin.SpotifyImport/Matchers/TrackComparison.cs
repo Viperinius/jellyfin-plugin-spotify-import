@@ -99,7 +99,8 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
 
         public static bool AlbumNameEqual(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
-            return Equal(jfItem.AlbumEntity?.Name, providerItem.AlbumName, matchLevel);
+            return Equal(jfItem.AlbumEntity?.Name, providerItem.AlbumName, matchLevel) ||
+                   Equal(jfItem.Album, providerItem.AlbumName, matchLevel);
         }
 
         public static bool AlbumNameEqual(MusicAlbum jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
@@ -109,7 +110,8 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
 
         public static bool AlbumArtistOneContained(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
-            return ListMatchOneItem(jfItem.AlbumEntity?.Artists, providerItem.AlbumArtistNames, matchLevel);
+            return ListMatchOneItem(jfItem.AlbumEntity?.Artists, providerItem.AlbumArtistNames, matchLevel) ||
+                   ListMatchOneItem(jfItem.AlbumArtists, providerItem.AlbumArtistNames, matchLevel);
         }
 
         public static bool AlbumArtistOneContained(MusicAlbum jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
