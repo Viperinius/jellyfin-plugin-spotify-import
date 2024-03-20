@@ -21,6 +21,9 @@ The playlist will be created with the same name, description and image as config
 
 If desired, the plugin can create a JSON file per playlist containing a list of any missing tracks that are part of the Spotify playlist but are not present on your server.
 
+> [!NOTE]  
+> The plugin is **not** a downloader for music, it only provides an automated way of importing playlist *metadata* from Spotify.
+
 This is still work in progress, see [below](#to-do) for more details what might be coming.
 
 
