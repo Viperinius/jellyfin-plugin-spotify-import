@@ -49,22 +49,21 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
             {
                 foreach (var providerCandidate in providerCandidates)
                 {
-                    switch (matchLevel)
+                    result |= _defaultStringMatcher.Matches(jellyfinCandidate, providerCandidate);
+
+                    if (!result && matchLevel >= ItemMatchLevel.IgnoreCase)
                     {
-                        case ItemMatchLevel.Default:
-                            result |= _defaultStringMatcher.Matches(jellyfinCandidate, providerCandidate);
-                            break;
-                        case ItemMatchLevel.IgnoreCase:
-                            result |= _caseInsensitiveMatcher.Matches(jellyfinCandidate, providerCandidate);
-                            break;
-                        case ItemMatchLevel.IgnorePunctuationAndCase:
-                            result |= _punctuationMatcher.Matches(jellyfinCandidate, providerCandidate);
-                            break;
-                        case ItemMatchLevel.IgnoreParensPunctuationAndCase:
-                            result |= _parensMatcher.Matches(jellyfinCandidate, providerCandidate);
-                            break;
-                        default:
-                            break;
+                        result |= _caseInsensitiveMatcher.Matches(jellyfinCandidate, providerCandidate);
+                    }
+
+                    if (!result && matchLevel >= ItemMatchLevel.IgnorePunctuationAndCase)
+                    {
+                        result |= _punctuationMatcher.Matches(jellyfinCandidate, providerCandidate);
+                    }
+
+                    if (!result && matchLevel >= ItemMatchLevel.IgnoreParensPunctuationAndCase)
+                    {
+                        result |= _parensMatcher.Matches(jellyfinCandidate, providerCandidate);
                     }
 
                     if (result)
