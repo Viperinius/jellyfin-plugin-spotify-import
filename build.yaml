@@ -3,8 +3,8 @@ name: "Spotify Import"
 guid: "F03D0ADB-289F-4986-BD6F-2468025249B3"
 imageUrl: "https://github.com/Viperinius/jellyfin-plugin-spotify-import/raw/master/viperinius-plugin-spotifyimport.png"
 version: "1.7.2.0"
-targetAbi: "10.8.0.0"
-framework: "net6.0"
+targetAbi: "10.9.0.0"
+framework: "net8.0"
 overview: "This plugin imports playlists from Spotify."
 description: >
   This plugin enables you to import playlists from Spotify to your Jellyfin server automatically.
