@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Plugins;
-using MediaBrowser.Controller.Plugins;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Viperinius.Plugin.SpotifyImport.Migrations;
 
@@ -14,7 +13,7 @@ namespace Viperinius.Plugin.SpotifyImport
     /// <summary>
     /// Entrypoint called when starting the server.
     /// </summary>
-    public class ServerEntrypoint : IServerEntryPoint
+    public class ServerEntrypoint : IHostedService
     {
         private readonly ILogger<ServerEntrypoint> _logger;
 
@@ -28,7 +27,7 @@ namespace Viperinius.Plugin.SpotifyImport
         }
 
         /// <inheritdoc/>
-        public Task RunAsync()
+        public Task StartAsync(CancellationToken cancellationToken)
         {
             if (Plugin.Instance != null)
             {
@@ -70,18 +69,9 @@ namespace Viperinius.Plugin.SpotifyImport
         }
 
         /// <inheritdoc/>
-        public void Dispose()
+        public Task StopAsync(CancellationToken cancellationToken)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Internal Dispose.
-        /// </summary>
-        /// <param name="dispose">Should dispose.</param>
-        protected virtual void Dispose(bool dispose)
-        {
+            return Task.CompletedTask;
         }
 
         private bool RunMigrations(Version configVersion)
