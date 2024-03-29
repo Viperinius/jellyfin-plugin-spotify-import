@@ -151,14 +151,18 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                     var artistResult = _libraryManager.GetArtists(new InternalItemsQuery
                     {
                         SearchTerm = artistName[0..Math.Min(artistName.Length, 5)],
-                    }).Items.Select(i => i.Item);
-                    var resultCount1 = artistResult.Count();
-                    artistResult = artistResult.Concat(_libraryManager.GetItemsResult(new InternalItemsQuery
-                    {
-                        SearchTerm = artistName[0..Math.Min(artistName.Length, 5)],
-                        MediaTypes = new[] { "MusicArtist" },
-                    }).Items);
-                    var resultCount2 = artistResult.Count() - resultCount1;
+                    }).Items.Select(i => i.Item).ToList();
+                    var resultCount1 = artistResult.Count;
+                    artistResult =
+                    [
+                        ..artistResult,
+                        .._libraryManager.GetItemsResult(new InternalItemsQuery
+                        {
+                            SearchTerm = artistName[0..Math.Min(artistName.Length, 5)],
+                            MediaTypes = new[] { "MusicArtist" },
+                        }).Items,
+                    ];
+                    var resultCount2 = artistResult.Count - resultCount1;
 
                     var jj = 1;
                     foreach (var artistItem in artistResult)
@@ -226,11 +230,11 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                 {
                     AutoFlush = true
                 };
-                textWriter.WriteLine("[");
+                await textWriter.WriteLineAsync("[").ConfigureAwait(false);
                 await JsonSerializer.SerializeAsync(writer, trackRefs, options, cancellationToken).ConfigureAwait(false);
-                textWriter.WriteLine(",");
+                await textWriter.WriteLineAsync(",").ConfigureAwait(false);
                 await JsonSerializer.SerializeAsync(writer, artistRefs, options, cancellationToken).ConfigureAwait(false);
-                textWriter.WriteLine("]");
+                await textWriter.WriteLineAsync("]").ConfigureAwait(false);
                 alreadyIncludedIds.Add(item.Id);
                 itemIndex++;
             }
