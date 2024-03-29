@@ -99,8 +99,8 @@ If you want to change this or want to let it run immediately, head to the schedu
 By default, the plugin will accept a Jellyfin track as equal to a Spotify track if these conditions are met:
 - Same track name
 - Same album name
-- At lease one album artist of the Jellyfin and Spotify album artist lists match
-- At lease one artist of the Jellyfin and Spotify artist lists match
+- At least one album artist of the Jellyfin and Spotify album artist lists match
+- At least one artist of the Jellyfin and Spotify artist lists match
 
 If you experience issues with tracks not matching even if they exist, you can "relax" these settings:
 
