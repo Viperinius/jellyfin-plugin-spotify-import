@@ -9,7 +9,7 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
 {
     internal class IgnoreParensMatcher : IItemMatcher<string>
     {
-        private static readonly Regex _regex = new Regex(@"\s*\([^\)]*\)\s*");
+        private static readonly Regex _regex = new Regex(@"\s*(?:\([^\)]*\)|\[[^\]]*\])\s*"); // find all occurences of (foo) or [foo]
 
         public bool IsStrict => false;
 

@@ -169,6 +169,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 TrackHelper.CreateJfItem("(asdkas) track", "Album", "Artist On Album", "Just artist"),
                 TrackHelper.CreateJfItem("Tra (b) ck", "Album", "Artist On Album", "Just artist"),
                 TrackHelper.CreateJfItem("a (b) (Track)", "Album", "Artist On Album", "Just artist"),
+                TrackHelper.CreateJfItem("a (b) [c] (Track)", "Album", "Artist On Album", "Just artist"),
+                TrackHelper.CreateJfItem("a (b) [c)] (Track)", "Album", "Artist On Album", "Just artist"),
+                TrackHelper.CreateJfItem("track [123]", "Album", "Artist On Album", "Just Artist"),
             };
 
             foreach (var jf in items)
