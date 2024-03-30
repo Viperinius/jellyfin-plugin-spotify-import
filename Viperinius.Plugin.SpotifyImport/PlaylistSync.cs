@@ -259,7 +259,7 @@ namespace Viperinius.Plugin.SpotifyImport
             var queryResult = _libraryManager.GetItemsResult(new MediaBrowser.Controller.Entities.InternalItemsQuery
             {
                 SearchTerm = providerTrackInfo.Name[0..Math.Min(providerTrackInfo.Name.Length, MaxSearchChars)],
-                MediaTypes = new[] { "Audio" }
+                MediaTypes = new[] { MediaType.Audio }
             });
 
             if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
@@ -481,7 +481,7 @@ namespace Viperinius.Plugin.SpotifyImport
             var result = await _playlistManager.CreatePlaylist(new MediaBrowser.Model.Playlists.PlaylistCreationRequest
             {
                 Name = name,
-                MediaType = "Audio",
+                MediaType = MediaType.Audio,
                 UserId = user.Id
             }).ConfigureAwait(false);
 

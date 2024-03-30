@@ -72,7 +72,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
             var queryResult = _libraryManager.GetItemsResult(new InternalItemsQuery
             {
                 Name = name,
-                MediaTypes = new[] { "Audio" },
+                MediaTypes = new[] { MediaType.Audio },
                 Recursive = true
             });
 
@@ -97,7 +97,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                 {
                     Id = audio.Id.ToString(),
                     Name = audio.Name,
-                    MediaType = audio.MediaType,
+                    MediaType = audio.MediaType.ToString(),
                     ParentId = audio.ParentId.ToString(),
                     IsTopParent = audio.IsTopParent,
                     DisplayParentId = audio.DisplayParentId.ToString(),
@@ -114,7 +114,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                     {
                         Id = audio.AlbumEntity.Id.ToString(),
                         Name = audio.AlbumEntity.Name,
-                        MediaType = audio.AlbumEntity.MediaType,
+                        MediaType = audio.AlbumEntity.MediaType.ToString(),
                         ParentId = audio.AlbumEntity.ParentId.ToString(),
                         IsTopParent = audio.AlbumEntity.IsTopParent,
                         DisplayParentId = audio.AlbumEntity.DisplayParentId.ToString(),
@@ -133,7 +133,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                     {
                         Id = nextParent.Id.ToString(),
                         Name = nextParent.Name,
-                        MediaType = nextParent.MediaType,
+                        MediaType = nextParent.MediaType.ToString(),
                         ParentId = nextParent.ParentId.ToString(),
                         IsTopParent = nextParent.IsTopParent,
                         DisplayParentId = nextParent.DisplayParentId.ToString(),
@@ -159,7 +159,6 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                         .._libraryManager.GetItemsResult(new InternalItemsQuery
                         {
                             SearchTerm = artistName[0..Math.Min(artistName.Length, 5)],
-                            MediaTypes = new[] { "MusicArtist" },
                         }).Items,
                     ];
                     var resultCount2 = artistResult.Count - resultCount1;
@@ -176,7 +175,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                         {
                             Id = artist.Id.ToString(),
                             Name = artist.Name,
-                            MediaType = artist.MediaType,
+                            MediaType = artist.MediaType.ToString(),
                             ParentId = artist.ParentId.ToString(),
                             IsTopParent = artist.IsTopParent,
                             DisplayParentId = artist.DisplayParentId.ToString(),
@@ -184,13 +183,13 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                             {
                                 Id = c.Id.ToString(),
                                 Name = c.Name,
-                                MediaType = c.MediaType,
+                                MediaType = c.MediaType.ToString(),
                             }).ToList(),
                             RecursiveChildren = artist.RecursiveChildren.Select(c => new ItemRef
                             {
                                 Id = c.Id.ToString(),
                                 Name = c.Name,
-                                MediaType = c.MediaType,
+                                MediaType = c.MediaType.ToString(),
                             }).ToList(),
                         };
                         artistRefs.Add($"Artist{jj}[{itemIndex}][{artistIndex}]/{resultCount1}/{resultCount2}", artistRef);
@@ -208,7 +207,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                             {
                                 Id = album.Id.ToString(),
                                 Name = album.Name,
-                                MediaType = album.MediaType,
+                                MediaType = album.MediaType.ToString(),
                                 ParentId = album.ParentId.ToString(),
                                 IsTopParent = album.IsTopParent,
                                 DisplayParentId = album.DisplayParentId.ToString(),
