@@ -38,6 +38,11 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool EnableVerboseLogging { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether to show completeness information.
+    /// </summary>
+    public bool ShowCompletenessInformation { get; set; }
+
+    /// <summary>
     /// Gets or sets the Spotify client ID.
     /// </summary>
     public string SpotifyClientId { get; set; }

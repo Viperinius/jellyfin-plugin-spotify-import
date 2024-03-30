@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -147,7 +148,7 @@ namespace Viperinius.Plugin.SpotifyImport
                     {
                         newTracks.Add(track.Id);
                     }
-                    else if (Plugin.Instance?.Configuration.GenerateMissingTrackLists ?? false)
+                    else
                     {
                         missingTracks.Add(providerTrack);
                     }
@@ -155,6 +156,7 @@ namespace Viperinius.Plugin.SpotifyImport
             }
 
             await _playlistManager.AddToPlaylistAsync(playlist.Id, newTracks, user.Id).ConfigureAwait(false);
+            await RenamePlaylistToReflectProgress(playlist, missingTracks.Count, providerTrackInfos.Count, cancellationToken).ConfigureAwait(false);
 
             if ((Plugin.Instance?.Configuration.GenerateMissingTrackLists ?? false) && missingTracks.Any())
             {
@@ -472,7 +474,7 @@ namespace Viperinius.Plugin.SpotifyImport
         private async Task<Playlist?> GetOrCreatePlaylistByName(string name, User user)
         {
             var playlists = _playlistManager.GetPlaylists(user.Id);
-            var playlist = playlists.Where(p => p.Name == name).FirstOrDefault();
+            var playlist = playlists.Where(p => p.Name.StartsWith(name, StringComparison.InvariantCulture)).FirstOrDefault();
             if (playlist != null)
             {
                 return playlist;
@@ -492,6 +494,23 @@ namespace Viperinius.Plugin.SpotifyImport
             }
 
             return null;
+        }
+
+        private static async Task RenamePlaylistToReflectProgress(Playlist playlist, int missingTracks, int totalTracks, CancellationToken cancellationToken)
+        {
+            var oldCompletenessString = Regex.Match(playlist.Name, @"\((\d+)/(\d+)\)$").Value ?? string.Empty;
+            var originalName = playlist.Name.Replace(oldCompletenessString, string.Empty, StringComparison.InvariantCulture);
+            var newName = originalName;
+            if (Plugin.Instance?.Configuration.ShowCompletenessInformation ?? false)
+            {
+                newName = $"{originalName} ({totalTracks - missingTracks}/{totalTracks})";
+            }
+
+            if (newName != playlist.Name)
+            {
+                playlist.Name = newName;
+                await playlist.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            }
         }
 
         private User? GetUser(string? username = null)
