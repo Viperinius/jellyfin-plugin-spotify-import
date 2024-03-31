@@ -21,7 +21,7 @@ The playlist will be created with the same name, description and image as config
 
 If desired, the plugin can create a JSON file per playlist containing a list of any missing tracks that are part of the Spotify playlist but are not present on your server.
 
-> [!NOTE]  
+> [!NOTE]
 > The plugin is **not** a downloader for music, it only provides an automated way of importing playlist *metadata* from Spotify.
 
 This is still work in progress, see [below](#to-do) for more details what might be coming.
@@ -62,10 +62,14 @@ When the authorisation is done, you can continue with the plugin configuration p
 
 #### Add Playlist
 
-Go to the section `Playlist Configuration` and click on `Add new playlist`. This creates a new row with three fields:
+Go to the section `Playlist Configuration` and click on `Add new playlist`. This creates a new row with four fields:
 - `Spotify ID`: Paste the identifier of the Spotify playlist that you want to import in here.
 - `Target Name`: Jellyfin playlist name. Keep this empty if the original name from Spotify should be used.
 - `Target User`: If you want to set another user as the playlist owner, select them here.
+- `Always From Scratch`: If you want to delete and recreate the Jellyfin playlist on each import run, check this box.
+
+> [!WARNING]
+> If you use `Always From Scratch` for a playlist and any playlist with this name already exists on your Jellyfin server, it **will** get deleted and replaced by the Spotify playlist.
 
 Following "Spotify ID" formats work:
 - The raw ID, e.g. `4cOdK2wGLETKBW3PvgPWqT`
@@ -86,7 +90,9 @@ The following "Spotify ID" formats work:
 
 Afterwards, following runs of the import task will include all playlists of this user and map them to the configured Jellyfin user.
 
-> Note: It is currently not possible to rename the playlists. Nor is it possible to selectively import only some of the playlists of a user without specifying each targeted playlist as described in [Add Playlist](#add-playlist).
+> [!NOTE]
+> It is currently not possible to rename the playlists. Nor is it possible to selectively import only some of the playlists of a user without specifying each targeted playlist as described in [Add Playlist](#add-playlist).
+> The `Always From Scratch` option available for individual playlists is also not used here currently.
 
 
 #### Save Changes
