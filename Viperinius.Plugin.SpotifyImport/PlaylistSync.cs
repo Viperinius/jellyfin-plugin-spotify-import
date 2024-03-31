@@ -68,7 +68,8 @@ namespace Viperinius.Plugin.SpotifyImport
                     {
                         Id = targetUser.Id,
                         Name = string.Empty,
-                        UserName = targetUser.UserName
+                        UserName = targetUser.UserName,
+                        RecreateFromScratch = false,
                     };
                 }
 
@@ -87,7 +88,7 @@ namespace Viperinius.Plugin.SpotifyImport
                     jfPlaylistName = providerPlaylist.Name;
                 }
 
-                var playlist = await GetOrCreatePlaylistByName(jfPlaylistName, user).ConfigureAwait(false);
+                var playlist = await GetOrCreatePlaylistByName(jfPlaylistName, user, targetConfig.RecreateFromScratch).ConfigureAwait(false);
 
                 if (playlist == null)
                 {
@@ -469,29 +470,46 @@ namespace Viperinius.Plugin.SpotifyImport
             return true;
         }
 
-        private async Task<Playlist?> GetOrCreatePlaylistByName(string name, User user)
+        private async Task<Playlist?> GetOrCreatePlaylistByName(string name, User user, bool deleteExistingPlaylist)
         {
             var playlists = _playlistManager.GetPlaylists(user.Id);
             var playlist = playlists.Where(p => p.Name == name).FirstOrDefault();
-            if (playlist != null)
+
+            if (playlist != null && deleteExistingPlaylist)
             {
-                return playlist;
+                _libraryManager.DeleteItem(playlist, new DeleteOptions { DeleteFileLocation = true }, true);
+
+                if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
+                {
+                    _logger.LogInformation("Deleted existing playlist {Name} ({Id})", playlist.Name, playlist.Id);
+                }
+
+                playlist = null;
             }
 
-            var result = await _playlistManager.CreatePlaylist(new MediaBrowser.Model.Playlists.PlaylistCreationRequest
+            if (playlist == null)
             {
-                Name = name,
-                MediaType = "Audio",
-                UserId = user.Id
-            }).ConfigureAwait(false);
+                var result = await _playlistManager.CreatePlaylist(new MediaBrowser.Model.Playlists.PlaylistCreationRequest
+                {
+                    Name = name,
+                    MediaType = "Audio",
+                    UserId = user.Id
+                }).ConfigureAwait(false);
 
-            if (!string.IsNullOrWhiteSpace(result.Id))
-            {
-                playlists = _playlistManager.GetPlaylists(user.Id);
-                return playlists.Where(p => p.Id.ToString().Replace("-", string.Empty, StringComparison.InvariantCulture) == result.Id).FirstOrDefault();
+                if (!string.IsNullOrWhiteSpace(result.Id))
+                {
+                    playlists = _playlistManager.GetPlaylists(user.Id);
+                    playlist = playlists.Where(p => p.Id.ToString().Replace("-", string.Empty, StringComparison.InvariantCulture) == result.Id).FirstOrDefault();
+                }
             }
 
-            return null;
+            if (playlist == null)
+            {
+                return null;
+            }
+
+            // don't just return the previous playlist instance because .GetManageableItems() returns "garbage" LinkedChild ids for that one (TODO: is this a jellyfin bug?)
+            return _libraryManager.GetItemById(playlist.Id) as Playlist;
         }
 
         private User? GetUser(string? username = null)

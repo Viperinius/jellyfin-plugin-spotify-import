@@ -28,6 +28,15 @@ function getUserSelectHtml(selectedUser) {
     return `<td class="detailTableBodyCell cellPlaylistUser"><select class="emby-select-withcolor emby-select" is="emby-select">${userOptionsHtml}</select></td>`;
 }
 
+function getRecreateFromScratchHtml(alwaysFromScratch) {
+    return `<td class="detailTableBodyCell cellPlaylistFromScratch">
+        <label class="emby-checkbox-label">
+            <input type="checkbox" is="emby-checkbox" ${alwaysFromScratch ? 'checked' : ''}/>
+            <span></span>
+        </label>
+    </td>`;
+}
+
 function getOnlyOwnHtml(onlyOwn) {
     return `<td class="detailTableBodyCell cellPlaylistOnlyOwn">
         <label class="emby-checkbox-label">
@@ -35,14 +44,14 @@ function getOnlyOwnHtml(onlyOwn) {
             <span></span>
         </label>
     </td>`;
-
 }
 
-function createPlaylistRowHtml(playlistId, name, user) {
+function createPlaylistRowHtml(playlistId, name, user, alwaysFromScratch) {
     const row = `<tr class="detailTableBodyRow detailTableBodyRow-shaded">
         ${getPlaylistIdElementHtml(playlistId)}
         ${getNameElementHtml(name)}
         ${getUserSelectHtml(user)}
+        ${getRecreateFromScratchHtml(alwaysFromScratch)}
         <td>
             <button class="paper-icon-button-light" type="button" onclick="this.closest('tr').remove()">
                 <span class="material-icons delete"></span>
@@ -78,7 +87,7 @@ function loadPlaylistTable(page, config) {
         config.Playlists.forEach(pl => {
             const user = users.find(u => u.name === pl.UserName);
             const userId = user?.id || '';
-            rowsHtml += createPlaylistRowHtml(pl.Id, pl.Name, userId);
+            rowsHtml += createPlaylistRowHtml(pl.Id, pl.Name, userId, pl.RecreateFromScratch);
         });
 
         tableBody.innerHTML = rowsHtml;
@@ -129,11 +138,13 @@ function getPlaylistTableData(page) {
             const renameTo = r.querySelector('td.cellPlaylistName').innerText.trim();
             const userSelect = r.querySelector('td.cellPlaylistUser > select');
             const jellyfinUser = userSelect.options[userSelect.selectedIndex].text.trim();
+            const recreateFromScratch = r.querySelector('td.cellPlaylistFromScratch > * input').checked;
 
             return {
                 Id: spotifyId,
                 Name: renameTo,
                 UserName: jellyfinUser,
+                RecreateFromScratch : recreateFromScratch,
             };
         });
 
