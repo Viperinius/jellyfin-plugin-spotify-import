@@ -363,7 +363,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [ClassData(typeof(AlbumCaseInsensitiveDataMatch))]
         [ClassData(typeof(AlbumCaseInsensitiveDataNoMatch))]
         public void Album_CaseInsensitive(string jfName, string provName, bool shouldMatch)
-            {
+        {
             var prov = TrackHelper.CreateProviderItem("Track", provName, new List<string> { "Artist On Album" }, new List<string> { "Just Artist" });
             var jf = TrackHelper.CreateJfItem("Track", jfName, "Artist On Album", "Just Artist");
 
@@ -374,7 +374,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
             else
             {
                 Assert.False(TrackComparison.AlbumNameEqual(jf, prov, ItemMatchLevel.IgnoreCase), TrackHelper.GetErrorString(jf));
-        }
+            }
         }
 
         class AlbumCaseInsensitiveDataMatch : AlbumDefaultDataMatch
@@ -396,11 +396,11 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 foreach (var obj in GetDefault())
                 {
                     yield return obj;
-            }
+                }
                 foreach (var obj in GetCaseInsensitive())
                 {
                     yield return obj;
-        }
+                }
             }
         }
         class AlbumCaseInsensitiveDataNoMatch : IEnumerable<object[]>
@@ -479,7 +479,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         class AlbumNoPunctuationDataNoMatch : IEnumerable<object[]>
         {
             public IEnumerator<object[]> GetEnumerator()
-        {
+            {
                 yield return new object[] { "albu.", "Album", false };
                 yield return new object[] { ".$Album", "Album", false };
                 yield return new object[] { "Al`bum", "Album", false };
@@ -495,7 +495,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [ClassData(typeof(AlbumNoParensDataMatch))]
         [ClassData(typeof(AlbumNoParensDataNoMatch))]
         public void Album_NoParens(string jfName, string provName, bool shouldMatch)
-            {
+        {
             var prov = TrackHelper.CreateProviderItem("Track", provName, new List<string> { "Artist On Album" }, new List<string> { "Just Artist" });
             var jf = TrackHelper.CreateJfItem("Track", jfName, "Artist On Album", "Just Artist");
 
@@ -506,7 +506,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
             else
             {
                 Assert.False(TrackComparison.AlbumNameEqual(jf, prov, ItemMatchLevel.IgnoreParensPunctuationAndCase), TrackHelper.GetErrorString(jf));
-        }
+            }
         }
 
         class AlbumNoParensDataMatch : AlbumNoPunctuationDataMatch
@@ -527,11 +527,11 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 foreach (var obj in GetDefault())
                 {
                     yield return obj;
-            }
+                }
                 foreach (var obj in GetCaseInsensitive())
                 {
                     yield return obj;
-        }
+                }
                 foreach (var obj in GetNoPunctuation())
                 {
                     yield return obj;
@@ -573,299 +573,423 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
 
             foreach (var level in Enum.GetValues<ItemMatchLevel>())
             {
-            foreach (var jf in items)
-            {
+                foreach (var jf in items)
+                {
                     Assert.True(TrackComparison.AlbumNameEqual(jf, prov, level), TrackHelper.GetErrorString(jf));
+                }
             }
-        }
 
             items = new List<Audio>
-        {
+            {
                 TrackHelper.CreateJfItem("Track", null, "Artist On Album", "Just Artist"),
                 TrackHelper.CreateJfItem(null, null, null, null),
             };
 
             foreach (var level in Enum.GetValues<ItemMatchLevel>())
             {
-            foreach (var jf in items)
-            {
+                foreach (var jf in items)
+                {
                     Assert.False(TrackComparison.AlbumNameEqual(jf, prov, level), TrackHelper.GetErrorString(jf));
                 }
             }
         }
 
-        [Fact]
-        public void AlbumArtist_Matches_Default()
+        [Theory]
+        [ClassData(typeof(AnyArtistDefaultDataMatch))]
+        [ClassData(typeof(AnyArtistDefaultDataNoMatch))]
+        public void AlbumArtist_Default(string jfName, string provName, bool shouldMatch)
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "No one" }, new List<string> { "Just Artist" });
-            var items = new List<Audio>
-            {
-                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "No one", "Just Artist"),
-                TrackHelper.CreateJfItem(null, null, "Artist On Album", null),
-                TrackHelper.CreateJfItem(null, null, "Artist On Album", "Just Artist"),
-                TrackHelper.CreateJfItem(null, "Album", "Artist On Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", null, "Artist On Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", null),
-                TrackHelper.CreateJfItem("track", "Album", "Artist On Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "album", "Artist On Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "No one", "Just artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "a (Artist On Album) z", "Just artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "(No one) (ok)", "Just artist"),
-            };
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "aaaaaaa", provName, "bbbbbbb" }, new List<string> { "Non-existent", "Artist 2" });
+            var jf = TrackHelper.CreateJfItem("Track", "Album", jfName, "Non-existent");
 
-            foreach (var jf in items)
+            if (shouldMatch)
             {
                 Assert.True(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.Default), TrackHelper.GetErrorString(jf));
             }
-        }
-
-        [Fact]
-        public void AlbumArtist_NoMatches_Default()
-        {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "No one" }, new List<string> { "Just Artist" });
-            var items = new List<Audio>
-            {
-                TrackHelper.CreateJfItem(null, "Album", "Artist on Album", "Just Artist"),
-                TrackHelper.CreateJfItem(null, "Album", "no one", "Just Artist"),
-                TrackHelper.CreateJfItem(null, null, null, null),
-                TrackHelper.CreateJfItem("Track", "Album", ".Artist On Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist On' Album", null),
-                TrackHelper.CreateJfItem("Track", "Album", "artist Album", null),
-            };
-
-            foreach (var jf in items)
+            else
             {
                 Assert.False(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.Default), TrackHelper.GetErrorString(jf));
             }
         }
 
-        [Fact]
-        public void AlbumArtist_Matches_CaseInsensitive()
+        [Theory]
+        [ClassData(typeof(AnyArtistDefaultDataMatch))]
+        [ClassData(typeof(AnyArtistDefaultDataNoMatch))]
+        public void Artist_Default(string jfName, string provName, bool shouldMatch)
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "No one" }, new List<string> { "Just Artist" });
-            var items = new List<Audio>
-            {
-                TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "no one", "Just Artist"),
-                TrackHelper.CreateJfItem(null, null, "Artist on Album", null),
-                TrackHelper.CreateJfItem(null, null, "Artist on Album", "Just Artist"),
-                TrackHelper.CreateJfItem(null, "Album", "Artist on Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", null),
-                TrackHelper.CreateJfItem("track", "Album", "Artist on Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "album", "Artist on Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "no ONE", "Just artist"),
-            };
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Non-existent", "Artist 2" }, new List<string> { "aaaaaaa", provName, "bbbbbbb" });
+            var jf = TrackHelper.CreateJfItem("Track", "Album", "Non-existent", jfName);
 
-            foreach (var jf in items)
-            {
-                Assert.True(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnoreCase), TrackHelper.GetErrorString(jf));
-            }
-        }
-
-        [Fact]
-        public void AlbumArtist_NoMatches_CaseInsensitive()
-        {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "No one" }, new List<string> { "Just Artist" });
-            var items = new List<Audio>
-            {
-                TrackHelper.CreateJfItem("Track", "Album", null, "Just Artist"),
-                TrackHelper.CreateJfItem(null, null, null, null),
-                TrackHelper.CreateJfItem("track.", "album.", "Artist on. Album", "Just Artist"),
-                TrackHelper.CreateJfItem(null, null, ".Artist On Album", null),
-                TrackHelper.CreateJfItem(null, null, ".No one", null),
-                TrackHelper.CreateJfItem(null, null, "Artist On' Album", null),
-                TrackHelper.CreateJfItem(null, null, "Artist O####n Album", null),
-            };
-
-            foreach (var jf in items)
-            {
-                Assert.False(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnoreCase), TrackHelper.GetErrorString(jf));
-            }
-        }
-
-        [Fact]
-        public void AlbumArtist_Matches_NoPunctuation()
-        {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "No one" }, new List<string> { "Just Artist" });
-            var items = new List<Audio>
-            {
-                TrackHelper.CreateJfItem("Track", "album", "Artist on Album", "Just Artist"),
-                TrackHelper.CreateJfItem(null, null, ".Artist on Album", null),
-                TrackHelper.CreateJfItem(null, null, "Artist on, Album", "Just Artist"),
-                TrackHelper.CreateJfItem(null, null, "Artist o###n Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", null, "Artist on Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist O!n Album", null),
-                TrackHelper.CreateJfItem("track", "Album", "Artist O-n Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist on Al&bum", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "No on!e", "Just artist"),
-            };
-
-            foreach (var jf in items)
-            {
-                Assert.True(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnorePunctuationAndCase), TrackHelper.GetErrorString(jf));
-            }
-        }
-
-        [Fact]
-        public void AlbumArtist_NoMatches_NoPunctuation()
-        {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "No one" }, new List<string> { "Just Artist" });
-            var items = new List<Audio>
-            {
-                TrackHelper.CreateJfItem("Track", "Album", null, "Just Artist"),
-                TrackHelper.CreateJfItem(null, null, null, null),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist .lbum", "Just Artist"),
-                TrackHelper.CreateJfItem(null, null, ".$Artist On Album", null),
-                TrackHelper.CreateJfItem(null, null, "Artist`On Album", null),
-                TrackHelper.CreateJfItem(null, null, "Artist0On Album", null),
-                TrackHelper.CreateJfItem(null, null, "Artist On Album (y)", null),
-                TrackHelper.CreateJfItem(null, null, "No. One(Two)", null),
-            };
-
-            foreach (var jf in items)
-            {
-                Assert.False(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnorePunctuationAndCase), TrackHelper.GetErrorString(jf));
-            }
-        }
-
-        [Fact]
-        public void Artist_Matches_Default()
-        {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album" }, new List<string> { "Just Artist", "Artist 2" });
-            var items = new List<Audio>
-            {
-                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just Artist"),
-                TrackHelper.CreateJfItem(null, null, null, "Just Artist"),
-                TrackHelper.CreateJfItem(null, null, "Artist On Album", "Just Artist"),
-                TrackHelper.CreateJfItem(null, "Album", "Artist On Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", null, "Artist On Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "Album", null, "Just Artist"),
-                TrackHelper.CreateJfItem("track", "Album", "Artist On Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "album", "Artist On Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "Artist 2"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "ABC (Artist 2)"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "%&% (Just Artist) ((("),
-            };
-
-            foreach (var jf in items)
+            if (shouldMatch)
             {
                 Assert.True(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.Default), TrackHelper.GetErrorString(jf));
             }
-        }
-
-        [Fact]
-        public void Artist_NoMatches_Default()
-        {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album" }, new List<string> { "Just Artist", "Artist 2" });
-            var items = new List<Audio>
-            {
-                TrackHelper.CreateJfItem(null, "Album", "Artist On Album", "Just artist"),
-                TrackHelper.CreateJfItem(null, null, null, null),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", ".Just Artist"),
-                TrackHelper.CreateJfItem("Track", null, null, "Just 'Artist"),
-                TrackHelper.CreateJfItem("Track", null, null, "Jus artist"),
-            };
-
-            foreach (var jf in items)
+            else
             {
                 Assert.False(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.Default), TrackHelper.GetErrorString(jf));
             }
         }
 
-        [Fact]
-        public void Artist_Matches_CaseInsensitive()
+        class AnyArtistDefaultDataMatch : IEnumerable<object[]>
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album" }, new List<string> { "Just Artist", "Artist 2" });
-            var items = new List<Audio>
+            public IEnumerable<object[]> GetDefault()
             {
-                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just artist"),
-                TrackHelper.CreateJfItem(null, null, null, "Just artist"),
-                TrackHelper.CreateJfItem(null, "Album", null, "Just artist"),
-                TrackHelper.CreateJfItem(null, "Album", "Artist On Album", "Just artist"),
-                TrackHelper.CreateJfItem("Track", "Album", null, "Just artist"),
-                TrackHelper.CreateJfItem("Track", null, "Artist On Album", "Just artist"),
-                TrackHelper.CreateJfItem("track", "Album", "Artist On Album", "Just artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "Just artist"),
-                TrackHelper.CreateJfItem("Track", "album", "Artist On Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "album", "Artist On Album", "Artist 2"),
-            };
+                yield return new object[] { "Just Artist", "Just Artist", true };
+                yield return new object[] { "foo (Just Artist)", "Just Artist", true };
+                yield return new object[] { "foo (Just Artist) (bar)", "Just Artist", true };
+                yield return new object[] { "foo [Just Artist] (bar)", "Just Artist", true };
+                yield return new object[] { "foo [Just Artist] [bar]", "Just Artist", true };
+                yield return new object[] { "Just Artist (hello)", "Just Artist (hello)", true };
+                yield return new object[] { "(Just Artist) (hello)", "Just Artist (hello)", true };
+                yield return new object[] { "Just Artist - here2", "Just Artist - here2", true };
+                yield return new object[] { "Just Artist [y]", "Just Artist [y]", true };
+            }
 
-            foreach (var jf in items)
+            public virtual IEnumerator<object[]> GetEnumerator() => GetDefault().GetEnumerator();
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+        class AnyArtistDefaultDataNoMatch : IEnumerable<object[]>
+        {
+            public IEnumerator<object[]> GetEnumerator()
+            {
+                yield return new object[] { "just artist", "Just Artist", false };
+                yield return new object[] { ".Just Artist", "Just Artist", false };
+                yield return new object[] { "Just'Artist", "Just Artist", false };
+                yield return new object[] { "Just####Artist", "Just Artist", false };
+                yield return new object[] { "Jus Artist", "Just Artist", false };
+                yield return new object[] { "Just Artist (x)", "Just Artist", false };
+                yield return new object[] { "foo (just artist)", "Just Artist", false };
+                yield return new object[] { "foo (just) (artist)", "Just Artist", false };
+                yield return new object[] { "(Just Artist) foo", "Just Artist", false };
+                yield return new object[] { "a (Just Artist) z", "Just Artist", false };
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        [Theory]
+        [ClassData(typeof(AnyArtistCaseInsensitiveDataMatch))]
+        [ClassData(typeof(AnyArtistCaseInsensitiveDataNoMatch))]
+        public void Artist_CaseInsensitive(string jfName, string provName, bool shouldMatch)
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Non-existent", "Artist 2" }, new List<string> { "aaaaaaa", provName, "bbbbbbb" });
+            var jf = TrackHelper.CreateJfItem("Track", "Album", "Non-existent", jfName);
+
+            if (shouldMatch)
             {
                 Assert.True(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.IgnoreCase), TrackHelper.GetErrorString(jf));
             }
-        }
-
-        [Fact]
-        public void Artist_NoMatches_CaseInsensitive()
-        {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album" }, new List<string> { "Just Artist", "Artist 2" });
-            var items = new List<Audio>
-            {
-                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", null),
-                TrackHelper.CreateJfItem(null, null, null, null),
-                TrackHelper.CreateJfItem("track.", "album.", "Artist On Album", "Just artist."),
-                TrackHelper.CreateJfItem(null, null, null, ".Just Artist"),
-                TrackHelper.CreateJfItem(null, null, null, "Just 'Artist"),
-                TrackHelper.CreateJfItem(null, null, null, "Just ###Artist"),
-            };
-
-            foreach (var jf in items)
+            else
             {
                 Assert.False(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.IgnoreCase), TrackHelper.GetErrorString(jf));
             }
         }
 
-        [Fact]
-        public void Artist_Matches_NoPunctuation()
+        [Theory]
+        [ClassData(typeof(AnyArtistCaseInsensitiveDataMatch))]
+        [ClassData(typeof(AnyArtistCaseInsensitiveDataNoMatch))]
+        public void AlbumArtist_CaseInsensitive(string jfName, string provName, bool shouldMatch)
         {
-            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album" }, new List<string> { "Just Artist", "Artist 2" });
-            var items = new List<Audio>
-            {
-                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just artist"),
-                TrackHelper.CreateJfItem(null, null, null, ".Just artist"),
-                TrackHelper.CreateJfItem(null, null, null, "Just ,artist"),
-                TrackHelper.CreateJfItem(null, null, "Artist On Album", "Just### artist"),
-                TrackHelper.CreateJfItem("Track", "Album", null, "Just artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just !Artist"),
-                TrackHelper.CreateJfItem("track", "Album", "Artist On Album", "Just- Artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist on Album", "Just& artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just Artist"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Artist 2"),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Artist 2!"),
-            };
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "aaaaaaa", provName, "bbbbbbb" }, new List<string> { "Non-existent", "Artist 2" });
+            var jf = TrackHelper.CreateJfItem("Track", "Album", jfName, "Non-existent");
 
-            foreach (var jf in items)
+            if (shouldMatch)
+            {
+                Assert.True(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnoreCase), TrackHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnoreCase), TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        class AnyArtistCaseInsensitiveDataMatch : AnyArtistDefaultDataMatch
+        {
+            public IEnumerable<object[]> GetCaseInsensitive()
+            {
+                yield return new object[] { "just artist", "Just Artist", true };
+                yield return new object[] { "foo (just Artist)", "Just Artist", true };
+                yield return new object[] { "foo (just artist) (bar)", "Just Artist", true };
+                yield return new object[] { "foo [just artist] (bar)", "Just Artist", true };
+                yield return new object[] { "foo [just artist] [bar]", "Just Artist", true };
+                yield return new object[] { "just artist (hello)", "Just Artist (hello)", true };
+                yield return new object[] { "just artist - here2", "Just Artist - here2", true };
+                yield return new object[] { "just artist [y]", "Just Artist [y]", true };
+            }
+
+            public override IEnumerator<object[]> GetEnumerator()
+            {
+                foreach (var obj in GetDefault())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetCaseInsensitive())
+                {
+                    yield return obj;
+                }
+            }
+        }
+        class AnyArtistCaseInsensitiveDataNoMatch : IEnumerable<object[]>
+        {
+            public IEnumerator<object[]> GetEnumerator()
+            {
+                yield return new object[] { "just artist.", "Just Artist", false };
+                yield return new object[] { ".Just Artist", "Just Artist", false };
+                yield return new object[] { "Just' Artist", "Just Artist", false };
+                yield return new object[] { "Just####Artist", "Just Artist", false };
+                yield return new object[] { "Jus Artist", "Just Artist", false };
+                yield return new object[] { "Just Artist (x)", "Just Artist", false };
+                yield return new object[] { "foo (-album)", "Just Artist", false };
+                yield return new object[] { "foo (al) (bum)", "Just Artist", false };
+                yield return new object[] { "(Just Artist) foo", "Just Artist", false };
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        [Theory]
+        [ClassData(typeof(AnyArtistNoPunctuationDataMatch))]
+        [ClassData(typeof(AnyArtistNoPunctuationDataNoMatch))]
+        public void Artist_NoPunctuation(string jfName, string provName, bool shouldMatch)
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Non-existent", "Artist 2" }, new List<string> { "aaaaaaa", provName, "bbbbbbb" });
+            var jf = TrackHelper.CreateJfItem("Track", "Album", "Non-existent", jfName);
+
+            if (shouldMatch)
             {
                 Assert.True(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.IgnorePunctuationAndCase), TrackHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.IgnorePunctuationAndCase), TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
+        [ClassData(typeof(AnyArtistNoPunctuationDataMatch))]
+        [ClassData(typeof(AnyArtistNoPunctuationDataNoMatch))]
+        public void AlbumArtist_NoPunctuation(string jfName, string provName, bool shouldMatch)
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "aaaaaaa", provName, "bbbbbbb" }, new List<string> { "Non-existent", "Artist 2" });
+            var jf = TrackHelper.CreateJfItem("Track", "Album", jfName, "Non-existent");
+
+            if (shouldMatch)
+            {
+                Assert.True(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnorePunctuationAndCase), TrackHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnorePunctuationAndCase), TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        class AnyArtistNoPunctuationDataMatch : AnyArtistCaseInsensitiveDataMatch
+        {
+            public IEnumerable<object[]> GetNoPunctuation()
+            {
+                yield return new object[] { ".just artist", "Just Artist", true };
+                yield return new object[] { "ju,st artist", "Just Artist", true };
+                yield return new object[] { "just a###rtist", "Just Artist", true };
+                yield return new object[] { "Just Artis!t", "Just Artist", true };
+                yield return new object[] { "just ar-tist", "Just Artist", true };
+                yield return new object[] { "jus&t Artist", "Just Artist", true };
+                yield return new object[] { "foo (just a.rtist)", "Just Artist", true };
+                yield return new object[] { "foo (Just arti-st) (bar)", "Just Artist", true };
+                yield return new object[] { "foo [just a,rtist] (bar)", "Just Artist", true };
+                yield return new object[] { "foo [ju.st artist] [bar]", "Just Artist", true };
+                yield return new object[] { "Ju'st Artist (hello)", "Just Artist (hello)", true };
+                yield return new object[] { "jus-t artist - here2", "Just Artist - here2", true };
+                yield return new object[] { "just ar\"tist [y]", "Just Artist [y]", true };
+                yield return new object[] { "Just Artist (hello)", "Just Artist - hello", true };
+                yield return new object[] { "Just Artist (hello) (foo)", "Just Artist - hello (foo)", true };
+            }
+
+            public override IEnumerator<object[]> GetEnumerator()
+            {
+                foreach (var obj in GetDefault())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetCaseInsensitive())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetNoPunctuation())
+                {
+                    yield return obj;
+                }
+            }
+        }
+        class AnyArtistNoPunctuationDataNoMatch : IEnumerable<object[]>
+        {
+            public IEnumerator<object[]> GetEnumerator()
+            {
+                yield return new object[] { "jus. artist", "Just Artist", false };
+                yield return new object[] { ".$Just Artist", "Just Artist", false };
+                yield return new object[] { "Just Ar`tist", "Just Artist", false };
+                yield return new object[] { "Just A0rtist", "Just Artist", false };
+                yield return new object[] { "Just Artist (x)", "Just Artist", false };
+                yield return new object[] { "foo (just) (artist)", "Just Artist", false };
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        [Theory]
+        [ClassData(typeof(AnyArtistNoParensDataMatch))]
+        [ClassData(typeof(AnyArtistNoParensDataNoMatch))]
+        public void Artist_NoParens(string jfName, string provName, bool shouldMatch)
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Non-existent", "Artist 2" }, new List<string> { "aaaaaaa", provName, "bbbbbbb" });
+            var jf = TrackHelper.CreateJfItem("Track", "Album", "Non-existent", jfName);
+
+            if (shouldMatch)
+            {
+                Assert.True(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.IgnoreParensPunctuationAndCase), TrackHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.IgnoreParensPunctuationAndCase), TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
+        [ClassData(typeof(AnyArtistNoParensDataMatch))]
+        [ClassData(typeof(AnyArtistNoParensDataNoMatch))]
+        public void AlbumArtist_NoParens(string jfName, string provName, bool shouldMatch)
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "aaaaaaa", provName, "bbbbbbb" }, new List<string> { "Non-existent", "Artist 2" });
+            var jf = TrackHelper.CreateJfItem("Track", "Album", jfName, "Non-existent");
+
+            if (shouldMatch)
+            {
+                Assert.True(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnoreParensPunctuationAndCase), TrackHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnoreParensPunctuationAndCase), TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        class AnyArtistNoParensDataMatch : AnyArtistNoPunctuationDataMatch
+        {
+            public IEnumerable<object[]> GetNoParens()
+            {
+                yield return new object[] { "Just Artist (abc)", "Just Artist", true };
+                yield return new object[] { "(asdkas) just artist", "Just Artist", true };
+                yield return new object[] { "Just A (b) rtist", "Just Artist", true };
+                yield return new object[] { "a (b) (Just Artist)", "Just Artist", true };
+                yield return new object[] { "a (b) [c] (Just Artist)", "Just Artist", true };
+                yield return new object[] { "a (b) [c)] (Just Artist)", "Just Artist", true };
+                yield return new object[] { "just artist [123]", "Just Artist", true };
+            }
+
+            public override IEnumerator<object[]> GetEnumerator()
+            {
+                foreach (var obj in GetDefault())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetCaseInsensitive())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetNoPunctuation())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetNoParens())
+                {
+                    yield return obj;
+                }
+            }
+        }
+        class AnyArtistNoParensDataNoMatch : IEnumerable<object[]>
+        {
+            public IEnumerator<object[]> GetEnumerator()
+            {
+                yield return new object[] { "just Artis.", "Just Artist", false };
+                yield return new object[] { ".$Just Artist", "Just Artist", false };
+                yield return new object[] { "Just Art`ist", "Just Artist", false };
+                yield return new object[] { "Just Arti0st", "Just Artist", false };
+                yield return new object[] { "Just Artistb (x)", "Just Artist", false };
+                yield return new object[] { "foo (alb) (um)", "Just Artist", false };
+                yield return new object[] { "Just Artist (hello)", "Just Artist - hello (foo)", false };
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        [Fact]
+        public void AlbumArtist_Ignores_Other_Fields()
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "No one" }, new List<string> { "Just Artist" });
+            var items = new List<Audio>
+            {
+                TrackHelper.CreateJfItem(null, null, "Artist On Album", null),
+                TrackHelper.CreateJfItem(null, null, "No one", "Just Artist"),
+                TrackHelper.CreateJfItem(null, "Album", "Artist On Album", "Just Artist"),
+                TrackHelper.CreateJfItem("Track", null, "Artist On Album", "Just Artist"),
+                TrackHelper.CreateJfItem("Track", "Album", "No one", null),
+            };
+
+            foreach (var level in Enum.GetValues<ItemMatchLevel>())
+            {
+                foreach (var jf in items)
+                {
+                    Assert.True(TrackComparison.AlbumArtistOneContained(jf, prov, level), TrackHelper.GetErrorString(jf));
+                }
+            }
+
+            items = new List<Audio>
+            {
+                TrackHelper.CreateJfItem("Track", "Album", null, "Just Artist"),
+                TrackHelper.CreateJfItem(null, null, null, null),
+            };
+
+            foreach (var level in Enum.GetValues<ItemMatchLevel>())
+            {
+                foreach (var jf in items)
+                {
+                    Assert.False(TrackComparison.AlbumArtistOneContained(jf, prov, level), TrackHelper.GetErrorString(jf));
+                }
             }
         }
 
         [Fact]
-        public void Artist_NoMatches_NoPunctuation()
+        public void Artist_Ignores_Other_Fields()
         {
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album" }, new List<string> { "Just Artist", "Artist 2" });
             var items = new List<Audio>
             {
-                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", null),
-                TrackHelper.CreateJfItem(null, null, null, null),
-                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", "Just .rtist"),
-                TrackHelper.CreateJfItem(null, null, null, ".$Just Artist"),
-                TrackHelper.CreateJfItem(null, null, null, "Just `Artist"),
-                TrackHelper.CreateJfItem(null, null, null, "Just0 Artist"),
-                TrackHelper.CreateJfItem(null, null, null, "Just Artist (z)"),
-                TrackHelper.CreateJfItem(null, null, null, "Artist 2 (z)"),
+                TrackHelper.CreateJfItem(null, null, null, "Just Artist"),
+                TrackHelper.CreateJfItem(null, null, "Artist On Album", "Artist 2"),
+                TrackHelper.CreateJfItem(null, "Album", "Artist On Album", "Just Artist"),
+                TrackHelper.CreateJfItem("Track", null, "Artist On Album", "Just Artist"),
+                TrackHelper.CreateJfItem("Track", "Album", null, "Artist 2"),
             };
 
-            foreach (var jf in items)
+            foreach (var level in Enum.GetValues<ItemMatchLevel>())
             {
-                Assert.False(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.IgnorePunctuationAndCase), TrackHelper.GetErrorString(jf));
+                foreach (var jf in items)
+                {
+                    Assert.True(TrackComparison.ArtistOneContained(jf, prov, level), TrackHelper.GetErrorString(jf));
+                }
+            }
+
+            items = new List<Audio>
+            {
+                TrackHelper.CreateJfItem("Track", "Album", "Artist On Album", null),
+                TrackHelper.CreateJfItem(null, null, null, null),
+            };
+
+            foreach (var level in Enum.GetValues<ItemMatchLevel>())
+            {
+                foreach (var jf in items)
+                {
+                    Assert.False(TrackComparison.ArtistOneContained(jf, prov, level), TrackHelper.GetErrorString(jf));
+                }
             }
         }
     }
