@@ -15,20 +15,55 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
         private static readonly IgnorePunctuationMatcher _punctuationMatcher = new IgnorePunctuationMatcher();
         private static readonly IgnoreParensMatcher _parensMatcher = new IgnoreParensMatcher();
 
-        private static readonly Regex _parensRegex = new Regex(@"\s*\(([^\)]*)\)\s*");
+        private static readonly Regex _parensRegex = new Regex(@"\s*[\(\[]([^\)\]]*)[\)\]]\s*$"); // find *last* occurence of (foo) or [foo]
 
-        private static List<string> TrySplitParensContents(string? raw)
+        private static SortedDictionary<int, List<string>> TrySplitParensContents(string? raw)
         {
-            var results = new List<string>();
+            var results = new SortedDictionary<int, List<string>>();
             if (string.IsNullOrWhiteSpace(raw))
             {
                 return results;
             }
 
-            results.Add(raw);
-            foreach (Match match in _parensRegex.Matches(raw))
+            var contentPrio = 1;
+
+            // add the full string, example: "My Title (Abc) (feat. Xyz) [foo]"
+            results.Add(contentPrio, new List<string> { raw });
+            contentPrio++;
+
+            var parensContents = new List<string>();
+            var tmp = raw;
+            var match = _parensRegex.Match(tmp);
+            while (match.Success && !string.IsNullOrWhiteSpace(tmp))
             {
-                results.Add(match.Groups[1].Value);
+                parensContents.Add(match.Groups[1].Value);
+                tmp = _parensRegex.Replace(tmp, string.Empty);
+                match = _parensRegex.Match(tmp);
+
+                // only add to results if tmp still has at least one parentheses block
+                if (match.Success)
+                {
+                    if (!results.ContainsKey(contentPrio))
+                    {
+                        results.Add(contentPrio, new List<string>());
+                    }
+
+                    // add combo of base string and remaining parentheses blocks, example: "My Title (Abc)", "My Title (Abc) (feat. Xyz)"
+                    results[contentPrio].Add(tmp);
+                }
+            }
+
+            contentPrio++;
+
+            // add parentheses content as separate result, example: "Abc", "foo"
+            foreach (var parensContent in parensContents)
+            {
+                if (!results.ContainsKey(contentPrio))
+                {
+                    results.Add(contentPrio, new List<string>());
+                }
+
+                results[contentPrio].Add(parensContent);
             }
 
             return results;
@@ -36,44 +71,67 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
 
         private static bool Equal(string? jellyfinName, string? providerName, ItemMatchLevel matchLevel)
         {
-            var result = false;
             if (string.IsNullOrEmpty(jellyfinName) || string.IsNullOrEmpty(providerName))
             {
-                return result;
+                return false;
             }
 
+            var resultsByCombinedPrio = new SortedDictionary<int, bool>();
+
+            // break name into parts
             var jellyfinCandidates = TrySplitParensContents(jellyfinName);
             var providerCandidates = TrySplitParensContents(providerName);
 
-            foreach (var jellyfinCandidate in jellyfinCandidates)
+            // try to match combinations of the name parts
+            // (realistically there shouldn't exist more than a handful of entries per loop,
+            // so this hideous nesting of loops should be fine)
+            foreach (var jellyfinCandidateByPrio in jellyfinCandidates)
             {
-                foreach (var providerCandidate in providerCandidates)
+                foreach (var providerCandidateByPrio in providerCandidates)
                 {
-                    result |= _defaultStringMatcher.Matches(jellyfinCandidate, providerCandidate);
-
-                    if (!result && matchLevel >= ItemMatchLevel.IgnoreCase)
+                    var combinedPrio = jellyfinCandidateByPrio.Key + providerCandidateByPrio.Key;
+                    if (!resultsByCombinedPrio.ContainsKey(combinedPrio))
                     {
-                        result |= _caseInsensitiveMatcher.Matches(jellyfinCandidate, providerCandidate);
+                        resultsByCombinedPrio.Add(combinedPrio, false);
                     }
 
-                    if (!result && matchLevel >= ItemMatchLevel.IgnorePunctuationAndCase)
+                    foreach (var jellyfinCandidate in jellyfinCandidateByPrio.Value)
                     {
-                        result |= _punctuationMatcher.Matches(jellyfinCandidate, providerCandidate);
-                    }
+                        foreach (var providerCandidate in providerCandidateByPrio.Value)
+                        {
+                            var result = _defaultStringMatcher.Matches(jellyfinCandidate, providerCandidate);
 
-                    if (!result && matchLevel >= ItemMatchLevel.IgnoreParensPunctuationAndCase)
-                    {
-                        result |= _parensMatcher.Matches(jellyfinCandidate, providerCandidate);
-                    }
+                            if (!result && matchLevel >= ItemMatchLevel.IgnoreCase)
+                            {
+                                result |= _caseInsensitiveMatcher.Matches(jellyfinCandidate, providerCandidate);
+                            }
 
-                    if (result)
-                    {
-                        return result;
+                            if (!result && matchLevel >= ItemMatchLevel.IgnorePunctuationAndCase)
+                            {
+                                result |= _punctuationMatcher.Matches(jellyfinCandidate, providerCandidate);
+                            }
+
+                            if (!result && matchLevel >= ItemMatchLevel.IgnoreParensPunctuationAndCase)
+                            {
+                                result |= _parensMatcher.Matches(jellyfinCandidate, providerCandidate);
+                            }
+
+                            resultsByCombinedPrio[combinedPrio] |= result;
+                        }
                     }
                 }
             }
 
-            return result;
+            // check if any combo was matched and return the one with the lowest prio value (first one found)
+            foreach (var result in resultsByCombinedPrio)
+            {
+                if (result.Value)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static bool ListContains(IReadOnlyList<string>? jellyfinList, string? providerName, ItemMatchLevel matchLevel)
