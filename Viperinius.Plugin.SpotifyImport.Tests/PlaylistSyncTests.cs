@@ -32,22 +32,6 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
     public class PlaylistSyncTests : IDisposable
     {
-        private void SetValidPluginInstance()
-        {
-            if (Plugin.Instance == null)
-            {
-                var mockAppPaths = Substitute.For<MediaBrowser.Common.Configuration.IApplicationPaths>();
-                mockAppPaths.PluginsPath.Returns(string.Empty);
-                mockAppPaths.PluginConfigurationsPath.Returns(string.Empty);
-                var mockXmlSerializer = Substitute.For<MediaBrowser.Model.Serialization.IXmlSerializer>();
-                mockXmlSerializer.DeserializeFromFile(Arg.Any<Type>(), Arg.Any<string>())
-                                 .Returns(_ => new Configuration.PluginConfiguration());
-
-                _ = new Plugin(mockAppPaths, mockXmlSerializer);
-            }
-            System.Threading.Thread.Sleep(100);
-        }
-
         private void SetUpLibManagerMock(MediaBrowser.Controller.Library.ILibraryManager libManagerMock, MediaBrowser.Controller.Entities.BaseItem? item)
         {
             var list = new List<(MediaBrowser.Controller.Entities.BaseItem, MediaBrowser.Model.Dto.ItemCounts)>();
@@ -111,7 +95,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         [Fact]
         public void TrackMatching_Respects_Level_Default()
         {
-            SetValidPluginInstance();
+            TrackHelper.SetValidPluginInstance();
 
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.Default;
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "Albtist" }, new List<string> { "Just Artist", "Artist 2" });
@@ -134,7 +118,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         [Fact]
         public void TrackMatching_Respects_Level_IgnoreCase()
         {
-            SetValidPluginInstance();
+            TrackHelper.SetValidPluginInstance();
 
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.IgnoreCase;
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "Albtist" }, new List<string> { "Just Artist", "Artist 2" });
@@ -156,7 +140,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         [Fact]
         public void TrackMatching_Respects_Level_IgnoreCasePunctuation()
         {
-            SetValidPluginInstance();
+            TrackHelper.SetValidPluginInstance();
 
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.IgnorePunctuationAndCase;
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "Albtist" }, new List<string> { "Just Artist", "Artist 2" });
@@ -178,7 +162,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         [Fact]
         public void TrackMatching_Respects_Level_IgnoreCasePunctuationParens()
         {
-            SetValidPluginInstance();
+            TrackHelper.SetValidPluginInstance();
 
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.IgnoreParensPunctuationAndCase;
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "Albtist" }, new List<string> { "Just Artist", "Artist 2" });
@@ -200,7 +184,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         [Fact]
         public void TrackMatching_Respects_Criteria_TrackName()
         {
-            SetValidPluginInstance();
+            TrackHelper.SetValidPluginInstance();
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.Default;
 
             Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.TrackName | ItemMatchCriteria.Artists);
@@ -232,7 +216,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         [Fact]
         public void TrackMatching_Respects_Criteria_Album()
         {
-            SetValidPluginInstance();
+            TrackHelper.SetValidPluginInstance();
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.Default;
 
             Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.AlbumName | ItemMatchCriteria.Artists);
@@ -264,7 +248,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         [Fact]
         public void TrackMatching_Respects_Criteria_Artist()
         {
-            SetValidPluginInstance();
+            TrackHelper.SetValidPluginInstance();
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.Default;
 
             Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.AlbumName | ItemMatchCriteria.Artists);
@@ -298,7 +282,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         [Fact]
         public void TrackMatching_Respects_Criteria_AlbumArtist()
         {
-            SetValidPluginInstance();
+            TrackHelper.SetValidPluginInstance();
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.Default;
 
             Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.AlbumArtists | ItemMatchCriteria.Artists);

@@ -281,6 +281,81 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
+        [Theory]
+        [ClassData(typeof(TrackFuzzyDataMatch))]
+        [ClassData(typeof(TrackFuzzyDataNoMatch))]
+        public void Track_Fuzzy(string jfName, string provName, bool shouldMatch)
+        {
+            TrackHelper.SetValidPluginInstance();
+            var prov = TrackHelper.CreateProviderItem(provName, "Album", new List<string> { "Artist On Album" }, new List<string> { "Just Artist" });
+            var jf = TrackHelper.CreateJfItem(jfName, "Album", "Artist On Album", "Just Artist");
+
+            var result = TrackComparison.TrackNameEqual(jf, prov, ItemMatchLevel.Fuzzy);
+            if (shouldMatch)
+            {
+                Assert.True(result.ComparisonResult, TrackHelper.GetErrorString(jf));
+                Assert.True(result.MatchedLevel <= ItemMatchLevel.Fuzzy, TrackHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(result.ComparisonResult, TrackHelper.GetErrorString(jf));
+                Assert.True(result.MatchedLevel == null, TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        class TrackFuzzyDataMatch : TrackNoParensDataMatch
+        {
+            public IEnumerable<object[]> GetFuzzy()
+            {
+                yield return new object[] { "Track 2", "Track", true };
+                yield return new object[] { "abcdefghijklmnopqrstuvwxyz", "abcdefghijklmnopqrstuvwxyz1", true };
+                yield return new object[] { "abcdefghijklmnopqrstuvwxyz", "abcdefghijklmnopqrstuvwxyz12", true };
+                yield return new object[] { "abcdefghijklmnopqrstuvwxyz", "abcdefghijklmnopqrstuvwxy", true };
+                yield return new object[] { "abcdefghijklmnopqrstuvwxyz", "abcdefghijklmnopqrstuvwx", true };
+                yield return new object[] { "abcdefghijklmnopqrstuvwxyz", "abcdefghijklmnopqrstuvwx12", true };
+                yield return new object[] { ".$Track", "Track", true };
+                yield return new object[] { "Tr`ack", "Track", true };
+                yield return new object[] { "Tr0ack", "Track", true };
+                yield return new object[] { "trac.", "Track", true };
+            }
+
+            public override IEnumerator<object[]> GetEnumerator()
+            {
+                foreach (var obj in GetDefault())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetCaseInsensitive())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetNoPunctuation())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetNoParens())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetFuzzy())
+                {
+                    yield return obj;
+                }
+            }
+        }
+        class TrackFuzzyDataNoMatch : IEnumerable<object[]>
+        {
+            public IEnumerator<object[]> GetEnumerator()
+            {
+                yield return new object[] { "Track123", "Track", false };
+                yield return new object[] { "Trackb (x)", "Track", false };
+                yield return new object[] { "foo (tra) (ck)", "Track", false };
+                yield return new object[] { "Track (hello)", "Track - hello (foo)", false };
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
         [Fact]
         public void Track_Ignores_Other_Fields()
         {
@@ -574,6 +649,76 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { ".$Album", "Album", false };
                 yield return new object[] { "Al`bum", "Album", false };
                 yield return new object[] { "Al0bum", "Album", false };
+                yield return new object[] { "Albumb (x)", "Album", false };
+                yield return new object[] { "foo (alb) (um)", "Album", false };
+                yield return new object[] { "Album (hello)", "Album - hello (foo)", false };
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        [Theory]
+        [ClassData(typeof(AlbumFuzzyDataMatch))]
+        [ClassData(typeof(AlbumFuzzyDataNoMatch))]
+        public void Album_Fuzzy(string jfName, string provName, bool shouldMatch)
+        {
+            TrackHelper.SetValidPluginInstance();
+            var prov = TrackHelper.CreateProviderItem("Track", provName, new List<string> { "Artist On Album" }, new List<string> { "Just Artist" });
+            var jf = TrackHelper.CreateJfItem("Track", jfName, "Artist On Album", "Just Artist");
+
+            var result = TrackComparison.AlbumNameEqual(jf, prov, ItemMatchLevel.Fuzzy);
+            if (shouldMatch)
+            {
+                Assert.True(result.ComparisonResult, TrackHelper.GetErrorString(jf));
+                Assert.True(result.MatchedLevel <= ItemMatchLevel.Fuzzy, TrackHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(result.ComparisonResult, TrackHelper.GetErrorString(jf));
+                Assert.True(result.MatchedLevel == null, TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        class AlbumFuzzyDataMatch : AlbumNoParensDataMatch
+        {
+            public IEnumerable<object[]> GetFuzzy()
+            {
+                yield return new object[] { "Album 2", "Album", true };
+                yield return new object[] { ".$Album", "Album", true };
+                yield return new object[] { "Al`bum", "Album", true };
+                yield return new object[] { "Al0bum", "Album", true };
+                yield return new object[] { "albu.", "Album", true };
+            }
+
+            public override IEnumerator<object[]> GetEnumerator()
+            {
+                foreach (var obj in GetDefault())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetCaseInsensitive())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetNoPunctuation())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetNoParens())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetFuzzy())
+                {
+                    yield return obj;
+                }
+            }
+        }
+        class AlbumFuzzyDataNoMatch : IEnumerable<object[]>
+        {
+            public IEnumerator<object[]> GetEnumerator()
+            {
+                yield return new object[] { "Album123", "Album", false };
                 yield return new object[] { "Albumb (x)", "Album", false };
                 yield return new object[] { "foo (alb) (um)", "Album", false };
                 yield return new object[] { "Album (hello)", "Album - hello (foo)", false };
@@ -893,6 +1038,46 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
             else
             {
                 Assert.False(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnoreParensPunctuationAndCase), TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
+        // fuzzy matching for artists is disabled, should match the same things as NoParens
+        [ClassData(typeof(AnyArtistNoParensDataMatch))]
+        [ClassData(typeof(AnyArtistNoParensDataNoMatch))]
+        public void Artist_Fuzzy(string jfName, string provName, bool shouldMatch)
+        {
+            TrackHelper.SetValidPluginInstance();
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Non-existent", "Artist 2" }, new List<string> { "aaaaaaa", provName, "bbbbbbb" });
+            var jf = TrackHelper.CreateJfItem("Track", "Album", "Non-existent", jfName);
+
+            if (shouldMatch)
+            {
+                Assert.True(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.Fuzzy), TrackHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.Fuzzy), TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
+        // fuzzy matching for artists is disabled, should match the same things as NoParens
+        [ClassData(typeof(AnyArtistNoParensDataMatch))]
+        [ClassData(typeof(AnyArtistNoParensDataNoMatch))]
+        public void AlbumArtist_Fuzzy(string jfName, string provName, bool shouldMatch)
+        {
+            TrackHelper.SetValidPluginInstance();
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "aaaaaaa", provName, "bbbbbbb" }, new List<string> { "Non-existent", "Artist 2" });
+            var jf = TrackHelper.CreateJfItem("Track", "Album", jfName, "Non-existent");
+
+            if (shouldMatch)
+            {
+                Assert.True(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.Fuzzy), TrackHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.Fuzzy), TrackHelper.GetErrorString(jf));
             }
         }
 

@@ -14,6 +14,7 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
         private static readonly CaseInsensitiveMatcher _caseInsensitiveMatcher = new CaseInsensitiveMatcher();
         private static readonly IgnorePunctuationMatcher _punctuationMatcher = new IgnorePunctuationMatcher();
         private static readonly IgnoreParensMatcher _parensMatcher = new IgnoreParensMatcher();
+        private static readonly FuzzyMatcher _fuzzyMatcher = new FuzzyMatcher();
 
         private static readonly Regex _parensRegex = new Regex(@"\s*[\(\[]([^\)\]]*)[\)\]]\s*$"); // find *last* occurence of (foo) or [foo]
 
@@ -120,6 +121,12 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
                                 resultLevel = result ? ItemMatchLevel.IgnoreParensPunctuationAndCase : null;
                             }
 
+                            if (!result && matchLevel >= ItemMatchLevel.Fuzzy)
+                            {
+                                result |= _fuzzyMatcher.Matches(jellyfinCandidate, providerCandidate);
+                                resultLevel = result ? ItemMatchLevel.Fuzzy : null;
+                            }
+
                             resultsByCombinedPrio[combinedPrio].ComparisonResult |= result;
                             if (resultsByCombinedPrio[combinedPrio].MatchedLevel == null || resultsByCombinedPrio[combinedPrio].MatchedLevel > resultLevel)
                             {
@@ -185,23 +192,27 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
 
         public static bool AlbumArtistOneContained(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
-            return ListMatchOneItem(jfItem.AlbumEntity?.Artists, providerItem.AlbumArtistNames, matchLevel) ||
-                   ListMatchOneItem(jfItem.AlbumArtists, providerItem.AlbumArtistNames, matchLevel);
+            var correctedMatchLevel = matchLevel >= ItemMatchLevel.Fuzzy ? ItemMatchLevel.IgnoreParensPunctuationAndCase : matchLevel;
+            return ListMatchOneItem(jfItem.AlbumEntity?.Artists, providerItem.AlbumArtistNames, correctedMatchLevel) ||
+                   ListMatchOneItem(jfItem.AlbumArtists, providerItem.AlbumArtistNames, correctedMatchLevel);
         }
 
         public static bool AlbumArtistOneContained(MusicAlbum jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
-            return ListMatchOneItem(jfItem.Artists, providerItem.AlbumArtistNames, matchLevel);
+            var correctedMatchLevel = matchLevel >= ItemMatchLevel.Fuzzy ? ItemMatchLevel.IgnoreParensPunctuationAndCase : matchLevel;
+            return ListMatchOneItem(jfItem.Artists, providerItem.AlbumArtistNames, correctedMatchLevel);
         }
 
         public static bool ArtistOneContained(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
-            return ListMatchOneItem(jfItem.Artists, providerItem.ArtistNames, matchLevel);
+            var correctedMatchLevel = matchLevel >= ItemMatchLevel.Fuzzy ? ItemMatchLevel.IgnoreParensPunctuationAndCase : matchLevel;
+            return ListMatchOneItem(jfItem.Artists, providerItem.ArtistNames, correctedMatchLevel);
         }
 
         public static bool ArtistOneContained(MusicArtist jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
-            return ListMatchOneItem(new List<string> { jfItem.Name }, providerItem.ArtistNames, matchLevel);
+            var correctedMatchLevel = matchLevel >= ItemMatchLevel.Fuzzy ? ItemMatchLevel.IgnoreParensPunctuationAndCase : matchLevel;
+            return ListMatchOneItem(new List<string> { jfItem.Name }, providerItem.ArtistNames, correctedMatchLevel);
         }
 
         public class Result
