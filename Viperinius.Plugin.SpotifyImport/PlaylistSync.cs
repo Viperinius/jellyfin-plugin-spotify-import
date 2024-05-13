@@ -240,7 +240,7 @@ namespace Viperinius.Plugin.SpotifyImport
                 }
             }
 
-            if (matchCandidates.Any())
+            if (matchCandidates.Count > 0)
             {
                 // sort by prio first, then match level
                 matchCandidates.Sort((a, b) =>
