@@ -44,13 +44,14 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
                 // only add to results if tmp still has at least one parentheses block
                 if (match.Success)
                 {
-                    if (!results.ContainsKey(contentPrio))
+                    if (!results.TryGetValue(contentPrio, out var thisPrioList))
                     {
-                        results.Add(contentPrio, new List<string>());
+                        thisPrioList = new List<string>();
+                        results.Add(contentPrio, thisPrioList);
                     }
 
                     // add combo of base string and remaining parentheses blocks, example: "My Title (Abc)", "My Title (Abc) (feat. Xyz)"
-                    results[contentPrio].Add(tmp);
+                    thisPrioList.Add(tmp);
                 }
             }
 
@@ -59,12 +60,13 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
             // add parentheses content as separate result, example: "Abc", "foo"
             foreach (var parensContent in parensContents)
             {
-                if (!results.ContainsKey(contentPrio))
+                if (!results.TryGetValue(contentPrio, out var thisPrioList))
                 {
-                    results.Add(contentPrio, new List<string>());
+                    thisPrioList = new List<string>();
+                    results.Add(contentPrio, thisPrioList);
                 }
 
-                results[contentPrio].Add(parensContent);
+                thisPrioList.Add(parensContent);
             }
 
             return results;
@@ -91,9 +93,10 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
                 foreach (var providerCandidateByPrio in providerCandidates)
                 {
                     var combinedPrio = jellyfinCandidateByPrio.Key + providerCandidateByPrio.Key;
-                    if (!resultsByCombinedPrio.ContainsKey(combinedPrio))
+                    if (!resultsByCombinedPrio.TryGetValue(combinedPrio, out var thisResult))
                     {
-                        resultsByCombinedPrio.Add(combinedPrio, new Result(false));
+                        thisResult = new Result(false);
+                        resultsByCombinedPrio.Add(combinedPrio, thisResult);
                     }
 
                     foreach (var jellyfinCandidate in jellyfinCandidateByPrio.Value)
@@ -127,15 +130,15 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
                                 resultLevel = result ? ItemMatchLevel.Fuzzy : null;
                             }
 
-                            resultsByCombinedPrio[combinedPrio].ComparisonResult |= result;
-                            if (resultsByCombinedPrio[combinedPrio].MatchedLevel == null || resultsByCombinedPrio[combinedPrio].MatchedLevel > resultLevel)
+                            thisResult.ComparisonResult |= result;
+                            if (thisResult.MatchedLevel == null || thisResult.MatchedLevel > resultLevel)
                             {
-                                resultsByCombinedPrio[combinedPrio].MatchedLevel = resultLevel;
+                                thisResult.MatchedLevel = resultLevel;
                             }
 
-                            if (resultsByCombinedPrio[combinedPrio].MatchedPrio == null || resultsByCombinedPrio[combinedPrio].MatchedPrio > combinedPrio)
+                            if (thisResult.MatchedPrio == null || thisResult.MatchedPrio > combinedPrio)
                             {
-                                resultsByCombinedPrio[combinedPrio].MatchedPrio = combinedPrio;
+                                thisResult.MatchedPrio = combinedPrio;
                             }
                         }
                     }

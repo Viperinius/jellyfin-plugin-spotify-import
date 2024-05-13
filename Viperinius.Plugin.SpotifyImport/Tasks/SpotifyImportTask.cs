@@ -69,7 +69,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
             var followedUsers = Plugin.Instance?.Configuration.Users ?? Array.Empty<TargetUserConfiguration>();
             var playlistIds = Plugin.Instance?.Configuration.Playlists.Select(p => p.Id).ToList() ?? new List<string>();
 
-            if (!followedUsers.Any() && !playlistIds.Any())
+            if (followedUsers.Length == 0 && playlistIds.Count == 0)
             {
                 return;
             }
@@ -79,7 +79,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
 
             // check if any users are given whose playlists need to be included
             var userPlaylistMapping = new Dictionary<string, string>();
-            if (followedUsers.Any())
+            if (followedUsers.Length > 0)
             {
                 foreach (var user in followedUsers)
                 {

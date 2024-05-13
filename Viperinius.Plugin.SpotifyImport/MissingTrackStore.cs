@@ -13,6 +13,11 @@ namespace Viperinius.Plugin.SpotifyImport
 {
     internal static class MissingTrackStore
     {
+        private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true
+        };
+
         public static string FilenameTemplate => "{%PLAYLIST%}_missing_{%TS%}.json";
 
         public static string DirName => "jfplugin_spotify_import";
@@ -45,12 +50,8 @@ namespace Viperinius.Plugin.SpotifyImport
 
         public static async Task WriteFile(string fileName, List<ProviderTrackInfo> tracks)
         {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true
-            };
             using var writer = File.Create(fileName);
-            await JsonSerializer.SerializeAsync(writer, tracks, options).ConfigureAwait(false);
+            await JsonSerializer.SerializeAsync(writer, tracks, _jsonSerializerOptions).ConfigureAwait(false);
         }
 
         private static void CreateCurrentTmpDir()

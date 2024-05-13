@@ -155,9 +155,9 @@ namespace Viperinius.Plugin.SpotifyImport
                 }
             }
 
-            await _playlistManager.AddToPlaylistAsync(playlist.Id, newTracks, user.Id).ConfigureAwait(false);
+            await _playlistManager.AddItemToPlaylistAsync(playlist.Id, newTracks, user.Id).ConfigureAwait(false);
 
-            if ((Plugin.Instance?.Configuration.GenerateMissingTrackLists ?? false) && missingTracks.Any())
+            if ((Plugin.Instance?.Configuration.GenerateMissingTrackLists ?? false) && missingTracks.Count > 0)
             {
                 var missingFilePath = MissingTrackStore.GetFilePath(playlist.Name);
 
@@ -240,7 +240,7 @@ namespace Viperinius.Plugin.SpotifyImport
                 }
             }
 
-            if (matchCandidates.Any())
+            if (matchCandidates.Count > 0)
             {
                 // sort by prio first, then match level
                 matchCandidates.Sort((a, b) =>
@@ -271,7 +271,7 @@ namespace Viperinius.Plugin.SpotifyImport
             var queryResult = _libraryManager.GetItemsResult(new MediaBrowser.Controller.Entities.InternalItemsQuery
             {
                 SearchTerm = providerTrackInfo.Name[0..Math.Min(providerTrackInfo.Name.Length, MaxSearchChars)],
-                MediaTypes = new[] { "Audio" }
+                MediaTypes = new[] { MediaType.Audio }
             });
 
             if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
@@ -514,7 +514,7 @@ namespace Viperinius.Plugin.SpotifyImport
                 var result = await _playlistManager.CreatePlaylist(new MediaBrowser.Model.Playlists.PlaylistCreationRequest
                 {
                     Name = name,
-                    MediaType = "Audio",
+                    MediaType = MediaType.Audio,
                     UserId = user.Id
                 }).ConfigureAwait(false);
 

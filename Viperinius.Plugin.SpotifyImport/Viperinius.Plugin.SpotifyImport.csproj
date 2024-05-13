@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Viperinius.Plugin.SpotifyImport</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -12,35 +11,33 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <Configurations>Debug;Release;ReleaseNoTest</Configurations>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Fastenshtein" Version="1.0.0.8" />
-    <PackageReference Include="Jellyfin.Controller" Version="10.8.12" />
-    <PackageReference Include="Jellyfin.Model" Version="10.8.12" />
+    <PackageReference Include="Jellyfin.Common" Version="10.9.1" />
+    <PackageReference Include="Jellyfin.Controller" Version="10.9.1" />
+    <PackageReference Include="Jellyfin.Data" Version="10.9.1" />
+    <PackageReference Include="Jellyfin.Extensions" Version="10.9.1" />
+    <PackageReference Include="Jellyfin.Model" Version="10.9.1" />
+    <PackageReference Include="Jellyfin.Naming" Version="10.9.1" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="SerilogAnalyzer" Version="0.15.0" PrivateAssets="All" />
     <PackageReference Include="SpotifyAPI.Web" Version="7.0.2" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.376" PrivateAssets="All" />
     <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" PrivateAssets="All" />
   </ItemGroup>
-
   <ItemGroup>
     <None Remove="Configuration\configPage.html" />
     <None Remove="Configuration\playlistConfig.js" />
     <EmbeddedResource Include="Configuration\configPage.html" />
     <EmbeddedResource Include="Configuration\playlistConfig.js" />
   </ItemGroup>
-
   <!-- make internal parts visible to test project -->
   <ItemGroup>
     <InternalsVisibleTo Include="Viperinius.Plugin.SpotifyImport.Tests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
-
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
     <Exec Command="SET jfpath=$(APPDATA)\..\Local\jellyfin\plugins\$(TargetName)&#xD;&#xA;if not exist &quot;%25jfpath%25&quot; mkdir &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetPath)&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)SpotifyAPI.Web.dll&quot; &quot;%25jfpath%25&quot;" />
   </Target>
-
 </Project>

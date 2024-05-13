@@ -43,7 +43,7 @@ namespace Viperinius.Plugin.SpotifyImport.Migrations
             {
                 var config = ParseConfigFile<PluginConfiguration>();
 
-                if (!config.PlaylistIds.Any())
+                if (config.PlaylistIds.Length == 0)
                 {
                     return true;
                 }
