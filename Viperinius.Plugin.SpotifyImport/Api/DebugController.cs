@@ -126,9 +126,14 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                 int ii = 1;
                 var nextParent = item;
                 var nextRef = new ItemRef();
-                while (!nextRef.IsTopParent && ii <= 10)
+                while (nextParent != null && !nextRef.IsTopParent && ii <= 10)
                 {
                     nextParent = _libraryManager.GetItemById(nextParent.ParentId);
+                    if (nextParent == null)
+                    {
+                        continue;
+                    }
+
                     nextRef = new ItemRef
                     {
                         Id = nextParent.Id.ToString(),
