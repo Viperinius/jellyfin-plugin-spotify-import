@@ -24,6 +24,7 @@ public class PluginConfiguration : BasePluginConfiguration
         Users = Array.Empty<TargetUserConfiguration>();
         ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.TrackName | ItemMatchCriteria.AlbumName | ItemMatchCriteria.AlbumArtists | ItemMatchCriteria.Artists);
         ItemMatchLevel = ItemMatchLevel.Default;
+        MaxFuzzyCharDifference = 2;
         MissingTrackListsDateFormat = "yyyy-MM-dd_HH-mm";
     }
 
@@ -66,6 +67,11 @@ public class PluginConfiguration : BasePluginConfiguration
     /// Gets or sets the track comparison level.
     /// </summary>
     public ItemMatchLevel ItemMatchLevel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum amount of character differences to be acceptable as fuzzy match.
+    /// </summary>
+    public int MaxFuzzyCharDifference { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to enable the legacy way of comparing tracks.

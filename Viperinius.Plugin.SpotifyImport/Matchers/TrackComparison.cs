@@ -14,66 +14,144 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
         private static readonly CaseInsensitiveMatcher _caseInsensitiveMatcher = new CaseInsensitiveMatcher();
         private static readonly IgnorePunctuationMatcher _punctuationMatcher = new IgnorePunctuationMatcher();
         private static readonly IgnoreParensMatcher _parensMatcher = new IgnoreParensMatcher();
+        private static readonly FuzzyMatcher _fuzzyMatcher = new FuzzyMatcher();
 
-        private static readonly Regex _parensRegex = new Regex(@"\s*\(([^\)]*)\)\s*");
+        private static readonly Regex _parensRegex = new Regex(@"\s*[\(\[]([^\)\]]*)[\)\]]\s*$"); // find *last* occurence of (foo) or [foo]
 
-        private static List<string> TrySplitParensContents(string? raw)
+        private static SortedDictionary<int, List<string>> TrySplitParensContents(string? raw)
         {
-            var results = new List<string>();
+            var results = new SortedDictionary<int, List<string>>();
             if (string.IsNullOrWhiteSpace(raw))
             {
                 return results;
             }
 
-            results.Add(raw);
-            foreach (Match match in _parensRegex.Matches(raw))
+            var contentPrio = 1;
+
+            // add the full string, example: "My Title (Abc) (feat. Xyz) [foo]"
+            results.Add(contentPrio, new List<string> { raw });
+            contentPrio++;
+
+            var parensContents = new List<string>();
+            var tmp = raw;
+            var match = _parensRegex.Match(tmp);
+            while (match.Success && !string.IsNullOrWhiteSpace(tmp))
             {
-                results.Add(match.Groups[1].Value);
+                parensContents.Add(match.Groups[1].Value);
+                tmp = _parensRegex.Replace(tmp, string.Empty);
+                match = _parensRegex.Match(tmp);
+
+                // only add to results if tmp still has at least one parentheses block
+                if (match.Success)
+                {
+                    if (!results.ContainsKey(contentPrio))
+                    {
+                        results.Add(contentPrio, new List<string>());
+                    }
+
+                    // add combo of base string and remaining parentheses blocks, example: "My Title (Abc)", "My Title (Abc) (feat. Xyz)"
+                    results[contentPrio].Add(tmp);
+                }
+            }
+
+            contentPrio++;
+
+            // add parentheses content as separate result, example: "Abc", "foo"
+            foreach (var parensContent in parensContents)
+            {
+                if (!results.ContainsKey(contentPrio))
+                {
+                    results.Add(contentPrio, new List<string>());
+                }
+
+                results[contentPrio].Add(parensContent);
             }
 
             return results;
         }
 
-        private static bool Equal(string? jellyfinName, string? providerName, ItemMatchLevel matchLevel)
+        private static Result Equal(string? jellyfinName, string? providerName, ItemMatchLevel matchLevel)
         {
-            var result = false;
             if (string.IsNullOrEmpty(jellyfinName) || string.IsNullOrEmpty(providerName))
             {
-                return result;
+                return new Result(false);
             }
 
+            var resultsByCombinedPrio = new SortedDictionary<int, Result>();
+
+            // break name into parts
             var jellyfinCandidates = TrySplitParensContents(jellyfinName);
             var providerCandidates = TrySplitParensContents(providerName);
 
-            foreach (var jellyfinCandidate in jellyfinCandidates)
+            // try to match combinations of the name parts
+            // (realistically there shouldn't exist more than a handful of entries per loop,
+            // so this hideous nesting of loops should be fine)
+            foreach (var jellyfinCandidateByPrio in jellyfinCandidates)
             {
-                foreach (var providerCandidate in providerCandidates)
+                foreach (var providerCandidateByPrio in providerCandidates)
                 {
-                    result |= _defaultStringMatcher.Matches(jellyfinCandidate, providerCandidate);
-
-                    if (!result && matchLevel >= ItemMatchLevel.IgnoreCase)
+                    var combinedPrio = jellyfinCandidateByPrio.Key + providerCandidateByPrio.Key;
+                    if (!resultsByCombinedPrio.ContainsKey(combinedPrio))
                     {
-                        result |= _caseInsensitiveMatcher.Matches(jellyfinCandidate, providerCandidate);
+                        resultsByCombinedPrio.Add(combinedPrio, new Result(false));
                     }
 
-                    if (!result && matchLevel >= ItemMatchLevel.IgnorePunctuationAndCase)
+                    foreach (var jellyfinCandidate in jellyfinCandidateByPrio.Value)
                     {
-                        result |= _punctuationMatcher.Matches(jellyfinCandidate, providerCandidate);
-                    }
+                        foreach (var providerCandidate in providerCandidateByPrio.Value)
+                        {
+                            var result = _defaultStringMatcher.Matches(jellyfinCandidate, providerCandidate);
+                            ItemMatchLevel? resultLevel = result ? ItemMatchLevel.Default : null;
 
-                    if (!result && matchLevel >= ItemMatchLevel.IgnoreParensPunctuationAndCase)
-                    {
-                        result |= _parensMatcher.Matches(jellyfinCandidate, providerCandidate);
-                    }
+                            if (!result && matchLevel >= ItemMatchLevel.IgnoreCase)
+                            {
+                                result |= _caseInsensitiveMatcher.Matches(jellyfinCandidate, providerCandidate);
+                                resultLevel = result ? ItemMatchLevel.IgnoreCase : null;
+                            }
 
-                    if (result)
-                    {
-                        return result;
+                            if (!result && matchLevel >= ItemMatchLevel.IgnorePunctuationAndCase)
+                            {
+                                result |= _punctuationMatcher.Matches(jellyfinCandidate, providerCandidate);
+                                resultLevel = result ? ItemMatchLevel.IgnorePunctuationAndCase : null;
+                            }
+
+                            if (!result && matchLevel >= ItemMatchLevel.IgnoreParensPunctuationAndCase)
+                            {
+                                result |= _parensMatcher.Matches(jellyfinCandidate, providerCandidate);
+                                resultLevel = result ? ItemMatchLevel.IgnoreParensPunctuationAndCase : null;
+                            }
+
+                            if (!result && matchLevel >= ItemMatchLevel.Fuzzy)
+                            {
+                                result |= _fuzzyMatcher.Matches(jellyfinCandidate, providerCandidate);
+                                resultLevel = result ? ItemMatchLevel.Fuzzy : null;
+                            }
+
+                            resultsByCombinedPrio[combinedPrio].ComparisonResult |= result;
+                            if (resultsByCombinedPrio[combinedPrio].MatchedLevel == null || resultsByCombinedPrio[combinedPrio].MatchedLevel > resultLevel)
+                            {
+                                resultsByCombinedPrio[combinedPrio].MatchedLevel = resultLevel;
+                            }
+
+                            if (resultsByCombinedPrio[combinedPrio].MatchedPrio == null || resultsByCombinedPrio[combinedPrio].MatchedPrio > combinedPrio)
+                            {
+                                resultsByCombinedPrio[combinedPrio].MatchedPrio = combinedPrio;
+                            }
+                        }
                     }
                 }
             }
 
-            return result;
+            // check if any combo was matched and return the one with the lowest prio value (first one found)
+            foreach (var result in resultsByCombinedPrio)
+            {
+                if (result.Value.ComparisonResult && result.Value.MatchedLevel != null)
+                {
+                    return result.Value;
+                }
+            }
+
+            return new Result(false);
         }
 
         private static bool ListContains(IReadOnlyList<string>? jellyfinList, string? providerName, ItemMatchLevel matchLevel)
@@ -83,7 +161,7 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
                 return false;
             }
 
-            return jellyfinList.Where(j => Equal(j, providerName, matchLevel)).Any();
+            return jellyfinList.Where(j => Equal(j, providerName, matchLevel).ComparisonResult).Any();
         }
 
         private static bool ListMatchOneItem(IReadOnlyList<string>? jellyfinList, IReadOnlyList<string> providerList, ItemMatchLevel matchLevel)
@@ -91,41 +169,66 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
             return (jellyfinList?.Any(j => ListContains(providerList, j, matchLevel)) ?? false) || providerList.Any(p => ListContains(jellyfinList, p, matchLevel));
         }
 
-        public static bool TrackNameEqual(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
+        public static Result TrackNameEqual(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
             return Equal(jfItem.Name, providerItem.Name, matchLevel);
         }
 
-        public static bool AlbumNameEqual(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
+        public static Result AlbumNameEqual(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
-            return Equal(jfItem.AlbumEntity?.Name, providerItem.AlbumName, matchLevel) ||
-                   Equal(jfItem.Album, providerItem.AlbumName, matchLevel);
+            var resultEntity = Equal(jfItem.AlbumEntity?.Name, providerItem.AlbumName, matchLevel);
+            if (resultEntity.ComparisonResult)
+            {
+                return resultEntity;
+            }
+
+            return Equal(jfItem.Album, providerItem.AlbumName, matchLevel);
         }
 
-        public static bool AlbumNameEqual(MusicAlbum jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
+        public static Result AlbumNameEqual(MusicAlbum jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
             return Equal(jfItem.Name, providerItem.AlbumName, matchLevel);
         }
 
         public static bool AlbumArtistOneContained(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
-            return ListMatchOneItem(jfItem.AlbumEntity?.Artists, providerItem.AlbumArtistNames, matchLevel) ||
-                   ListMatchOneItem(jfItem.AlbumArtists, providerItem.AlbumArtistNames, matchLevel);
+            var correctedMatchLevel = matchLevel >= ItemMatchLevel.Fuzzy ? ItemMatchLevel.IgnoreParensPunctuationAndCase : matchLevel;
+            return ListMatchOneItem(jfItem.AlbumEntity?.Artists, providerItem.AlbumArtistNames, correctedMatchLevel) ||
+                   ListMatchOneItem(jfItem.AlbumArtists, providerItem.AlbumArtistNames, correctedMatchLevel);
         }
 
         public static bool AlbumArtistOneContained(MusicAlbum jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
-            return ListMatchOneItem(jfItem.Artists, providerItem.AlbumArtistNames, matchLevel);
+            var correctedMatchLevel = matchLevel >= ItemMatchLevel.Fuzzy ? ItemMatchLevel.IgnoreParensPunctuationAndCase : matchLevel;
+            return ListMatchOneItem(jfItem.Artists, providerItem.AlbumArtistNames, correctedMatchLevel);
         }
 
         public static bool ArtistOneContained(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
-            return ListMatchOneItem(jfItem.Artists, providerItem.ArtistNames, matchLevel);
+            var correctedMatchLevel = matchLevel >= ItemMatchLevel.Fuzzy ? ItemMatchLevel.IgnoreParensPunctuationAndCase : matchLevel;
+            return ListMatchOneItem(jfItem.Artists, providerItem.ArtistNames, correctedMatchLevel);
         }
 
         public static bool ArtistOneContained(MusicArtist jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
-            return ListMatchOneItem(new List<string> { jfItem.Name }, providerItem.ArtistNames, matchLevel);
+            var correctedMatchLevel = matchLevel >= ItemMatchLevel.Fuzzy ? ItemMatchLevel.IgnoreParensPunctuationAndCase : matchLevel;
+            return ListMatchOneItem(new List<string> { jfItem.Name }, providerItem.ArtistNames, correctedMatchLevel);
+        }
+
+        public class Result
+        {
+            public Result(bool result, ItemMatchLevel? level = null, int? prio = null)
+            {
+                ComparisonResult = result;
+                MatchedLevel = level;
+                MatchedPrio = prio;
+            }
+
+            public bool ComparisonResult { get; set; }
+
+            public ItemMatchLevel? MatchedLevel { get; set; }
+
+            public int? MatchedPrio { get; set; }
         }
     }
 }

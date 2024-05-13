@@ -28,6 +28,22 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.TestHelpers
             System.Threading.Thread.Sleep(100);
         }
 
+        public static void SetValidPluginInstance()
+        {
+            if (Plugin.Instance == null)
+            {
+                var mockAppPaths = Substitute.For<MediaBrowser.Common.Configuration.IApplicationPaths>();
+                mockAppPaths.PluginsPath.Returns(string.Empty);
+                mockAppPaths.PluginConfigurationsPath.Returns(string.Empty);
+                var mockXmlSerializer = Substitute.For<MediaBrowser.Model.Serialization.IXmlSerializer>();
+                mockXmlSerializer.DeserializeFromFile(Arg.Any<Type>(), Arg.Any<string>())
+                                 .Returns(_ => new Configuration.PluginConfiguration());
+
+                _ = new Plugin(mockAppPaths, mockXmlSerializer);
+            }
+            System.Threading.Thread.Sleep(100);
+        }
+
         public static void ClearAlbums()
         {
             _albums.Clear();

@@ -12,6 +12,7 @@
     <Configurations>Debug;Release;ReleaseNoTest</Configurations>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Fastenshtein" Version="1.0.0.8" />
     <PackageReference Include="Jellyfin.Common" Version="10.9.1" />
     <PackageReference Include="Jellyfin.Controller" Version="10.9.1" />
     <PackageReference Include="Jellyfin.Data" Version="10.9.1" />
