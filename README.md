@@ -113,6 +113,18 @@ If you experience issues with tracks not matching even if they exist, you can "r
 1. `Match Type` determines how strict the individual comparison is (e.g. if case differences are ignored)
 2. `Enable * comparison` fully enables or disables the comparison of the respective condition
 
+`Match Type` allows selecting `Fuzzy Check` which adds another less strict matching option for track and album names (but not artists).
+When selected and if no other type already provides a match, a name will be matched if both strings are `x` modifications apart from each other. `x` refers to the number configured in `Max. Accepted Character Differences In Match`.
+
+Example with max. differences set to 2:
+| Provider name | Jellyfin name | Is Match |
+| -- | -- | -- |
+| abcde | abcde | &check; |
+| abcd | abcd | &check; |
+| Aabde | abcde | &check; |
+| Aabd | abcde | &cross; |
+
+
 ## Troubleshooting
 
 If you encounter issues with playlists / tracks not matching when they definitely should, you can enable the logging of some more information from the playlist importer.
