@@ -45,7 +45,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
         /// <param name="baseUrl">The base url to use in the redirect uri.</param>
         /// <returns>The login request uri.</returns>
         [HttpPost($"{nameof(Viperinius)}.{nameof(Viperinius.Plugin)}.{nameof(SpotifyImport)}/SpotifyAuth")]
-        [Authorize(Policy = "DefaultAuthorization")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Produces(MediaTypeNames.Application.Json)]

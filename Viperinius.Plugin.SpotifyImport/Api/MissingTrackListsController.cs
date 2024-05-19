@@ -18,7 +18,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
     /// </summary>
     [ApiController]
     [Produces(MediaTypeNames.Application.Json)]
-    [Authorize(Policy = "DefaultAuthorization")]
+    [Authorize]
     public class MissingTrackListsController : ControllerBase
     {
         /// <summary>
