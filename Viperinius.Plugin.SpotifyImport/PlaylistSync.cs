@@ -548,10 +548,8 @@ namespace Viperinius.Plugin.SpotifyImport
                 _logger.LogInformation("Update completeness for {Name} (Provider Id {Id})", playlist.Name, providerPlaylistInfo.Id);
             }
 
-            playlist.Tagline = $"{providerPlaylistInfo.ProviderName} Sync Info" +
-                               $" - Last Sync At: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} (UTC)" +
-                               $" - Completion: {totalTracks - missingTracks}/{totalTracks} tracks" +
-                               $" - Origin: {providerPlaylistInfo.Id}";
+            playlist.Tagline = $"Synced {totalTracks - missingTracks} out of {totalTracks} tracks " +
+                               $"from {providerPlaylistInfo.ProviderName} playlist {providerPlaylistInfo.Id} (at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} [UTC])";
 
             await _libraryManager.UpdateItemAsync(playlist, playlist.GetParent(), ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
         }
