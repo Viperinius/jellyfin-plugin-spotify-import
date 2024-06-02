@@ -35,16 +35,5 @@ namespace Viperinius.Plugin.SpotifyImport.Exceptions
         public TaskAbortedException(string message, Exception innerException) : base(message, innerException)
         {
         }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TaskAbortedException"/> class.
-        /// </summary>
-        /// <param name="serializationInfo">Info.</param>
-        /// <param name="streamingContext">Context.</param>
-        protected TaskAbortedException(
-            System.Runtime.Serialization.SerializationInfo serializationInfo,
-            System.Runtime.Serialization.StreamingContext streamingContext) : base(serializationInfo, streamingContext)
-        {
-        }
     }
 }

@@ -91,6 +91,7 @@
                                     <th class="detailTableHeaderCell" data-priority="persist">Spotify ID</th>
                                     <th class="detailTableHeaderCell" data-priority="persist">Target Name</th>
                                     <th class="detailTableHeaderCell" data-priority="persist">Target User</th>
+                                    <th class="detailTableHeaderCell" data-priority="persist">Always From Scratch</th>
                                     <th></th>
                                 </thead>
                                 <tbody>
@@ -172,9 +173,16 @@
                                 <option value="IgnoreCase">Ignore Case</option>
                                 <option value="IgnorePunctuationAndCase">Ignore Case + Punctuation</option>
                                 <option value="IgnoreParensPunctuationAndCase">Ignore Case + Punctuation + Parentheses Content</option>
+                                <option value="Fuzzy">Fuzzy Check</option>
                             </select>
                             <div class="fieldDescription">
                                 Choose how strict the comparison between Spotify and Jellyfin tracks is.
+                            </div>
+                        </div>
+                        <div class="inputContainer">
+                            <input id="FuzzyMaxDiff" type="text" is="emby-input" type="number" pattern="[0-9]+" min="0" label="Max. Accepted Character Differences In Match" />
+                            <div class="fieldDescription">
+                                Only important if <b>Match Type</b> is set to <b>Fuzzy Check</b>
                             </div>
                         </div>
                         <div class="multiCheckboxContainer">

@@ -35,5 +35,10 @@ namespace Viperinius.Plugin.SpotifyImport.Configuration
         /// Gets or sets the targeted Jellyfin user name.
         /// </summary>
         public string UserName { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to delete and recreate the playlist from scratch each run.
+        /// </summary>
+        public bool RecreateFromScratch { get; set; }
     }
 }

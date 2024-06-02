@@ -30,5 +30,10 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
         /// Case insensitive equality check minus any punctuation and anything in parentheses.
         /// </summary>
         IgnoreParensPunctuationAndCase,
+
+        /// <summary>
+        /// Check if difference between strings within acceptable range.
+        /// </summary>
+        Fuzzy,
     }
 }

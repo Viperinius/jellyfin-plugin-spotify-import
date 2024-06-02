@@ -24,7 +24,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
     /// </summary>
     [ApiController]
     [Produces(MediaTypeNames.Application.Json)]
-    [Authorize(Policy = "DefaultAuthorization")]
+    [Authorize]
     public class DebugController : ControllerBase
     {
         private readonly ILibraryManager _libraryManager;
@@ -72,7 +72,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
             var queryResult = _libraryManager.GetItemsResult(new InternalItemsQuery
             {
                 Name = name,
-                MediaTypes = new[] { "Audio" },
+                MediaTypes = new[] { MediaType.Audio },
                 Recursive = true
             });
 
@@ -97,7 +97,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                 {
                     Id = audio.Id.ToString(),
                     Name = audio.Name,
-                    MediaType = audio.MediaType,
+                    MediaType = audio.MediaType.ToString(),
                     ParentId = audio.ParentId.ToString(),
                     IsTopParent = audio.IsTopParent,
                     DisplayParentId = audio.DisplayParentId.ToString(),
@@ -114,7 +114,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                     {
                         Id = audio.AlbumEntity.Id.ToString(),
                         Name = audio.AlbumEntity.Name,
-                        MediaType = audio.AlbumEntity.MediaType,
+                        MediaType = audio.AlbumEntity.MediaType.ToString(),
                         ParentId = audio.AlbumEntity.ParentId.ToString(),
                         IsTopParent = audio.AlbumEntity.IsTopParent,
                         DisplayParentId = audio.AlbumEntity.DisplayParentId.ToString(),
@@ -126,14 +126,19 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                 int ii = 1;
                 var nextParent = item;
                 var nextRef = new ItemRef();
-                while (!nextRef.IsTopParent && ii <= 10)
+                while (nextParent != null && !nextRef.IsTopParent && ii <= 10)
                 {
                     nextParent = _libraryManager.GetItemById(nextParent.ParentId);
+                    if (nextParent == null)
+                    {
+                        continue;
+                    }
+
                     nextRef = new ItemRef
                     {
                         Id = nextParent.Id.ToString(),
                         Name = nextParent.Name,
-                        MediaType = nextParent.MediaType,
+                        MediaType = nextParent.MediaType.ToString(),
                         ParentId = nextParent.ParentId.ToString(),
                         IsTopParent = nextParent.IsTopParent,
                         DisplayParentId = nextParent.DisplayParentId.ToString(),
@@ -151,14 +156,17 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                     var artistResult = _libraryManager.GetArtists(new InternalItemsQuery
                     {
                         SearchTerm = artistName[0..Math.Min(artistName.Length, 5)],
-                    }).Items.Select(i => i.Item);
-                    var resultCount1 = artistResult.Count();
-                    artistResult = artistResult.Concat(_libraryManager.GetItemsResult(new InternalItemsQuery
-                    {
-                        SearchTerm = artistName[0..Math.Min(artistName.Length, 5)],
-                        MediaTypes = new[] { "MusicArtist" },
-                    }).Items);
-                    var resultCount2 = artistResult.Count() - resultCount1;
+                    }).Items.Select(i => i.Item).ToList();
+                    var resultCount1 = artistResult.Count;
+                    artistResult =
+                    [
+                        ..artistResult,
+                        .._libraryManager.GetItemsResult(new InternalItemsQuery
+                        {
+                            SearchTerm = artistName[0..Math.Min(artistName.Length, 5)],
+                        }).Items,
+                    ];
+                    var resultCount2 = artistResult.Count - resultCount1;
 
                     var jj = 1;
                     foreach (var artistItem in artistResult)
@@ -172,7 +180,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                         {
                             Id = artist.Id.ToString(),
                             Name = artist.Name,
-                            MediaType = artist.MediaType,
+                            MediaType = artist.MediaType.ToString(),
                             ParentId = artist.ParentId.ToString(),
                             IsTopParent = artist.IsTopParent,
                             DisplayParentId = artist.DisplayParentId.ToString(),
@@ -180,13 +188,13 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                             {
                                 Id = c.Id.ToString(),
                                 Name = c.Name,
-                                MediaType = c.MediaType,
+                                MediaType = c.MediaType.ToString(),
                             }).ToList(),
                             RecursiveChildren = artist.RecursiveChildren.Select(c => new ItemRef
                             {
                                 Id = c.Id.ToString(),
                                 Name = c.Name,
-                                MediaType = c.MediaType,
+                                MediaType = c.MediaType.ToString(),
                             }).ToList(),
                         };
                         artistRefs.Add($"Artist{jj}[{itemIndex}][{artistIndex}]/{resultCount1}/{resultCount2}", artistRef);
@@ -204,7 +212,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                             {
                                 Id = album.Id.ToString(),
                                 Name = album.Name,
-                                MediaType = album.MediaType,
+                                MediaType = album.MediaType.ToString(),
                                 ParentId = album.ParentId.ToString(),
                                 IsTopParent = album.IsTopParent,
                                 DisplayParentId = album.DisplayParentId.ToString(),
@@ -226,11 +234,11 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                 {
                     AutoFlush = true
                 };
-                textWriter.WriteLine("[");
+                await textWriter.WriteLineAsync("[").ConfigureAwait(false);
                 await JsonSerializer.SerializeAsync(writer, trackRefs, options, cancellationToken).ConfigureAwait(false);
-                textWriter.WriteLine(",");
+                await textWriter.WriteLineAsync(",").ConfigureAwait(false);
                 await JsonSerializer.SerializeAsync(writer, artistRefs, options, cancellationToken).ConfigureAwait(false);
-                textWriter.WriteLine("]");
+                await textWriter.WriteLineAsync("]").ConfigureAwait(false);
                 alreadyIncludedIds.Add(item.Id);
                 itemIndex++;
             }
