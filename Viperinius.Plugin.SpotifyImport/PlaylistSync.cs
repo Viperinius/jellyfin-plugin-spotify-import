@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -118,16 +119,16 @@ namespace Viperinius.Plugin.SpotifyImport
                     await _libraryManager.UpdateItemAsync(playlist, playlist.GetParent(), updateReason, cancellationToken).ConfigureAwait(false);
                 }
 
-                await FindTracksAndAddToPlaylist(playlist, providerPlaylist.Tracks, user, cancellationToken).ConfigureAwait(false);
+                await FindTracksAndAddToPlaylist(playlist, providerPlaylist, user, cancellationToken).ConfigureAwait(false);
             }
         }
 
-        private async Task FindTracksAndAddToPlaylist(Playlist playlist, List<ProviderTrackInfo> providerTrackInfos, User user, CancellationToken cancellationToken)
+        private async Task FindTracksAndAddToPlaylist(Playlist playlist, ProviderPlaylistInfo providerPlaylistInfo, User user, CancellationToken cancellationToken)
         {
             var newTracks = new List<Guid>();
             var missingTracks = new List<ProviderTrackInfo>();
 
-            foreach (var providerTrack in providerTrackInfos)
+            foreach (var providerTrack in providerPlaylistInfo.Tracks)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -148,7 +149,7 @@ namespace Viperinius.Plugin.SpotifyImport
                     {
                         newTracks.Add(track.Id);
                     }
-                    else if (Plugin.Instance?.Configuration.GenerateMissingTrackLists ?? false)
+                    else
                     {
                         missingTracks.Add(providerTrack);
                     }
@@ -156,6 +157,7 @@ namespace Viperinius.Plugin.SpotifyImport
             }
 
             await _playlistManager.AddItemToPlaylistAsync(playlist.Id, newTracks, user.Id).ConfigureAwait(false);
+            await UpdatePlaylistCompletenessDesc(playlist, providerPlaylistInfo, missingTracks.Count, providerPlaylistInfo.Tracks.Count, cancellationToken).ConfigureAwait(false);
 
             if ((Plugin.Instance?.Configuration.GenerateMissingTrackLists ?? false) && missingTracks.Count > 0)
             {
@@ -532,6 +534,24 @@ namespace Viperinius.Plugin.SpotifyImport
 
             // don't just return the previous playlist instance because .GetManageableItems() returns "garbage" LinkedChild ids for that one (TODO: is this a jellyfin bug?)
             return _libraryManager.GetItemById(playlist.Id) as Playlist;
+        }
+
+        private async Task UpdatePlaylistCompletenessDesc(Playlist playlist, ProviderPlaylistInfo providerPlaylistInfo, int missingTracks, int totalTracks, CancellationToken cancellationToken)
+        {
+            if (!(Plugin.Instance?.Configuration.ShowCompletenessInformation ?? false))
+            {
+                return;
+            }
+
+            if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
+            {
+                _logger.LogInformation("Update completeness for {Name} (Provider Id {Id})", playlist.Name, providerPlaylistInfo.Id);
+            }
+
+            playlist.Tagline = $"Synced {totalTracks - missingTracks} out of {totalTracks} tracks " +
+                               $"from {providerPlaylistInfo.ProviderName} playlist {providerPlaylistInfo.Id} (at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} [UTC])";
+
+            await _libraryManager.UpdateItemAsync(playlist, playlist.GetParent(), ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
         }
 
         private User? GetUser(string? username = null)

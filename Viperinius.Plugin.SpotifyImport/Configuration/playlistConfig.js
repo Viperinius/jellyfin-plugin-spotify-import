@@ -221,6 +221,7 @@ export default function (view) {
             }
 
             document.querySelector('#EnableVerboseLogging').checked = config.EnableVerboseLogging;
+            document.querySelector('#ShowCompletenessInformation').checked = config.ShowCompletenessInformation;
             document.querySelector('#SpotifyClientId').value = config.SpotifyClientId;
 
             document.querySelector('#GenerateMissingTrackLists').checked = config.GenerateMissingTrackLists;
@@ -292,6 +293,7 @@ export default function (view) {
         Dashboard.showLoadingMsg();
         ApiClient.getPluginConfiguration(SpotifyImportConfig.pluginUniqueId).then(function (config) {
             config.EnableVerboseLogging = document.querySelector('#EnableVerboseLogging').checked;
+            config.ShowCompletenessInformation = document.querySelector('#ShowCompletenessInformation').checked;
             config.SpotifyClientId = document.querySelector('#SpotifyClientId').value;
 
             config.Playlists = [];
