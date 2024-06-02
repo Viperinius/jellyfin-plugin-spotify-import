@@ -119,16 +119,16 @@ namespace Viperinius.Plugin.SpotifyImport
                     await _libraryManager.UpdateItemAsync(playlist, playlist.GetParent(), updateReason, cancellationToken).ConfigureAwait(false);
                 }
 
-                await FindTracksAndAddToPlaylist(playlist, providerPlaylist.Tracks, user, cancellationToken).ConfigureAwait(false);
+                await FindTracksAndAddToPlaylist(playlist, providerPlaylist, user, cancellationToken).ConfigureAwait(false);
             }
         }
 
-        private async Task FindTracksAndAddToPlaylist(Playlist playlist, List<ProviderTrackInfo> providerTrackInfos, User user, CancellationToken cancellationToken)
+        private async Task FindTracksAndAddToPlaylist(Playlist playlist, ProviderPlaylistInfo providerPlaylistInfo, User user, CancellationToken cancellationToken)
         {
             var newTracks = new List<Guid>();
             var missingTracks = new List<ProviderTrackInfo>();
 
-            foreach (var providerTrack in providerTrackInfos)
+            foreach (var providerTrack in providerPlaylistInfo.Tracks)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -157,7 +157,7 @@ namespace Viperinius.Plugin.SpotifyImport
             }
 
             await _playlistManager.AddItemToPlaylistAsync(playlist.Id, newTracks, user.Id).ConfigureAwait(false);
-            await RenamePlaylistToReflectProgress(playlist, missingTracks.Count, providerTrackInfos.Count, cancellationToken).ConfigureAwait(false);
+            await UpdatePlaylistCompletenessDesc(playlist, providerPlaylistInfo, missingTracks.Count, providerPlaylistInfo.Tracks.Count, cancellationToken).ConfigureAwait(false);
 
             if ((Plugin.Instance?.Configuration.GenerateMissingTrackLists ?? false) && missingTracks.Count > 0)
             {
@@ -497,7 +497,7 @@ namespace Viperinius.Plugin.SpotifyImport
         private async Task<Playlist?> GetOrCreatePlaylistByName(string name, User user, bool deleteExistingPlaylist)
         {
             var playlists = _playlistManager.GetPlaylists(user.Id);
-            var playlist = playlists.Where(p => p.Name.StartsWith(name, StringComparison.InvariantCulture)).FirstOrDefault();
+            var playlist = playlists.Where(p => p.Name == name).FirstOrDefault();
 
             if (playlist != null && deleteExistingPlaylist)
             {
@@ -536,21 +536,24 @@ namespace Viperinius.Plugin.SpotifyImport
             return _libraryManager.GetItemById(playlist.Id) as Playlist;
         }
 
-        private static async Task RenamePlaylistToReflectProgress(Playlist playlist, int missingTracks, int totalTracks, CancellationToken cancellationToken)
+        private async Task UpdatePlaylistCompletenessDesc(Playlist playlist, ProviderPlaylistInfo providerPlaylistInfo, int missingTracks, int totalTracks, CancellationToken cancellationToken)
         {
-            var oldCompletenessString = Regex.Match(playlist.Name, @"\((\d+)/(\d+)\)$").Value ?? string.Empty;
-            var originalName = playlist.Name.Replace(oldCompletenessString, string.Empty, StringComparison.InvariantCulture);
-            var newName = originalName;
-            if (Plugin.Instance?.Configuration.ShowCompletenessInformation ?? false)
+            if (!(Plugin.Instance?.Configuration.ShowCompletenessInformation ?? false))
             {
-                newName = $"{originalName} ({totalTracks - missingTracks}/{totalTracks})";
+                return;
             }
 
-            if (newName != playlist.Name)
+            if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
             {
-                playlist.Name = newName;
-                await playlist.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                _logger.LogInformation("Update completeness for {Name} (Provider Id {Id})", playlist.Name, providerPlaylistInfo.Id);
             }
+
+            playlist.Tagline = $"{providerPlaylistInfo.ProviderName} Sync Info" +
+                               $" - Last Sync At: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} (UTC)" +
+                               $" - Completion: {totalTracks - missingTracks}/{totalTracks} tracks" +
+                               $" - Origin: {providerPlaylistInfo.Id}";
+
+            await _libraryManager.UpdateItemAsync(playlist, playlist.GetParent(), ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
         }
 
         private User? GetUser(string? username = null)

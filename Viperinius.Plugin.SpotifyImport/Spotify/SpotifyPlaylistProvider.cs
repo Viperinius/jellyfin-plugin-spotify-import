@@ -12,6 +12,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
 {
     internal class SpotifyPlaylistProvider : GenericPlaylistProvider
     {
+        private const string ProviderName = "Spotify";
         private readonly ILogger<SpotifyPlaylistProvider> _logger;
         private readonly ILogger<SpotifyLogger> _apiLogger;
         private SpotifyClient? _spotifyClient;
@@ -87,7 +88,8 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                         Name = playlist.Name ?? string.Empty,
                         ImageUrl = string.IsNullOrWhiteSpace(rawImageUrl) ? null : new Uri(rawImageUrl),
                         Description = playlist.Description ?? string.Empty,
-                        OwnerId = ownerId
+                        OwnerId = ownerId,
+                        ProviderName = ProviderName,
                     });
                 }
 
@@ -146,7 +148,8 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                     ImageUrl = string.IsNullOrWhiteSpace(rawImageUrl) ? null : new Uri(rawImageUrl),
                     Description = playlist.Description ?? string.Empty,
                     OwnerId = playlist.Owner != null ? playlist.Owner.Id : string.Empty,
-                    Tracks = tracks
+                    Tracks = tracks,
+                    ProviderName = ProviderName,
                 };
             }
             catch (APIException e)
