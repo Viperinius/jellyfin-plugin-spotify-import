@@ -32,6 +32,12 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
         IgnoreParensPunctuationAndCase,
 
         /// <summary>
+        /// Case insensitive equality check minus any punctuation and anything in parentheses.
+        /// Additionally, use album name found in title (if any found and configured to check against).
+        /// </summary>
+        IgnoreParensPunctuationAndCaseUseAlbumFromTrack,
+
+        /// <summary>
         /// Check if difference between strings within acceptable range.
         /// </summary>
         Fuzzy,

@@ -70,6 +70,10 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "Track (x)", "Track", false };
                 yield return new object[] { "foo (track)", "Track", false };
                 yield return new object[] { "foo (tra) (ck)", "Track", false };
+                yield return new object[] { "Track", "Track (From \"abc\")", false };
+                yield return new object[] { "Track", "Track (From xyz1 \"abc\")", false };
+                yield return new object[] { "Track", "Track [From \"abc\"]", false };
+                yield return new object[] { "Track", "Track - From \"abc\"", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -133,6 +137,10 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "Track (x)", "Track", false };
                 yield return new object[] { "foo (-track)", "Track", false };
                 yield return new object[] { "foo (tra) (ck)", "Track", false };
+                yield return new object[] { "Track", "Track (From \"abc\")", false };
+                yield return new object[] { "Track", "Track (From xyz1 \"abc\")", false };
+                yield return new object[] { "Track", "Track [From \"abc\"]", false };
+                yield return new object[] { "Track", "Track - From \"abc\"", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -206,6 +214,10 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "Tr0ack", "Track", false };
                 yield return new object[] { "Track (x)", "Track", false };
                 yield return new object[] { "foo (tra) (ck)", "Track", false };
+                yield return new object[] { "Track", "Track (From \"abc\")", false };
+                yield return new object[] { "Track", "Track (From xyz1 \"abc\")", false };
+                yield return new object[] { "Track", "Track [From \"abc\"]", false };
+                yield return new object[] { "Track", "Track - From \"abc\"", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -243,6 +255,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "a (b) [c] (Track)", "Track", true };
                 yield return new object[] { "a (b) [c)] (Track)", "Track", true };
                 yield return new object[] { "track [123]", "Track", true };
+                yield return new object[] { "Track", "Track (From \"abc\")", true };
+                yield return new object[] { "Track", "Track (From xyz1 \"abc\")", true };
+                yield return new object[] { "Track", "Track [From \"abc\"]", true };
             }
 
             public override IEnumerator<object[]> GetEnumerator()
@@ -266,6 +281,75 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
             }
         }
         class TrackNoParensDataNoMatch : IEnumerable<object[]>
+        {
+            public IEnumerator<object[]> GetEnumerator()
+            {
+                yield return new object[] { "trac.", "Track", false };
+                yield return new object[] { ".$Track", "Track", false };
+                yield return new object[] { "Tr`ack", "Track", false };
+                yield return new object[] { "Tr0ack", "Track", false };
+                yield return new object[] { "Trackb (x)", "Track", false };
+                yield return new object[] { "foo (tra) (ck)", "Track", false };
+                yield return new object[] { "Track (hello)", "Track - hello (foo)", false };
+                yield return new object[] { "Track", "Track - From \"abc\"", false };
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        [Theory]
+        [ClassData(typeof(TrackNoParensAlbumFromTrackDataMatch))]
+        [ClassData(typeof(TrackNoParensAlbumFromTrackDataNoMatch))]
+        public void Track_NoParensAlbumFromTrack(string jfName, string provName, bool shouldMatch)
+        {
+            var prov = TrackHelper.CreateProviderItem(provName, "Album", new List<string> { "Artist On Album" }, new List<string> { "Just Artist" });
+            var jf = TrackHelper.CreateJfItem(jfName, "Album", "Artist On Album", "Just Artist");
+
+            var result = TrackComparison.TrackNameEqual(jf, prov, ItemMatchLevel.IgnoreParensPunctuationAndCaseUseAlbumFromTrack);
+            if (shouldMatch)
+            {
+                Assert.True(result.ComparisonResult, TrackHelper.GetErrorString(jf));
+                Assert.True(result.MatchedLevel <= ItemMatchLevel.IgnoreParensPunctuationAndCaseUseAlbumFromTrack, TrackHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(result.ComparisonResult, TrackHelper.GetErrorString(jf));
+                Assert.True(result.MatchedLevel == null, TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        class TrackNoParensAlbumFromTrackDataMatch : TrackNoParensDataMatch
+        {
+            public IEnumerable<object[]> GetNoParensAlbumFromTrack()
+            {
+                yield return new object[] { "Track", "Track - From \"abc\"", true };
+            }
+
+            public override IEnumerator<object[]> GetEnumerator()
+            {
+                foreach (var obj in GetDefault())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetCaseInsensitive())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetNoPunctuation())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetNoParens())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetNoParensAlbumFromTrack())
+                {
+                    yield return obj;
+                }
+            }
+        }
+        class TrackNoParensAlbumFromTrackDataNoMatch : IEnumerable<object[]>
         {
             public IEnumerator<object[]> GetEnumerator()
             {
@@ -652,6 +736,96 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "Albumb (x)", "Album", false };
                 yield return new object[] { "foo (alb) (um)", "Album", false };
                 yield return new object[] { "Album (hello)", "Album - hello (foo)", false };
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        [Theory]
+        [ClassData(typeof(AlbumNoParensAlbumFromTrackDataMatch))]
+        [ClassData(typeof(AlbumNoParensAlbumFromTrackDataNoMatch))]
+        public void Album_NoParensAlbumFromTrack(string jfName, string provName, bool shouldMatch)
+        {
+            var provTrackNames = new List<string> { "Track" };
+            if (provName == "#usefromtrack#" && shouldMatch)
+            {
+                provTrackNames[0] = $"Track (From \"{jfName}\")";
+                provTrackNames.Add($"Track [From \"{jfName}\"]");
+                provTrackNames.Add($"Track - From \"{jfName}\"");
+                provTrackNames.Add($"Track (From eurfbsdf \"{jfName}\")");
+                provTrackNames.Add($"Track [From 4ro8idaf \"{jfName}\"]");
+                provTrackNames.Add($"Track - From wseaEREto5isf \"{jfName}\"");
+            }
+            if (provName == "#usefromtrack#" && !shouldMatch)
+            {
+                provTrackNames.Add($"Track [From \"{jfName}]");
+                provTrackNames.Add($"Track - From {jfName}\"");
+                provTrackNames.Add($"Track (from eurfbsdf \"{jfName}\")");
+                provTrackNames.Add($"Track From \"{jfName}\"");
+            }
+
+            foreach (var provTrackName in provTrackNames)
+            {
+                var prov = TrackHelper.CreateProviderItem(provTrackName, provName, new List<string> { "Artist On Album" }, new List<string> { "Just Artist" });
+                var jf = TrackHelper.CreateJfItem("Track", jfName, "Artist On Album", "Just Artist");
+
+                var result = TrackComparison.AlbumNameEqual(jf, prov, ItemMatchLevel.IgnoreParensPunctuationAndCaseUseAlbumFromTrack);
+                if (shouldMatch)
+                {
+                    Assert.True(result.ComparisonResult, TrackHelper.GetErrorString(jf));
+                    Assert.True(result.MatchedLevel <= ItemMatchLevel.IgnoreParensPunctuationAndCaseUseAlbumFromTrack, TrackHelper.GetErrorString(jf));
+                }
+                else
+                {
+                    Assert.False(result.ComparisonResult, TrackHelper.GetErrorString(jf));
+                    Assert.True(result.MatchedLevel == null, TrackHelper.GetErrorString(jf));
+                }
+            }
+        }
+
+        class AlbumNoParensAlbumFromTrackDataMatch : AlbumNoParensDataMatch
+        {
+            public IEnumerable<object[]> GetNoParensAlbumFromTrack()
+            {
+                yield return new object[] { "My Great Album", "#usefromtrack#", true };
+            }
+
+            public override IEnumerator<object[]> GetEnumerator()
+            {
+                foreach (var obj in GetDefault())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetCaseInsensitive())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetNoPunctuation())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetNoParens())
+                {
+                    yield return obj;
+                }
+                foreach (var obj in GetNoParensAlbumFromTrack())
+                {
+                    yield return obj;
+                }
+            }
+        }
+        class AlbumNoParensAlbumFromTrackDataNoMatch : IEnumerable<object[]>
+        {
+            public IEnumerator<object[]> GetEnumerator()
+            {
+                yield return new object[] { "albu.", "Album", false };
+                yield return new object[] { ".$Album", "Album", false };
+                yield return new object[] { "Al`bum", "Album", false };
+                yield return new object[] { "Al0bum", "Album", false };
+                yield return new object[] { "Albumb (x)", "Album", false };
+                yield return new object[] { "foo (alb) (um)", "Album", false };
+                yield return new object[] { "Album (hello)", "Album - hello (foo)", false };
+                yield return new object[] { "My Great Album", "#usefromtrack#", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

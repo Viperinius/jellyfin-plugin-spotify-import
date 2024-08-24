@@ -14,6 +14,7 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
         private static readonly CaseInsensitiveMatcher _caseInsensitiveMatcher = new CaseInsensitiveMatcher();
         private static readonly IgnorePunctuationMatcher _punctuationMatcher = new IgnorePunctuationMatcher();
         private static readonly IgnoreParensMatcher _parensMatcher = new IgnoreParensMatcher();
+        private static readonly AlbumFromTrackMatcher _albumFromTrackMatcher = new AlbumFromTrackMatcher();
         private static readonly FuzzyMatcher _fuzzyMatcher = new FuzzyMatcher();
 
         private static readonly Regex _parensRegex = new Regex(@"\s*[\(\[]([^\)\]]*)[\)\]]\s*$"); // find *last* occurence of (foo) or [foo]
@@ -124,6 +125,12 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
                                 resultLevel = result ? ItemMatchLevel.IgnoreParensPunctuationAndCase : null;
                             }
 
+                            if (!result && matchLevel >= ItemMatchLevel.IgnoreParensPunctuationAndCaseUseAlbumFromTrack)
+                            {
+                                result |= _albumFromTrackMatcher.Matches(jellyfinCandidate, providerCandidate);
+                                resultLevel = result ? ItemMatchLevel.IgnoreParensPunctuationAndCaseUseAlbumFromTrack : null;
+                            }
+
                             if (!result && matchLevel >= ItemMatchLevel.Fuzzy)
                             {
                                 result |= _fuzzyMatcher.Matches(jellyfinCandidate, providerCandidate);
@@ -177,20 +184,36 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
             return Equal(jfItem.Name, providerItem.Name, matchLevel);
         }
 
+        private static Result AlbumNameEqualInner(string? jfName, string? providerName, string? providerTrackName, ItemMatchLevel matchLevel)
+        {
+            if (!string.IsNullOrEmpty(providerTrackName) &&
+                matchLevel >= ItemMatchLevel.IgnoreParensPunctuationAndCaseUseAlbumFromTrack &&
+                AlbumFromTrackMatcher.TryGetAlbumNameFromTrack(providerTrackName, out var foundAlbum))
+            {
+                var result = Equal(jfName, foundAlbum, matchLevel);
+                if (result.ComparisonResult)
+                {
+                    return result;
+                }
+            }
+
+            return Equal(jfName, providerName, matchLevel);
+        }
+
         public static Result AlbumNameEqual(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
-            var resultEntity = Equal(jfItem.AlbumEntity?.Name, providerItem.AlbumName, matchLevel);
+            var resultEntity = AlbumNameEqualInner(jfItem.AlbumEntity?.Name, providerItem.AlbumName, providerItem.Name, matchLevel);
             if (resultEntity.ComparisonResult)
             {
                 return resultEntity;
             }
 
-            return Equal(jfItem.Album, providerItem.AlbumName, matchLevel);
+            return AlbumNameEqualInner(jfItem.Album, providerItem.AlbumName, providerItem.Name, matchLevel);
         }
 
         public static Result AlbumNameEqual(MusicAlbum jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
-            return Equal(jfItem.Name, providerItem.AlbumName, matchLevel);
+            return AlbumNameEqualInner(jfItem.Name, providerItem.AlbumName, providerItem.Name, matchLevel);
         }
 
         public static bool AlbumArtistOneContained(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
