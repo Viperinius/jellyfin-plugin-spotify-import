@@ -35,6 +35,9 @@ namespace Viperinius.Plugin.SpotifyImport
                 {
                     if (Plugin.Instance.Configuration.EnableVerboseLogging)
                     {
+                        // print this info to ease finding the config dir when setting up debug logging
+                        _logger.LogInformation("Jellyfin Configuration Directory: {Path}", Plugin.Instance.GetServerApplicationPaths().ConfigurationDirectoryPath);
+
                         _logger.LogInformation("Checking for any needed migrations...");
                     }
 

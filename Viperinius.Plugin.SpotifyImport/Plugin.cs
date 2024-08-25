@@ -74,6 +74,15 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     }
 
     /// <summary>
+    /// Get the jellyfin app paths.
+    /// </summary>
+    /// <returns>Application paths.</returns>
+    public IApplicationPaths GetServerApplicationPaths()
+    {
+        return ApplicationPaths;
+    }
+
+    /// <summary>
     /// Sets the plugin instance.
     /// </summary>
     /// <param name="instance">New Instance.</param>
