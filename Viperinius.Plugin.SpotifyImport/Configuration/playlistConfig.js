@@ -251,10 +251,11 @@ export default function (view) {
                 const clearFilesButton = document.querySelector('#removeMissingTracksFiles');
                 clearFilesButton.classList.remove('hide');
                 clearFilesButton.addEventListener('click', function () {
-                    const apiUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/MissingTracksFile', {
-                        'api_key': apiQueryOpts.api_key
-                    });
-                    fetch(apiUrl, { method: 'DELETE' }).then(function (res) {
+                    const apiUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/MissingTracksFile');
+                    ApiClient.fetch({
+                        url: apiUrl,
+                        type: 'DELETE'
+                    }, true).then(function (res) {
                         if (!res || !res.ok) {
                             throw "invalid response";
                         }
@@ -344,22 +345,22 @@ export default function (view) {
 
     document.querySelector('#authSpotify').addEventListener('click', function () {
         const fullAuthUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/SpotifyAuth', {
-            'baseUrl': ApiClient._serverAddress,
-            'api_key': apiQueryOpts.api_key
+            'baseUrl': ApiClient._serverAddress
         });
 
-        fetch(fullAuthUrl, { method: 'POST' }).then(function (res) {
-            if (!res || !res.ok) {
-                throw "invalid response";
+        ApiClient.fetch({
+            url: fullAuthUrl,
+            type: 'POST',
+            dataType: 'json',
+            headers: {
+                accept: 'application/json'
+            }
+        }, true).then(function (json) {
+            if (!json || !('login_req_uri' in json)) {
+                throw "invalid json response";
             }
 
-            res.json().then(function (json) {
-                if (!json || !('login_req_uri' in json)) {
-                    throw "invalid json response";
-                }
-
-                window.open(json['login_req_uri'], '_self');
-            });
+            window.open(json['login_req_uri'], '_self');
         }).catch(function (error) {
             console.error(error);
         });
@@ -367,13 +368,14 @@ export default function (view) {
 
     const dbgDumpMetaBtn = document.querySelector('#dbgDumpMeta');
     dbgDumpMetaBtn.addEventListener('click', function () {
-        const apiUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/Debug/DumpMetadata', {
-            'api_key': apiQueryOpts.api_key
-        });
+        const apiUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/Debug/DumpMetadata');
 
         dbgDumpMetaBtn.disabled = true;
 
-        fetch(apiUrl, { method: 'POST' }).then(function (res) {
+        ApiClient.fetch({
+            url: apiUrl,
+            type: 'POST'
+        }, true).then(function (res) {
             dbgDumpMetaBtn.disabled = false;
             if (!res || !res.ok) {
                 throw "invalid response";
@@ -387,13 +389,15 @@ export default function (view) {
     dbgDumpRefsBtn.addEventListener('click', function () {
         const name = document.querySelector('#dbgDumpRefsTrackName').value;
         const apiUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/Debug/DumpTrackRefs', {
-            name: name,
-            'api_key': apiQueryOpts.api_key
+            name: name
         });
 
         dbgDumpRefsBtn.disabled = true;
 
-        fetch(apiUrl, { method: 'POST' }).then(function (res) {
+        ApiClient.fetch({
+            url: apiUrl,
+            type: 'POST'
+        }, true).then(function (res) {
             dbgDumpRefsBtn.disabled = false;
             if (!res || !res.ok) {
                 throw "invalid response";
