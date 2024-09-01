@@ -192,10 +192,11 @@ namespace Viperinius.Plugin.SpotifyImport
 
             var matchCandidates = new List<(int, ItemMatchLevel, Audio)>();
 
-            var artistNextIndex = 0;
-            while (artistNextIndex >= 0)
+            var artistProviderNextIndex = 0;
+            var artistJfNextIndex = 0;
+            while (artistProviderNextIndex >= 0)
             {
-                var artist = GetArtist(providerTrackInfo, ref artistNextIndex);
+                var artist = GetArtist(providerTrackInfo, ref artistProviderNextIndex, ref artistJfNextIndex);
                 if (artist == null)
                 {
                     failedMatchCriterium |= ItemMatchCriteria.Artists;
@@ -302,18 +303,17 @@ namespace Viperinius.Plugin.SpotifyImport
             return null;
         }
 
-        private MusicArtist? GetArtist(ProviderTrackInfo providerTrackInfo, ref int nextArtistIndex)
+        private MusicArtist? GetArtist(ProviderTrackInfo providerTrackInfo, ref int nextProviderArtistIndex, ref int nextJfArtistIndex)
         {
-            var artistName = providerTrackInfo.ArtistNames.ElementAtOrDefault(nextArtistIndex);
-            nextArtistIndex++;
+            var artistName = providerTrackInfo.ArtistNames.ElementAtOrDefault(nextProviderArtistIndex);
             if (string.IsNullOrEmpty(artistName))
             {
                 if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                 {
-                    _logger.LogInformation("> Reached end of artist list");
+                    _logger.LogInformation("> Reached end of provider artist list");
                 }
 
-                nextArtistIndex = -1;
+                nextProviderArtistIndex = -1;
                 return null;
             }
 
@@ -323,31 +323,50 @@ namespace Viperinius.Plugin.SpotifyImport
                 SearchTerm = artistName[0..Math.Min(artistName.Length, MaxSearchChars)],
             });
 
-            foreach (var (item, _) in queryResult.Items)
+            if (queryResult.Items.Count == nextJfArtistIndex || queryResult.Items.Count == 0)
             {
-                if (item is not MusicArtist artist)
+                if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                 {
-                    continue;
-                }
-
-                if (Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.Artists) ?? false)
-                {
-                    var level = Plugin.Instance?.Configuration.ItemMatchLevel ?? ItemMatchLevel.Default;
-                    if (!TrackComparison.ArtistOneContained(artist, providerTrackInfo, level))
+                    _logger.LogInformation("> Reached end of jellyfin artist list");
+                    if (queryResult.Items.Count == 0)
                     {
-                        continue;
+                        _logger.LogDebug("> Did not find any artists for the name {Name}", artistName);
                     }
                 }
 
-                return artist;
+                nextProviderArtistIndex++;
+                nextJfArtistIndex = 0;
+                return null;
             }
 
-            if (queryResult.Items.Count == 0 && (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false))
+            var (item, _) = queryResult.Items.ElementAt(nextJfArtistIndex);
+            nextJfArtistIndex++;
+
+            if (item is not MusicArtist artist)
             {
-                _logger.LogDebug("> Did not find any artists for the name {Name}", artistName);
+                return null;
             }
 
-            return null;
+            if (Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.Artists) ?? false)
+            {
+                var level = Plugin.Instance?.Configuration.ItemMatchLevel ?? ItemMatchLevel.Default;
+                if (!TrackComparison.ArtistOneContained(artist, providerTrackInfo, level))
+                {
+                    if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
+                    {
+                        _logger.LogDebug(
+                            "> Artist did not match: \"{Name}\"/\"{SortName}\" [Jellyfin, {Id}], \"{Name}\" [Provider]",
+                            artist.Name,
+                            artist.SortName,
+                            artist.Id,
+                            string.Join("#", providerTrackInfo.ArtistNames));
+                    }
+
+                    return null;
+                }
+            }
+
+            return artist;
         }
 
         private bool CheckAlbumArtist(MusicAlbum album, ProviderTrackInfo providerTrackInfo)
@@ -372,6 +391,7 @@ namespace Viperinius.Plugin.SpotifyImport
                     AlbumArtistIds = new[] { artist.Id },
                     IncludeItemTypes = new[] { BaseItemKind.MusicAlbum }
                 });
+                albums ??= new List<MediaBrowser.Controller.Entities.BaseItem>();
             }
 
             var item = albums.ElementAtOrDefault(nextAlbumIndex);
@@ -397,6 +417,16 @@ namespace Viperinius.Plugin.SpotifyImport
                 var level = Plugin.Instance?.Configuration.ItemMatchLevel ?? ItemMatchLevel.Default;
                 if (!TrackComparison.AlbumNameEqual(album, providerTrackInfo, level).ComparisonResult)
                 {
+                    if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
+                    {
+                        _logger.LogDebug(
+                            "> Album did not match: \"{Name}\"/\"{SortName}\" [Jellyfin, {Id}], \"{Name}\" [Provider]",
+                            album.Name,
+                            album.SortName,
+                            album.Id,
+                            providerTrackInfo.AlbumName);
+                    }
+
                     return null;
                 }
             }

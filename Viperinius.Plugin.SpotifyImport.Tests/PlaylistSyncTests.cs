@@ -34,6 +34,19 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
     public class PlaylistSyncTests : IDisposable
     {
+        private void SetUpLibManagerMock(MediaBrowser.Controller.Library.ILibraryManager libManagerMock, List<MediaBrowser.Controller.Entities.BaseItem> items)
+        {
+            var list = new List<(MediaBrowser.Controller.Entities.BaseItem, MediaBrowser.Model.Dto.ItemCounts)>();
+            foreach (var item in items)
+            {
+                list.Add((item, new MediaBrowser.Model.Dto.ItemCounts()));
+            }
+
+            libManagerMock
+                .GetArtists(Arg.Any<MediaBrowser.Controller.Entities.InternalItemsQuery>())
+                .Returns(_ => new MediaBrowser.Model.Querying.QueryResult<(MediaBrowser.Controller.Entities.BaseItem, MediaBrowser.Model.Dto.ItemCounts)>(list));
+        }
+
         private void SetUpLibManagerMock(MediaBrowser.Controller.Library.ILibraryManager libManagerMock, MediaBrowser.Controller.Entities.BaseItem? item)
         {
             var list = new List<(MediaBrowser.Controller.Entities.BaseItem, MediaBrowser.Model.Dto.ItemCounts)>();
@@ -99,6 +112,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         {
             TrackHelper.SetValidPluginInstance();
 
+            Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.TrackName | ItemMatchCriteria.AlbumName | ItemMatchCriteria.AlbumArtists | ItemMatchCriteria.Artists);
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.Default;
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "Albtist" }, new List<string> { "Just Artist", "Artist 2" });
             var jfItems = new List<(bool IsMatch, (Audio Track, MusicAlbum Album, MusicArtist Artist) Item)>
@@ -124,6 +138,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         {
             TrackHelper.SetValidPluginInstance();
 
+            Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.TrackName | ItemMatchCriteria.AlbumName | ItemMatchCriteria.AlbumArtists | ItemMatchCriteria.Artists);
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.IgnoreCase;
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "Albtist" }, new List<string> { "Just Artist", "Artist 2" });
             var jfItems = new List<(bool IsMatch, (Audio Track, MusicAlbum Album, MusicArtist Artist) Item)>
@@ -148,6 +163,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         {
             TrackHelper.SetValidPluginInstance();
 
+            Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.TrackName | ItemMatchCriteria.AlbumName | ItemMatchCriteria.AlbumArtists | ItemMatchCriteria.Artists);
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.IgnorePunctuationAndCase;
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "Albtist" }, new List<string> { "Just Artist", "Artist 2" });
             var jfItems = new List<(bool IsMatch, (Audio Track, MusicAlbum Album, MusicArtist Artist) Item)>
@@ -172,6 +188,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         {
             TrackHelper.SetValidPluginInstance();
 
+            Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.TrackName | ItemMatchCriteria.AlbumName | ItemMatchCriteria.AlbumArtists | ItemMatchCriteria.Artists);
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.IgnoreParensPunctuationAndCase;
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "Albtist" }, new List<string> { "Just Artist", "Artist 2" });
             var jfItems = new List<(bool IsMatch, (Audio Track, MusicAlbum Album, MusicArtist Artist) Item)>
@@ -196,6 +213,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         {
             TrackHelper.SetValidPluginInstance();
 
+            Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.TrackName | ItemMatchCriteria.AlbumName | ItemMatchCriteria.AlbumArtists | ItemMatchCriteria.Artists);
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.Fuzzy;
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Artist On Album", "Albtist" }, new List<string> { "Just Artist", "Artist 2" });
             var jfItems = new List<(bool IsMatch, (Audio Track, MusicAlbum Album, MusicArtist Artist) Item)>
@@ -436,7 +454,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         }
 
         [Fact]
-        public void FindTrackMatch_FromMultipleCandidates()
+        public void FindTrackMatch_FromMultipleTrackCandidates()
         {
             TrackHelper.SetValidPluginInstance();
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.IgnoreParensPunctuationAndCase;
@@ -484,6 +502,43 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             Assert.Equal(result, jfTrackCorrect);
             Assert.Contains("Acoustic", result!.Name);
             Assert.Contains("Richards", result!.Name);
+            Assert.True(failedCrit == ItemMatchCriteria.None);
+        }
+
+        [Fact]
+        public void FindTrackMatch_FromMultipleArtistCandidates()
+        {
+            TrackHelper.SetValidPluginInstance();
+            Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.IgnoreParensPunctuationAndCase;
+            Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.TrackName | ItemMatchCriteria.AlbumName | ItemMatchCriteria.Artists);
+
+            var prov = TrackHelper.CreateProviderItem("You Make My Dreams (Come True)", "Voices", new List<string> { "Daryl Hall & John Oates" }, new List<string> { "Daryl Hall & John Oates" });
+
+            var (jfTrackCorrect, jfAlbumCorrect, jfArtistCorrect) = TrackHelper.CreateAllJfItems("You Make My Dreams (Come True)", "Voices", "Daryl Hall & John Oates", "Daryl Hall & John Oates");
+            jfTrackCorrect.Id = Guid.Parse("99999999-0000-0000-0000-000000000000");
+            jfArtistCorrect.Id = Guid.Parse("00000000-0000-0000-0000-000000000010");
+
+            var jfArtistOther1 = ArtistHelper.CreateJfItem("Daryl Hall & John Oates", new List<MusicAlbum>());
+            jfArtistOther1.Id = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var jfArtistOther2 = ArtistHelper.CreateJfItem("Daryl Hall & John Oates", new List<MusicAlbum>());
+            jfArtistOther2.Id = Guid.Parse("00000000-0000-0000-0000-000000000002");
+
+            var loggerMock = Substitute.For<ILogger<PlaylistSync>>();
+            var plManagerMock = Substitute.For<MediaBrowser.Controller.Playlists.IPlaylistManager>();
+            var userManagerMock = Substitute.For<MediaBrowser.Controller.Library.IUserManager>();
+            var libManagerMock = Substitute.For<MediaBrowser.Controller.Library.ILibraryManager>();
+            SetUpLibManagerMock(libManagerMock, new List<MediaBrowser.Controller.Entities.BaseItem>
+            {
+                jfArtistOther1,
+                jfArtistCorrect,
+                jfArtistOther2
+            });
+            var wrapper = new PlaylistSyncWrapper(loggerMock, plManagerMock, libManagerMock, userManagerMock, new List<ProviderPlaylistInfo>(), new Dictionary<string, string>());
+
+            var result = wrapper.WrapGetMatchingTrack(prov, out var failedCrit);
+            Assert.NotNull(result);
+            Assert.Equal(result.Name, jfTrackCorrect.Name);
+            Assert.Equal(result.Id, jfTrackCorrect.Id);
             Assert.True(failedCrit == ItemMatchCriteria.None);
         }
     }
