@@ -87,7 +87,17 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
                     if (userPlaylists != null)
                     {
                         playlistIds.AddRange(userPlaylists);
-                        userPlaylists.ForEach(id => userPlaylistMapping.Add(id, user.Id));
+                        userPlaylists.ForEach(id =>
+                        {
+                            if (userPlaylistMapping.ContainsKey(id))
+                            {
+                                _logger.LogWarning("Found and ignored duplicate playlist id {Id} of user {User}", id, user.Id);
+                            }
+                            else
+                            {
+                                userPlaylistMapping.Add(id, user.Id);
+                            }
+                        });
                     }
                 }
 
@@ -115,7 +125,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
                 {
                     Type = TaskTriggerInfo.TriggerDaily,
                     TimeOfDayTicks = TimeSpan.FromHours(3).Ticks,
-                    MaxRuntimeTicks = TimeSpan.FromHours(1).Ticks,
+                    MaxRuntimeTicks = TimeSpan.FromHours(3).Ticks,
                 }
             };
         }
