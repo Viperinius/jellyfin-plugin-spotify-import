@@ -66,6 +66,7 @@ Go to the section `Playlist Configuration` and click on `Add new playlist`. This
 - `Spotify ID`: Paste the identifier of the Spotify playlist that you want to import in here.
 - `Target Name`: Jellyfin playlist name. Keep this empty if the original name from Spotify should be used.
 - `Target User`: If you want to set another user as the playlist owner, select them here.
+- `Set To Private`: If you want to limit the playlist visibility to the targeted owner, check this box.
 - `Always From Scratch`: If you want to delete and recreate the Jellyfin playlist on each import run, check this box.
 
 > [!WARNING]
@@ -81,6 +82,7 @@ Following "Spotify ID" formats work:
 If you just want to import all playlists of a Spotify user, go to `Users Configuration` and click `Add new user`.
 - `Spotify ID`: Paste the identifier of the Spotify user that you want to import in here.
 - `Target User`: If you want to set another user as the playlist owner, select them here.
+- `Set To Private`: If you want to limit the playlist visibility to the targeted owner, check this box.
 - `Only Original Playlists`: If you want to follow all playlists of a user, including collaborative ones, leave this unchecked. If you only want to follow the playlists that the user created, check this box.
 
 The following "Spotify ID" formats work:
