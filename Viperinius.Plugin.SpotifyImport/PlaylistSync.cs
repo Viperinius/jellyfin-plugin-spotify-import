@@ -70,6 +70,7 @@ namespace Viperinius.Plugin.SpotifyImport
                         Id = targetUser.Id,
                         Name = string.Empty,
                         UserName = targetUser.UserName,
+                        IsPrivate = targetUser.IsPrivate,
                         RecreateFromScratch = false,
                     };
                 }
@@ -89,7 +90,7 @@ namespace Viperinius.Plugin.SpotifyImport
                     jfPlaylistName = providerPlaylist.Name;
                 }
 
-                var playlist = await GetOrCreatePlaylistByName(jfPlaylistName, user, targetConfig.RecreateFromScratch).ConfigureAwait(false);
+                var playlist = await GetOrCreatePlaylistByName(jfPlaylistName, user, targetConfig.IsPrivate, targetConfig.RecreateFromScratch).ConfigureAwait(false);
 
                 if (playlist == null)
                 {
@@ -111,6 +112,12 @@ namespace Viperinius.Plugin.SpotifyImport
                 if (!string.IsNullOrWhiteSpace(providerPlaylist.Description) && providerPlaylist.Description != playlist.Overview)
                 {
                     playlist.Overview = providerPlaylist.Description;
+                    updateReason |= ItemUpdateType.MetadataEdit;
+                }
+
+                if ((!targetConfig.IsPrivate) != playlist.OpenAccess)
+                {
+                    playlist.OpenAccess = !targetConfig.IsPrivate;
                     updateReason |= ItemUpdateType.MetadataEdit;
                 }
 
@@ -494,7 +501,7 @@ namespace Viperinius.Plugin.SpotifyImport
             return true;
         }
 
-        private async Task<Playlist?> GetOrCreatePlaylistByName(string name, User user, bool deleteExistingPlaylist)
+        private async Task<Playlist?> GetOrCreatePlaylistByName(string name, User user, bool shouldBePrivate, bool deleteExistingPlaylist)
         {
             var playlists = _playlistManager.GetPlaylists(user.Id);
             var playlist = playlists.Where(p => p.Name == name).FirstOrDefault();
@@ -517,13 +524,14 @@ namespace Viperinius.Plugin.SpotifyImport
                 {
                     Name = name,
                     MediaType = MediaType.Audio,
-                    UserId = user.Id
+                    UserId = user.Id,
+                    Public = !shouldBePrivate,
                 }).ConfigureAwait(false);
 
                 if (!string.IsNullOrWhiteSpace(result.Id))
                 {
                     playlists = _playlistManager.GetPlaylists(user.Id);
-                    playlist = playlists.Where(p => p.Id.ToString().Replace("-", string.Empty, StringComparison.InvariantCulture) == result.Id).FirstOrDefault();
+                    playlist = playlists.Where(p => p.Id.ToString().Replace("-", string.Empty, StringComparison.InvariantCulture) == result.Id).FirstOrDefault((Playlist?)null);
                 }
             }
 
