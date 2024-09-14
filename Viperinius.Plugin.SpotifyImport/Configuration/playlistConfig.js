@@ -37,6 +37,15 @@ function getRecreateFromScratchHtml(alwaysFromScratch) {
     </td>`;
 }
 
+function getIsPrivateHtml(isPrivate) {
+    return `<td class="detailTableBodyCell cellPlaylistIsPrivate">
+        <label class="emby-checkbox-label">
+            <input type="checkbox" is="emby-checkbox" ${isPrivate ? 'checked' : ''}/>
+            <span></span>
+        </label>
+    </td>`;
+}
+
 function getOnlyOwnHtml(onlyOwn) {
     return `<td class="detailTableBodyCell cellPlaylistOnlyOwn">
         <label class="emby-checkbox-label">
@@ -46,11 +55,12 @@ function getOnlyOwnHtml(onlyOwn) {
     </td>`;
 }
 
-function createPlaylistRowHtml(playlistId, name, user, alwaysFromScratch) {
+function createPlaylistRowHtml(playlistId, name, user, isPrivate, alwaysFromScratch) {
     const row = `<tr class="detailTableBodyRow detailTableBodyRow-shaded">
         ${getPlaylistIdElementHtml(playlistId)}
         ${getNameElementHtml(name)}
         ${getUserSelectHtml(user)}
+        ${getIsPrivateHtml(isPrivate)}
         ${getRecreateFromScratchHtml(alwaysFromScratch)}
         <td>
             <button class="paper-icon-button-light" type="button" onclick="this.closest('tr').remove()">
@@ -62,10 +72,11 @@ function createPlaylistRowHtml(playlistId, name, user, alwaysFromScratch) {
     return row;
 }
 
-function createUserRowHtml(spotifyUser, jellyfinUser, onlyOwn) {
+function createUserRowHtml(spotifyUser, jellyfinUser, isPrivate, onlyOwn) {
     const row = `<tr class="detailTableBodyRow detailTableBodyRow-shaded">
         ${getPlaylistIdElementHtml(spotifyUser)}
         ${getUserSelectHtml(jellyfinUser)}
+        ${getIsPrivateHtml(isPrivate)}
         ${getOnlyOwnHtml(onlyOwn)}
         <td>
             <button class="paper-icon-button-light" type="button" onclick="this.closest('tr').remove()">
@@ -87,7 +98,7 @@ function loadPlaylistTable(page, config) {
         config.Playlists.forEach(pl => {
             const user = users.find(u => u.name === pl.UserName);
             const userId = user?.id || '';
-            rowsHtml += createPlaylistRowHtml(pl.Id, pl.Name, userId, pl.RecreateFromScratch);
+            rowsHtml += createPlaylistRowHtml(pl.Id, pl.Name, userId, pl.IsPrivate, pl.RecreateFromScratch);
         });
 
         tableBody.innerHTML = rowsHtml;
@@ -113,9 +124,8 @@ function loadUsersTable(page, config) {
             const spotifyUser = user.Id;
             const jellyfinUser = users.find(u => u.name === user.UserName);
             const jellyfinUserId = jellyfinUser?.id || '';
-            const onlyOwn = user.OnlyOwnPlaylists;
 
-            rowsHtml += createUserRowHtml(spotifyUser, jellyfinUserId, onlyOwn);
+            rowsHtml += createUserRowHtml(spotifyUser, jellyfinUserId, user.IsPrivate, user.OnlyOwnPlaylists);
         });
 
         tableBody.innerHTML = rowsHtml;
@@ -138,12 +148,14 @@ function getPlaylistTableData(page) {
             const renameTo = r.querySelector('td.cellPlaylistName').innerText.trim();
             const userSelect = r.querySelector('td.cellPlaylistUser > select');
             const jellyfinUser = userSelect.options[userSelect.selectedIndex].text.trim();
+            const isPrivate = r.querySelector('td.cellPlaylistIsPrivate > * input').checked;
             const recreateFromScratch = r.querySelector('td.cellPlaylistFromScratch > * input').checked;
 
             return {
                 Id: spotifyId,
                 Name: renameTo,
                 UserName: jellyfinUser,
+                IsPrivate: isPrivate,
                 RecreateFromScratch : recreateFromScratch,
             };
         });
@@ -164,11 +176,13 @@ function getUsersTableData(page) {
         const spotifyUser = r.querySelector('td.cellPlaylistId').innerText.trim();
         const userSelect = r.querySelector('td.cellPlaylistUser > select');
         const jellyfinUser = userSelect.options[userSelect.selectedIndex].text.trim();
+        const isPrivate = r.querySelector('td.cellPlaylistIsPrivate > * input').checked;
         const onlyOwn = r.querySelector('td.cellPlaylistOnlyOwn > * input').checked;
 
         return {
             Id: spotifyUser,
             UserName: jellyfinUser,
+            IsPrivate: isPrivate,
             OnlyOwnPlaylists: onlyOwn
         };
 
