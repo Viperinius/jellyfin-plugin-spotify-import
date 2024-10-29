@@ -27,6 +27,7 @@ namespace Viperinius.Plugin.SpotifyImport
         private readonly IUserManager _userManager;
         private readonly List<ProviderPlaylistInfo> _providerPlaylists;
         private readonly Dictionary<string, string> _userPlaylistIds;
+        private readonly ManualMapStore _manualMapStore;
 
         public PlaylistSync(
             ILogger<PlaylistSync> logger,
@@ -34,7 +35,8 @@ namespace Viperinius.Plugin.SpotifyImport
             ILibraryManager libraryManager,
             IUserManager userManager,
             List<ProviderPlaylistInfo> playlists,
-            Dictionary<string, string> userPlaylistIds)
+            Dictionary<string, string> userPlaylistIds,
+            ManualMapStore manualMapStore)
         {
             _logger = logger;
             _playlistManager = playlistManager;
@@ -42,6 +44,7 @@ namespace Viperinius.Plugin.SpotifyImport
             _userManager = userManager;
             _providerPlaylists = playlists;
             _userPlaylistIds = userPlaylistIds;
+            _manualMapStore = manualMapStore;
         }
 
         public async Task Execute(CancellationToken cancellationToken = default)
@@ -190,6 +193,12 @@ namespace Viperinius.Plugin.SpotifyImport
                     providerTrackInfo.AlbumName,
                     string.Join("#", providerTrackInfo.AlbumArtistNames),
                     string.Join("#", providerTrackInfo.ArtistNames));
+            }
+
+            var manualTrack = _manualMapStore.GetByProviderTrackInfo(providerTrackInfo);
+            if (manualTrack?.Provider.Equals(providerTrackInfo) ?? false)
+            {
+                return _libraryManager.GetItemById<Audio>(Guid.Parse(manualTrack.Jellyfin.Track));
             }
 
             if (Plugin.Instance?.Configuration.UseLegacyMatching ?? false)
@@ -451,13 +460,19 @@ namespace Viperinius.Plugin.SpotifyImport
             yield break;
         }
 
-        private static bool CheckPlaylistForTrack(Playlist playlist, User user, ProviderTrackInfo providerTrackInfo)
+        private bool CheckPlaylistForTrack(Playlist playlist, User user, ProviderTrackInfo providerTrackInfo)
         {
             foreach (var item in playlist.GetChildren(user, false))
             {
                 if (item is not Audio audioItem)
                 {
                     continue;
+                }
+
+                var manualTrack = _manualMapStore.GetByTrackId(audioItem.Id);
+                if (manualTrack?.Provider.Equals(providerTrackInfo) ?? false)
+                {
+                    return true;
                 }
 
                 if (ItemMatchesTrackInfo(audioItem, providerTrackInfo, out _))
