@@ -198,6 +198,11 @@ namespace Viperinius.Plugin.SpotifyImport
             var manualTrack = _manualMapStore.GetByProviderTrackInfo(providerTrackInfo);
             if (manualTrack?.Provider.Equals(providerTrackInfo) ?? false)
             {
+                if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
+                {
+                    _logger.LogDebug("Found manual mapping for track with id {Id}", manualTrack.Jellyfin.Track);
+                }
+
                 return _libraryManager.GetItemById<Audio>(Guid.Parse(manualTrack.Jellyfin.Track));
             }
 

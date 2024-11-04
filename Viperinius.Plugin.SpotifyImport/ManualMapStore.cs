@@ -20,10 +20,16 @@ namespace Viperinius.Plugin.SpotifyImport
         private List<ManualMapTrack> _tracks;
         private static JsonSchema? _schema;
 
+        private JsonSerializerOptions _serializerOpts;
+
         public ManualMapStore(ILogger<ManualMapStore> logger)
         {
             _logger = logger;
             _tracks = new List<ManualMapTrack>();
+            _serializerOpts = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            };
         }
 
         protected static JsonSchema Schema
@@ -126,6 +132,22 @@ namespace Viperinius.Plugin.SpotifyImport
             return true;
         }
 
+        public bool Save()
+        {
+            var schemaVersion = Schema.GetProperties()?["Version"].GetConst()?.GetValue<string>();
+
+            var json = new JsonObject
+            {
+                ["$schema"] = "https://raw.githubusercontent.com/Viperinius/jellyfin-plugin-spotify-import/refs/heads/master/schemas/manual_track_map.schema.json",
+                ["Version"] = schemaVersion,
+                ["Items"] = JsonSerializer.SerializeToNode(_tracks)
+            };
+
+            File.WriteAllText(FilePath, JsonSerializer.Serialize(json, _serializerOpts));
+
+            return true;
+        }
+
         public static (bool IsOk, string Version) ValidateJsonSchema(JsonNode jsonData)
         {
             var schemaVersion = Schema.GetProperties()?["Version"].GetConst()?.GetValue<string>();
@@ -165,6 +187,11 @@ namespace Viperinius.Plugin.SpotifyImport
         public void Add(ManualMapTrack item)
         {
             _tracks.Add(item);
+        }
+
+        public void AddRange(IEnumerable<ManualMapTrack> items)
+        {
+            _tracks.AddRange(items);
         }
 
         public void Clear()
