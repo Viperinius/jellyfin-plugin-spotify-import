@@ -31,6 +31,11 @@ namespace Viperinius.Plugin.SpotifyImport.Configuration
         public string UserName { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the playlist should be private to the target user.
+        /// </summary>
+        public bool IsPrivate { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether only original playlists should be collected.
         /// </summary>
         public bool OnlyOwnPlaylists { get; set; }
