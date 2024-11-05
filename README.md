@@ -126,6 +126,18 @@ Example with max. differences set to 2:
 | Aabde | abcde | &check; |
 | Aabd | abcde | &cross; |
 
+### Track match forcing
+
+If you have a track with a name wildly different to its equivalent on Spotify or it's not covered by the existing track matching for other reasons, you can define a "manual mapping entry" for this track. If a given Spotify track in this map is part of a playlist, it will always get matched with the defined Jellyfin track.
+
+Defining an entry can be done via a page on the Jellyfin admin dashboard (at the bottom of the admin panel you can go to `Spotify Import - Map`). Add a new row there and fill it with the Spotify track information as well as the targeted Jellyfin track ID. To get that ID, navigate to the track in the web UI and paste in its link or click the three dots of it, click on `Copy Stream URI` and paste that into the `Jellyfin Track` field. After parsing the link (click the check mark), you should see the track name instead.
+When done adding rows, save the map.
+
+> [!TIP]
+> To specify multiple artists for a track, use a comma to separate them.
+
+Alternatively, you can change the manual map file `manual_track_map.json` directly. It is located in the plugin directory (if you need help finding it, check the Jellyfin logs at startup for the string `Path to manual track map`).
+
 
 ## Troubleshooting
 
@@ -151,7 +163,7 @@ There are two verbosity levels to this:
         }
       ```
     - With this enabled you will see log entries for every track that did not get matched and added to a playlist
- 
+
 
 ## To do
 

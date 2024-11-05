@@ -1,0 +1,56 @@
+<div id="SpotifyImportMapPage"
+     data-role="page"
+     class="page type-interior pluginConfigurationPage"
+     data-require="emby-input,emby-button"
+     data-controller="__plugin/spotifyimportmapjs">
+    <style>
+        .verticalSection > .button-submit {
+            margin-top: 3em;
+        }
+    </style>
+    <div class="content-primary">
+        <form id="SpotifyImportMapForm" style="max-width: 100%;">
+            <div class="sectionTitleContainer flex align-items-center">
+                <h2 class="sectionTitle">Spotify Import - Manual Track Map</h2>
+            </div>
+            <div class="verticalSection">
+                <p>Put provider tracks in here to force mapping it to a specific Jellyfin track.</p>
+                <p>
+                    After adding a new row, replace the dummy text with the ID of the target Jellyfin track item in one of the following formats:
+                    <ul>
+                        <li>Raw ID (ex.: bfd9b42542e752bfdd63617e7966ba6a)</li>
+                        <li>"<b>Copy Stream URI</b>" result (ex.: http://&lt;JELLYFIN IP&gt;/Items/bfd9b42542e752bfdd63617e7966ba6a/Download?api_key=...)</li>
+                        <li>URL from web UI (ex.: http://&lt;JELLYFIN IP&gt;/web/?#/details?id=bfd9b42542e752bfdd63617e7966ba6a&serverId=...)</li>
+                    </ul>
+                    Then confirm the ID, it should get parsed and display the track name of that item.
+                </p>
+                <br />
+            </div>
+
+            <div class="verticalSection">
+                <table id="mapTable" class="stripedTable ui-responsive table-stroke detailTable" data-role="table">
+                    <thead>
+                        <th class="detailTableHeaderCell" data-priority="persist">Jellyfin Track</th>
+                        <th class="detailTableHeaderCell" data-priority="persist">Spotify Track Name</th>
+                        <th class="detailTableHeaderCell" data-priority="persist">Spotify Album Name</th>
+                        <th class="detailTableHeaderCell" data-priority="persist">Spotify Album Artists</th>
+                        <th class="detailTableHeaderCell" data-priority="persist">Spotify Artists</th>
+                        <th></th>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <button is="emby-button" type="button" id="addRowBtn" class="raised block" style="display: flex;">
+                    <span class="material-icons playlist_add" style="margin-right: 1em;"></span>
+                    <span>Add new entry</span>
+                </button>
+            </div>
+
+            <div class="verticalSection">
+                <button is="emby-button" type="submit" class="raised button-submit block emby-button">
+                    <span>Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

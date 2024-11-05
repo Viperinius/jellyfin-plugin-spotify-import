@@ -21,8 +21,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             MediaBrowser.Controller.Library.ILibraryManager libraryManager,
             MediaBrowser.Controller.Library.IUserManager userManager,
             List<ProviderPlaylistInfo> playlists,
-            Dictionary<string, string> userPlaylistIds)
-            : base(logger, playlistManager, libraryManager, userManager, playlists, userPlaylistIds)
+            Dictionary<string, string> userPlaylistIds,
+            ManualMapStore manualMapStore)
+            : base(logger, playlistManager, libraryManager, userManager, playlists, userPlaylistIds, manualMapStore)
         {
         }
 
@@ -78,7 +79,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             var userManagerMock = Substitute.For<MediaBrowser.Controller.Library.IUserManager>();
             var libManagerMock = Substitute.For<MediaBrowser.Controller.Library.ILibraryManager>();
             SetUpLibManagerMock(libManagerMock, artist);
-            var wrapper = new PlaylistSyncWrapper(loggerMock, plManagerMock, libManagerMock, userManagerMock, new List<ProviderPlaylistInfo>(), new Dictionary<string, string>());
+            var wrapper = new PlaylistSyncWrapper(loggerMock, plManagerMock, libManagerMock, userManagerMock, new List<ProviderPlaylistInfo>(), new Dictionary<string, string>(), new ManualMapStore(Substitute.For<ILogger<ManualMapStore>>()));
 
             ItemMatchCriteria failedCrit;
             if (shouldMatch)
@@ -478,7 +479,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             var userManagerMock = Substitute.For<MediaBrowser.Controller.Library.IUserManager>();
             var libManagerMock = Substitute.For<MediaBrowser.Controller.Library.ILibraryManager>();
             SetUpLibManagerMock(libManagerMock, jfArtist);
-            var wrapper = new PlaylistSyncWrapper(loggerMock, plManagerMock, libManagerMock, userManagerMock, new List<ProviderPlaylistInfo>(), new Dictionary<string, string>());
+            var wrapper = new PlaylistSyncWrapper(loggerMock, plManagerMock, libManagerMock, userManagerMock, new List<ProviderPlaylistInfo>(), new Dictionary<string, string>(), new ManualMapStore(Substitute.For<ILogger<ManualMapStore>>()));
 
             var result = wrapper.WrapGetMatchingTrack(prov, out var failedCrit);
             Assert.NotNull(result);
@@ -489,7 +490,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
             jfArtist = ArtistHelper.CreateJfItem("Ephixa", new List<MusicAlbum> { jfAlbumCorrect, jfAlbumOther1, jfAlbumOther2, jfAlbumOther3 });
             SetUpLibManagerMock(libManagerMock, jfArtist);
-            wrapper = new PlaylistSyncWrapper(loggerMock, plManagerMock, libManagerMock, userManagerMock, new List<ProviderPlaylistInfo>(), new Dictionary<string, string>());
+            wrapper = new PlaylistSyncWrapper(loggerMock, plManagerMock, libManagerMock, userManagerMock, new List<ProviderPlaylistInfo>(), new Dictionary<string, string>(), new ManualMapStore(Substitute.For<ILogger<ManualMapStore>>()));
 
             result = wrapper.WrapGetMatchingTrack(prov, out failedCrit);
             Assert.Equal(result, jfTrackCorrect);

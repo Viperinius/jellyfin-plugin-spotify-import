@@ -60,7 +60,19 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
             {
                 Name = "playlistconfigjs",
                 EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.Configuration.playlistConfig.js", GetType().Namespace)
-            }
+            },
+            new PluginPageInfo
+            {
+                Name = "spotifyimportmap",
+                DisplayName = "Spotify Import - Map",
+                EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.Configuration.manualMapConfig.html", GetType().Namespace),
+                EnableInMainMenu = true,
+            },
+            new PluginPageInfo
+            {
+                Name = "spotifyimportmapjs",
+                EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.Configuration.manualMapConfig.js", GetType().Namespace),
+            },
         };
     }
 

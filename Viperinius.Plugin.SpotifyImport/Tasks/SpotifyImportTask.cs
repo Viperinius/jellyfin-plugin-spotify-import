@@ -74,6 +74,12 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
                 return;
             }
 
+            var manualMapStore = new ManualMapStore(_loggerFactory.CreateLogger<ManualMapStore>());
+            if (!manualMapStore.Load())
+            {
+                _logger.LogWarning("Failed to load manual track map, but continuing without it");
+            }
+
             var spotify = new SpotifyPlaylistProvider(_loggerFactory.CreateLogger<SpotifyPlaylistProvider>(), _loggerFactory.CreateLogger<SpotifyLogger>());
             spotify.SetUpProvider();
 
@@ -112,7 +118,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
                     _libraryManager,
                     _userManager,
                     spotify.Playlists,
-                    userPlaylistMapping);
+                    userPlaylistMapping,
+                    manualMapStore);
             await playlistSync.Execute(cancellationToken).ConfigureAwait(false);
         }
 

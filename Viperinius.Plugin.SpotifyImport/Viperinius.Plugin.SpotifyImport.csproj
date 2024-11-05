@@ -19,6 +19,7 @@
     <PackageReference Include="Jellyfin.Extensions" Version="10.9.9" />
     <PackageReference Include="Jellyfin.Model" Version="10.9.9" />
     <PackageReference Include="Jellyfin.Naming" Version="10.9.9" />
+    <PackageReference Include="JsonSchema.Net" Version="7.2.3" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="SerilogAnalyzer" Version="0.15.0" PrivateAssets="All" />
@@ -29,8 +30,13 @@
   <ItemGroup>
     <None Remove="Configuration\configPage.html" />
     <None Remove="Configuration\playlistConfig.js" />
+    <None Remove="Configuration\manualMapConfig.html" />
+    <None Remove="Configuration\manualMapConfig.js" />
     <EmbeddedResource Include="Configuration\configPage.html" />
     <EmbeddedResource Include="Configuration\playlistConfig.js" />
+    <EmbeddedResource Include="Configuration\manualMapConfig.html" />
+    <EmbeddedResource Include="Configuration\manualMapConfig.js" />
+    <EmbeddedResource Include="..\schemas\manual_track_map.schema.json" />
   </ItemGroup>
   <!-- make internal parts visible to test project -->
   <ItemGroup>
@@ -38,6 +44,6 @@
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
-    <Exec Command="SET jfpath=$(APPDATA)\..\Local\jellyfin\plugins\$(TargetName)&#xD;&#xA;if not exist &quot;%25jfpath%25&quot; mkdir &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetPath)&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)SpotifyAPI.Web.dll&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)Fastenshtein.dll&quot; &quot;%25jfpath%25&quot;" />
+    <Exec Command="SET jfpath=$(APPDATA)\..\Local\jellyfin\plugins\$(TargetName)&#xD;&#xA;if not exist &quot;%25jfpath%25&quot; mkdir &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetPath)&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)SpotifyAPI.Web.dll&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)Fastenshtein.dll&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)Json.More.dll&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)JsonPointer.Net.dll&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)JsonSchema.Net.dll&quot; &quot;%25jfpath%25&quot;" />
   </Target>
 </Project>
