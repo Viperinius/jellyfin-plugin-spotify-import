@@ -16,13 +16,13 @@ namespace Viperinius.Plugin.SpotifyImport
     {
         private static readonly string _schemaResourceName = $"{Plugin.PluginApiBase}.manual_track_map.schema.json";
 
-        private readonly ILogger<ManualMapStore> _logger;
+        private readonly ILogger<ManualMapStore>? _logger;
         private List<ManualMapTrack> _tracks;
         private static JsonSchema? _schema;
 
         private JsonSerializerOptions _serializerOpts;
 
-        public ManualMapStore(ILogger<ManualMapStore> logger)
+        public ManualMapStore(ILogger<ManualMapStore>? logger = null)
         {
             _logger = logger;
             _tracks = new List<ManualMapTrack>();
@@ -77,7 +77,7 @@ namespace Viperinius.Plugin.SpotifyImport
             {
                 if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                 {
-                    _logger.LogInformation("Manual track map is empty, skip loading it");
+                    _logger?.LogInformation("Manual track map is empty, skip loading it");
                 }
 
                 return false;
@@ -95,21 +95,21 @@ namespace Viperinius.Plugin.SpotifyImport
 
             if (jsonNode == null)
             {
-                _logger.LogError("Failed to parse manual track map json");
+                _logger?.LogError("Failed to parse manual track map json");
                 return false;
             }
 
             var (isOk, version) = ValidateJsonSchema(jsonNode);
             if (!isOk)
             {
-                _logger.LogError("Manual track map does not follow the expected schema");
+                _logger?.LogError("Manual track map does not follow the expected schema");
                 return false;
             }
 
             var mapSchemaVersion = jsonNode["Version"]?.GetValue<string>();
             if (string.IsNullOrWhiteSpace(mapSchemaVersion))
             {
-                _logger.LogError("Manual track map does not have a schema version set");
+                _logger?.LogError("Manual track map does not have a schema version set");
                 return false;
             }
 
@@ -117,14 +117,14 @@ namespace Viperinius.Plugin.SpotifyImport
             var actualSchemaVersion = Version.Parse(mapSchemaVersion);
             if (actualSchemaVersion > expectedMinSchemaVersion)
             {
-                _logger.LogError("Manual track map has an invalid schema version set");
+                _logger?.LogError("Manual track map has an invalid schema version set");
                 return false;
             }
 
             var tracks = JsonSerializer.Deserialize<List<ManualMapTrack>>(jsonNode["Items"]);
             if (tracks == null)
             {
-                _logger.LogError("Failed to deserialise the manual track map json");
+                _logger?.LogError("Failed to deserialise the manual track map json");
                 return false;
             }
 
