@@ -210,7 +210,7 @@ function getTableData(page) {
             const tds = r.querySelectorAll('td');
             if (tds.length === 6) {
                 const trackId = tds[0].querySelector('.viewCell > a').getAttribute(attrTrackId).trim();
-                if (!trackId) {
+                if (!trackId || trackId === dummyText) {
                     return [];
                 }
 
