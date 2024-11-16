@@ -114,14 +114,15 @@ namespace Viperinius.Plugin.SpotifyImport
                     return false;
                 }
 
-                if (obj is ProviderTrackInfo info)
+                if (obj.GetType() == typeof(ProviderTrackInfo))
                 {
-                    return Equals(info);
+                    return Equals(obj as ProviderTrackInfo);
                 }
 
-                if (obj is ProviderTrack other)
+                if (obj.GetType() == typeof(ProviderTrack))
                 {
-                    return Name == other.Name &&
+                    var other = obj as ProviderTrack;
+                    return Name == other!.Name &&
                            AlbumName == other.AlbumName &&
                            AlbumArtistNames == other.AlbumArtistNames &&
                            ArtistNames == other.ArtistNames;

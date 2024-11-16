@@ -20,7 +20,7 @@ namespace Viperinius.Plugin.SpotifyImport
         private List<ManualMapTrack> _tracks;
         private static JsonSchema? _schema;
 
-        private JsonSerializerOptions _serializerOpts;
+        private readonly JsonSerializerOptions _serializerOpts;
 
         public ManualMapStore(ILogger<ManualMapStore>? logger = null)
         {

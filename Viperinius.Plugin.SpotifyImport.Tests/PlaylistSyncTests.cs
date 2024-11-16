@@ -515,7 +515,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
             var prov = TrackHelper.CreateProviderItem("You Make My Dreams (Come True)", "Voices", new List<string> { "Daryl Hall & John Oates" }, new List<string> { "Daryl Hall & John Oates" });
 
-            var (jfTrackCorrect, jfAlbumCorrect, jfArtistCorrect) = TrackHelper.CreateAllJfItems("You Make My Dreams (Come True)", "Voices", "Daryl Hall & John Oates", "Daryl Hall & John Oates");
+            var (jfTrackCorrect, _, jfArtistCorrect) = TrackHelper.CreateAllJfItems("You Make My Dreams (Come True)", "Voices", "Daryl Hall & John Oates", "Daryl Hall & John Oates");
             jfTrackCorrect.Id = Guid.Parse("99999999-0000-0000-0000-000000000000");
             jfArtistCorrect.Id = Guid.Parse("00000000-0000-0000-0000-000000000010");
 
