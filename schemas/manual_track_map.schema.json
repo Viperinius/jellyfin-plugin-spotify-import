@@ -1,0 +1,85 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://raw.githubusercontent.com/Viperinius/jellyfin-plugin-spotify-import/refs/heads/master/schemas/manual_track_map.schema.json",
+    "title": "Viperinius.Plugin.SpotifyImport Manual Track Map",
+    "description": "Map between Jellyfin and provider tracks",
+    "type": "object",
+    "properties": {
+        "Version": {
+            "description": "Used schema version",
+            "type": "string",
+            "const": "1.0.0"
+        },
+        "Items": {
+            "description": "List of mapping entries",
+            "type": "array",
+            "items": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$id": "manual_track_map_entry",
+                "title": "Viperinius.Plugin.SpotifyImport Manual Track Mapping Entry",
+                "description": "Associates a provider track with certain Jellyfin objects",
+                "type": "object",
+                "properties": {
+                    "Jellyfin": {
+                        "description": "Target Jellyfin IDs",
+                        "type": "object",
+                        "properties": {
+                            "Track": {
+                                "description": "Jellyfin track ID",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "Track"
+                        ]
+                    },
+                    "Provider": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "$id": "provider_track",
+                        "title": "Viperinius.Plugin.SpotifyImport Provider Track",
+                        "description": "Represents info about a track from a provider",
+                        "type": "object",
+                        "properties": {
+                            "Name": {
+                                "description": "Track name",
+                                "type": "string"
+                            },
+                            "AlbumName": {
+                                "description": "Album name",
+                                "type": "string"
+                            },
+                            "ArtistNames": {
+                                "description": "List of artist names",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "AlbumArtistNames": {
+                                "description": "List of album artist names",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "Name",
+                            "AlbumName",
+                            "ArtistNames",
+                            "AlbumArtistNames"
+                        ]
+                    }
+                },
+                "required": [
+                    "Jellyfin",
+                    "Provider"
+                ]
+            }
+        }
+    },
+    "required": [
+        "Version",
+        "Items"
+    ]
+}

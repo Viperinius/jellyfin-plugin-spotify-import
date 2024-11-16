@@ -38,6 +38,9 @@ namespace Viperinius.Plugin.SpotifyImport
                         // print this info to ease finding the config dir when setting up debug logging
                         _logger.LogInformation("Jellyfin Configuration Directory: {Path}", Plugin.Instance.GetServerApplicationPaths().ConfigurationDirectoryPath);
 
+                        var tmpManualMapStore = new ManualMapStore();
+                        _logger.LogInformation("Path to manual track map: {Path}", tmpManualMapStore.FilePath);
+
                         _logger.LogInformation("Checking for any needed migrations...");
                     }
 
