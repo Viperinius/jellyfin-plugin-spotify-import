@@ -534,7 +534,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
                 jfArtistCorrect,
                 jfArtistOther2
             });
-            var wrapper = new PlaylistSyncWrapper(loggerMock, plManagerMock, libManagerMock, userManagerMock, new List<ProviderPlaylistInfo>(), new Dictionary<string, string>());
+            var wrapper = new PlaylistSyncWrapper(loggerMock, plManagerMock, libManagerMock, userManagerMock, new List<ProviderPlaylistInfo>(), new Dictionary<string, string>(), new ManualMapStore(Substitute.For<ILogger<ManualMapStore>>()));
 
             var result = wrapper.WrapGetMatchingTrack(prov, out var failedCrit);
             Assert.NotNull(result);
