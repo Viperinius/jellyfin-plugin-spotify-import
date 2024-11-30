@@ -15,6 +15,9 @@ artifacts:
 - "Viperinius.Plugin.SpotifyImport.dll"
 - "SpotifyAPI.Web.dll"
 - "Fastenshtein.dll"
+- "Json.More.dll"
+- "JsonPointer.Net.dll"
+- "JsonSchema.Net.dll"
 changelog: |2-
   # Changelog
 
