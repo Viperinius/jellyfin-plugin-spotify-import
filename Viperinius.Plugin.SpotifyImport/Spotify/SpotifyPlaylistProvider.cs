@@ -71,8 +71,14 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             {
                 var playlists = new List<ProviderPlaylistInfo>();
                 spotifyPlaylists = await _spotifyClient.Playlists.GetUsers(target.Id, cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
-                await foreach (var playlist in _spotifyClient.Paginate(spotifyPlaylists))
+                await foreach (var playlist in _spotifyClient.Paginate(spotifyPlaylists).ConfigureAwait(false))
                 {
+                    if (playlist == null)
+                    {
+                        // playlist can be null if it is owned by Spotify (as of 27.11.2024 the Spotify API does not return those anymore...)
+                        continue;
+                    }
+
                     var ownerId = playlist.Owner != null ? playlist.Owner.Id : string.Empty;
 
                     if (target.OnlyOwnPlaylists && ownerId != target.Id)
@@ -127,7 +133,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 var tracks = new List<ProviderTrackInfo>();
                 if (playlist.Tracks != null)
                 {
-                    await foreach (var track in _spotifyClient.Paginate(playlist.Tracks))
+                    await foreach (var track in _spotifyClient.Paginate(playlist.Tracks).ConfigureAwait(false))
                     {
                         var trackInfo = GetTrackInfo(track);
                         if (trackInfo != null)
