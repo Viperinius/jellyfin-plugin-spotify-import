@@ -26,7 +26,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             _apiLogger = apiLogger;
         }
 
-        public override string Name => "Spotify";
+        public override string Name => ProviderName;
 
         public override Uri ApiUrl => throw new NotImplementedException();
 
@@ -73,6 +73,11 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 spotifyPlaylists = await _spotifyClient.Playlists.GetUsers(target.Id, cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
                 await foreach (var playlist in _spotifyClient.Paginate(spotifyPlaylists).ConfigureAwait(false))
                 {
+                    if (cancellationToken?.IsCancellationRequested ?? false)
+                    {
+                        return null;
+                    }
+
                     if (playlist == null)
                     {
                         // playlist can be null if it is owned by Spotify (as of 27.11.2024 the Spotify API does not return those anymore...)
@@ -135,6 +140,11 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 {
                     await foreach (var track in _spotifyClient.Paginate(playlist.Tracks).ConfigureAwait(false))
                     {
+                        if (cancellationToken?.IsCancellationRequested ?? false)
+                        {
+                            return null;
+                        }
+
                         var trackInfo = GetTrackInfo(track);
                         if (trackInfo != null)
                         {

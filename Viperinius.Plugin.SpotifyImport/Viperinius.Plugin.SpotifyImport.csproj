@@ -13,6 +13,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Fastenshtein" Version="1.0.10" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.71" />
     <PackageReference Include="Jellyfin.Common" Version="10.10.3" />
     <PackageReference Include="Jellyfin.Controller" Version="10.10.3" />
     <PackageReference Include="Jellyfin.Data" Version="10.10.3" />
@@ -44,6 +45,6 @@
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
-    <Exec Command="SET jfpath=..\jellyfin_srv_\data\plugins\$(TargetName)&#xD;&#xA;if not exist &quot;%25jfpath%25&quot; mkdir &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetPath)&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)SpotifyAPI.Web.dll&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)Fastenshtein.dll&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)Json.More.dll&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)JsonPointer.Net.dll&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)JsonSchema.Net.dll&quot; &quot;%25jfpath%25&quot;" />
+    <Exec Command="SET jfpath=..\jellyfin_srv_\data\plugins\$(TargetName)&#xD;&#xA;if not exist &quot;%25jfpath%25&quot; mkdir &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetPath)&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)SpotifyAPI.Web.dll&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)Fastenshtein.dll&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)Json.More.dll&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)JsonPointer.Net.dll&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)JsonSchema.Net.dll&quot; &quot;%25jfpath%25&quot;&#xD;&#xA;copy /y &quot;$(TargetDir)HtmlAgilityPack.dll&quot; &quot;%25jfpath%25&quot;" />
   </Target>
 </Project>

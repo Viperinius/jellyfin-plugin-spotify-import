@@ -20,6 +20,7 @@ public class PluginConfiguration : BasePluginConfiguration
     {
         Version = string.Empty;
         SpotifyClientId = string.Empty;
+        SpotifyCookie = string.Empty;
         Playlists = Array.Empty<TargetPlaylistConfiguration>();
         Users = Array.Empty<TargetUserConfiguration>();
         ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.TrackName | ItemMatchCriteria.AlbumName | ItemMatchCriteria.AlbumArtists | ItemMatchCriteria.Artists);
@@ -47,6 +48,11 @@ public class PluginConfiguration : BasePluginConfiguration
     /// Gets or sets the Spotify client ID.
     /// </summary>
     public string SpotifyClientId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Spotify session cookies.
+    /// </summary>
+    public string SpotifyCookie { get; set; }
 
     /// <summary>
     /// Gets or sets the targeted playlists.

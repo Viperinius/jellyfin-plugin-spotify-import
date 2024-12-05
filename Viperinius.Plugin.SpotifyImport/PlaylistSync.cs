@@ -25,7 +25,7 @@ namespace Viperinius.Plugin.SpotifyImport
         private readonly IPlaylistManager _playlistManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
-        private readonly List<ProviderPlaylistInfo> _providerPlaylists;
+        private readonly IEnumerable<ProviderPlaylistInfo> _providerPlaylists;
         private readonly Dictionary<string, string> _userPlaylistIds;
         private readonly ManualMapStore _manualMapStore;
 
@@ -34,7 +34,7 @@ namespace Viperinius.Plugin.SpotifyImport
             IPlaylistManager playlistManager,
             ILibraryManager libraryManager,
             IUserManager userManager,
-            List<ProviderPlaylistInfo> playlists,
+            IEnumerable<ProviderPlaylistInfo> playlists,
             Dictionary<string, string> userPlaylistIds,
             ManualMapStore manualMapStore)
         {
