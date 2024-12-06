@@ -18,6 +18,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
     /// </summary>
     public class SpotifyImportTask : IScheduledTask
     {
+        private const string SpotifyOwnedIdPrefix = "37i9dQZ";
+
         private readonly ILogger<SpotifyImportTask> _logger;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IPlaylistManager _playlistManager;
@@ -67,7 +69,20 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
             }
 
             var followedUsers = Plugin.Instance?.Configuration.Users ?? Array.Empty<TargetUserConfiguration>();
-            var playlistIds = Plugin.Instance?.Configuration.Playlists.Select(p => p.Id).ToList() ?? new List<string>();
+            var playlistIds = new List<string>();
+            var playlistIdsAlt = new List<string>();
+            foreach (var playlist in Plugin.Instance?.Configuration.Playlists ?? Array.Empty<TargetPlaylistConfiguration>())
+            {
+                if (playlist.Id.StartsWith(SpotifyOwnedIdPrefix, StringComparison.InvariantCulture))
+                {
+                    // playlist is owned by Spotify
+                    playlistIdsAlt.Add(playlist.Id);
+                }
+                else
+                {
+                    playlistIds.Add(playlist.Id);
+                }
+            }
 
             if (followedUsers.Length == 0 && playlistIds.Count == 0)
             {
@@ -82,6 +97,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
 
             var spotify = new SpotifyPlaylistProvider(_loggerFactory.CreateLogger<SpotifyPlaylistProvider>(), _loggerFactory.CreateLogger<SpotifyLogger>());
             spotify.SetUpProvider();
+            var spotifyAlt = new SpotifyAltPlaylistProvider(_loggerFactory.CreateLogger<SpotifyAltPlaylistProvider>(), _loggerFactory.CreateLogger<Utils.HttpRequest>());
+            spotifyAlt.SetUpProvider();
 
             // check if any users are given whose playlists need to be included
             var userPlaylistMapping = new Dictionary<string, string>();
@@ -89,35 +106,53 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
             {
                 foreach (var user in followedUsers)
                 {
-                    var userPlaylists = await spotify.GetUserPlaylistIds(user, cancellationToken).ConfigureAwait(false);
-                    if (userPlaylists != null)
+                    // get playlists created / shared with user
+                    var userPlaylists = await spotify.GetUserPlaylistIds(user, cancellationToken).ConfigureAwait(false) ?? new List<string>();
+                    // get playlists owned by spotify
+                    userPlaylists.AddRange(await spotifyAlt.GetUserPlaylistIds(user, cancellationToken).ConfigureAwait(false) ?? new List<string>());
+
+                    userPlaylists.ForEach(id =>
                     {
-                        playlistIds.AddRange(userPlaylists);
-                        userPlaylists.ForEach(id =>
+                        if (id.StartsWith(SpotifyOwnedIdPrefix, StringComparison.InvariantCulture))
                         {
-                            if (userPlaylistMapping.ContainsKey(id))
-                            {
-                                _logger.LogWarning("Found and ignored duplicate playlist id {Id} of user {User}", id, user.Id);
-                            }
-                            else
-                            {
-                                userPlaylistMapping.Add(id, user.Id);
-                            }
-                        });
-                    }
+                            // playlist is owned by Spotify
+                            playlistIdsAlt.Add(id);
+                        }
+                        else
+                        {
+                            playlistIds.Add(id);
+                        }
+
+                        if (userPlaylistMapping.ContainsKey(id))
+                        {
+                            _logger.LogWarning("Found and ignored duplicate playlist id {Id} of user {User}", id, user.Id);
+                        }
+                        else
+                        {
+                            userPlaylistMapping.Add(id, user.Id);
+                        }
+                    });
                 }
 
                 playlistIds = playlistIds.Distinct().ToList();
+                playlistIdsAlt = playlistIdsAlt.Distinct().ToList();
             }
 
             await spotify.PopulatePlaylists(playlistIds, cancellationToken).ConfigureAwait(false);
+            foreach (var playlist in spotify.Playlists)
+            {
+                playlistIds.Remove(playlist.Id);
+            }
+
+            // try to get any missing and spotify owned playlists using alternative method
+            await spotifyAlt.PopulatePlaylists([..playlistIdsAlt, ..playlistIds], cancellationToken).ConfigureAwait(false);
 
             var playlistSync = new PlaylistSync(
                     _loggerFactory.CreateLogger<PlaylistSync>(),
                     _playlistManager,
                     _libraryManager,
                     _userManager,
-                    spotify.Playlists,
+                    spotify.Playlists.Concat(spotifyAlt.Playlists),
                     userPlaylistMapping,
                     manualMapStore);
             await playlistSync.Execute(cancellationToken).ConfigureAwait(false);

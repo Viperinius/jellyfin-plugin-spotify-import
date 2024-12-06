@@ -18,6 +18,7 @@ artifacts:
 - "Json.More.dll"
 - "JsonPointer.Net.dll"
 - "JsonSchema.Net.dll"
+- "HtmlAgilityPack.dll"
 changelog: |2-
   # Changelog
 

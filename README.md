@@ -96,6 +96,21 @@ Afterwards, following runs of the import task will include all playlists of this
 > It is currently not possible to rename the playlists. Nor is it possible to selectively import only some of the playlists of a user without specifying each targeted playlist as described in [Add Playlist](#add-playlist).
 > The `Always From Scratch` option available for individual playlists is also not used here currently.
 
+> [!IMPORTANT]
+> Since 27th November 2024 any playlists owned / created by Spotify (e.g. `Release Radar`) are no longer accessible using the normal authentication method (client ID + authorisation). The plugin uses a workaround to still be able to import those playlists, but with a caveat:
+> If you want to import such playlists through the `User Configuration`, a Spotify web session cookie needs to be set in the plugin settings, see [below](#setting-spotify-cookie).
+
+#### Setting Spotify Cookie
+
+To configure a Spotify session cookie as authentication fallback, follow these steps:
+
+1. Open the [Spotify web client](https://open.spotify.com/) and sign in
+2. Open the developer tools of your browser by pressing F12
+3. Depending on your browser, go to the section listing current cookies:
+    - Firefox: Tab `Storage`, then expand the `Cookies` section on the left and click on the entry for `https://open.spotify.com`
+    - Chrome / Edge: Tab `Application`, then expand the `Cookies` section on the left and click on the entry for `https://open.spotify.com`
+4. You should see a cookie with the name `sp_dc` (if not, make sure you are logged in), copy its `Value` entry
+5. Paste it in the field `Spotify Session Cookie` of the plugin configuration page
 
 #### Save Changes
 
@@ -130,7 +145,7 @@ Example with max. differences set to 2:
 
 If you have a track with a name wildly different to its equivalent on Spotify or it's not covered by the existing track matching for other reasons, you can define a "manual mapping entry" for this track. If a given Spotify track in this map is part of a playlist, it will always get matched with the defined Jellyfin track.
 
-Defining an entry can be done via a page on the Jellyfin admin dashboard (at the bottom of the admin panel you can go to `Spotify Import - Map`). Add a new row there and fill it with the Spotify track information as well as the targeted Jellyfin track ID. To get that ID, navigate to the track in the web UI and paste in its link or click the three dots of it, click on `Copy Stream URI` and paste that into the `Jellyfin Track` field. After parsing the link (click the check mark), you should see the track name instead.
+Defining an entry can be done via a page on the Jellyfin admin dashboard (at the bottom of the admin panel plugin section you can go to `Spotify Import - Map`). Add a new row there and fill it with the Spotify track information as well as the targeted Jellyfin track ID. To get that ID, navigate to the track in the web UI and paste in its link or click the three dots of it, click on `Copy Stream URI` and paste that into the `Jellyfin Track` field. After parsing the link (click the check mark), you should see the track name instead.
 When done adding rows, save the map.
 
 > [!TIP]
