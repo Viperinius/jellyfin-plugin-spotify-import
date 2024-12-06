@@ -35,7 +35,8 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
 
         public static string BuildUrlQuery(Dictionary<string, string> args)
         {
-            return new FormUrlEncodedContent(args).ReadAsStringAsync().Result;
+            using var content = new FormUrlEncodedContent(args);
+            return content.ReadAsStringAsync().Result;
         }
 
         public static string GetResponseContentString(HttpResponseMessage response)
