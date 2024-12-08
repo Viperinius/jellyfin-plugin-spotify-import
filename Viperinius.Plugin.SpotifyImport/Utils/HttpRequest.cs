@@ -83,7 +83,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
 
                     if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                     {
-                        _logger.LogDebug("HTTP {Method} for {Url}", method, url);
+                        _logger.LogInformation("HTTP {Method} for {Url}", method, url);
                     }
 
                     var res = await _httpClient.SendAsync(req, HttpCompletionOption.ResponseContentRead, cancellationToken.Token).ConfigureAwait(false);
@@ -92,7 +92,10 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
                 }
                 catch (HttpRequestException e)
                 {
-                    _logger.LogDebug(e, "Request failed (try {Index}/{Max})", ii + 1, MaxRetries);
+                    if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
+                    {
+                        _logger.LogInformation(e, "Request failed (try {Index}/{Max})", ii + 1, MaxRetries);
+                    }
                 }
                 catch (TaskCanceledException)
                 {

@@ -200,7 +200,7 @@ namespace Viperinius.Plugin.SpotifyImport
             {
                 if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                 {
-                    _logger.LogDebug("Found manual mapping for track with id {Id}", manualTrack.Jellyfin.Track);
+                    _logger.LogInformation("Found manual mapping for track with id {Id}", manualTrack.Jellyfin.Track);
                 }
 
                 return _libraryManager.GetItemById<Audio>(Guid.Parse(manualTrack.Jellyfin.Track));
@@ -226,7 +226,7 @@ namespace Viperinius.Plugin.SpotifyImport
 
                 if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                 {
-                    _logger.LogDebug("> Found matching artist {Name} {Id}", artist.Name, artist.Id);
+                    _logger.LogInformation("> Found matching artist {Name} {Id}", artist.Name, artist.Id);
                 }
 
                 var albumNextIndex = 0;
@@ -241,7 +241,7 @@ namespace Viperinius.Plugin.SpotifyImport
 
                     if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                     {
-                        _logger.LogDebug("> Found matching album {Name} {Id}", album.Name, album.Id);
+                        _logger.LogInformation("> Found matching album {Name} {Id}", album.Name, album.Id);
                     }
 
                     if (!CheckAlbumArtist(album, providerTrackInfo))
@@ -252,7 +252,7 @@ namespace Viperinius.Plugin.SpotifyImport
 
                     if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                     {
-                        _logger.LogDebug("> Album artists ok");
+                        _logger.LogInformation("> Album artists ok");
                     }
 
                     var tracks = GetTrack(album, providerTrackInfo);
@@ -300,7 +300,7 @@ namespace Viperinius.Plugin.SpotifyImport
 
             if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
             {
-                _logger.LogDebug("> Found {Count} tracks when searching for {Name}", queryResult.Items.Count, providerTrackInfo.Name);
+                _logger.LogInformation("> Found {Count} tracks when searching for {Name}", queryResult.Items.Count, providerTrackInfo.Name);
             }
 
             foreach (var item in queryResult.Items)
@@ -314,7 +314,7 @@ namespace Viperinius.Plugin.SpotifyImport
                 {
                     if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                     {
-                        _logger.LogDebug("> Found matching track {Name} {Id}", audioItem.Name, audioItem.Id);
+                        _logger.LogInformation("> Found matching track {Name} {Id}", audioItem.Name, audioItem.Id);
                     }
 
                     return audioItem;
@@ -351,7 +351,7 @@ namespace Viperinius.Plugin.SpotifyImport
                     _logger.LogInformation("> Reached end of jellyfin artist list");
                     if (queryResult.Items.Count == 0)
                     {
-                        _logger.LogDebug("> Did not find any artists for the name {Name}", artistName);
+                        _logger.LogInformation("> Did not find any artists for the name {Name}", artistName);
                     }
                 }
 
@@ -375,7 +375,7 @@ namespace Viperinius.Plugin.SpotifyImport
                 {
                     if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                     {
-                        _logger.LogDebug(
+                        _logger.LogInformation(
                             "> Artist did not match: {Name} [Jellyfin, {Id}], {Name} [Provider]",
                             artist.Name,
                             artist.Id,
@@ -439,7 +439,7 @@ namespace Viperinius.Plugin.SpotifyImport
                 {
                     if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                     {
-                        _logger.LogDebug(
+                        _logger.LogInformation(
                             "> Album did not match: {Name} [Jellyfin, {Id}], {Name} [Provider]",
                             album.Name,
                             album.Id,
@@ -459,7 +459,7 @@ namespace Viperinius.Plugin.SpotifyImport
             {
                 if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                 {
-                    _logger.LogDebug(
+                    _logger.LogInformation(
                         ">> Checking server track {Name} [{Album}][{AlbumArtist}][{Artist}]",
                         item.Name,
                         album.Name,
@@ -482,7 +482,7 @@ namespace Viperinius.Plugin.SpotifyImport
                         level = (ItemMatchLevel)checkResult.MatchedLevel;
                         if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                         {
-                            _logger.LogDebug("> Found matching potential track {Name} {Id}", item.Name, item.Id);
+                            _logger.LogInformation("> Found matching potential track {Name} {Id}", item.Name, item.Id);
                         }
                     }
                 }

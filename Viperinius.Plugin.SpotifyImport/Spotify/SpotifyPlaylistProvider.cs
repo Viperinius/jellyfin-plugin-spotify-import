@@ -242,7 +242,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             {
             }
 
-            _logger.LogDebug("Received: \n{Object}", objString);
+            _logger.LogInformation("Received: \n{Object}", objString);
         }
     }
 }
