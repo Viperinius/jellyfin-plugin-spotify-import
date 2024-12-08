@@ -13,6 +13,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
 {
     internal class HttpRequest
     {
+        private const int MaxRetries = 3;
         private readonly string _userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0"; // use a hardcoded UA for now
         private readonly ILogger<HttpRequest> _logger;
 
@@ -51,45 +52,55 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
 
         private async Task<HttpResponseMessage?> Request(Uri url, HttpMethod method, HttpContent? content = null, HttpRequestHeaders? headers = null, string? cookies = null)
         {
-            try
+            for (int ii = 0; ii < MaxRetries; ii++)
             {
-                using var cancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-                using var req = new HttpRequestMessage(method, url);
-                if (headers != null)
+                try
                 {
-                    foreach (var header in headers)
+                    using var cancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+                    using var req = new HttpRequestMessage(method, url);
+                    if (headers != null)
                     {
-                        req.Headers.Add(header.Key, header.Value);
+                        foreach (var header in headers)
+                        {
+                            req.Headers.Add(header.Key, header.Value);
+                        }
+                    }
+
+                    if (req.Headers.UserAgent.Count == 0)
+                    {
+                        req.Headers.UserAgent.ParseAdd(_userAgent);
+                    }
+
+                    if (!string.IsNullOrEmpty(cookies))
+                    {
+                        req.Headers.Add("Cookie", cookies);
+                    }
+
+                    if (content != null)
+                    {
+                        req.Content = content;
+                    }
+
+                    if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
+                    {
+                        _logger.LogDebug("HTTP {Method} for {Url}", method, url);
+                    }
+
+                    var res = await _httpClient.SendAsync(req, HttpCompletionOption.ResponseContentRead, cancellationToken.Token).ConfigureAwait(false);
+                    res.EnsureSuccessStatusCode();
+                    return res;
+                }
+                catch (HttpRequestException e)
+                {
+                    _logger.LogDebug(e, "Request failed (try {Index}/{Max})", ii + 1, MaxRetries);
+                }
+                catch (TaskCanceledException)
+                {
+                    if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
+                    {
+                        _logger.LogInformation("Request timeout (try {Index}/{Max})", ii + 1, MaxRetries);
                     }
                 }
-
-                if (req.Headers.UserAgent.Count == 0)
-                {
-                    req.Headers.UserAgent.ParseAdd(_userAgent);
-                }
-
-                if (!string.IsNullOrEmpty(cookies))
-                {
-                    req.Headers.Add("Cookie", cookies);
-                }
-
-                if (content != null)
-                {
-                    req.Content = content;
-                }
-
-                if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
-                {
-                    _logger.LogDebug("HTTP {Method} for {Url}", method, url);
-                }
-
-                var res = await _httpClient.SendAsync(req, HttpCompletionOption.ResponseContentRead, cancellationToken.Token).ConfigureAwait(false);
-                res.EnsureSuccessStatusCode();
-                return res;
-            }
-            catch (HttpRequestException e)
-            {
-                _logger.LogDebug(e, "Request failed");
             }
 
             return null;
