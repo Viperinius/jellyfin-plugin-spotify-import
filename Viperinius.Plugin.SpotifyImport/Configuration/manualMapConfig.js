@@ -221,8 +221,8 @@ function getTableData(page) {
                     Provider: {
                         Name: tds[1].innerText.trim(),
                         AlbumName: tds[2].innerText.trim(),
-                        AlbumArtistNames: tds[3].innerText.trim().split(',').map(s => s.trim()),
-                        ArtistNames: tds[4].innerText.trim().split(',').map(s => s.trim()),
+                        AlbumArtistNames: tds[3].innerText.trim().split(',').flatMap(s => s.trim().length == 0 ? [] : s.trim()),
+                        ArtistNames: tds[4].innerText.trim().split(',').flatMap(s => s.trim().length == 0 ? [] : s.trim()),
                     },
                 };
             }
