@@ -302,7 +302,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 Description = description,
                 OwnerId = ownerId,
                 Tracks = tracks,
-                ProviderName = ProviderName.Replace("Alt", string.Empty, StringComparison.InvariantCulture),
+                ProviderName = ProviderName,
             };
         }
 
