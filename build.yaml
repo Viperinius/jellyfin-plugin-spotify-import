@@ -19,6 +19,10 @@ artifacts:
 - "JsonPointer.Net.dll"
 - "JsonSchema.Net.dll"
 - "HtmlAgilityPack.dll"
+#- "Microsoft.Data.Sqlite.dll"            # not needed as long as jellyfin uses the library as well and we keep the version in sync
+#- "SQLitePCLRaw.batteries_v2"            # 
+#- "SQLitePCLRaw.core.dll"                #
+#- "SQLitePCLRaw.provider.e_sqlite3.dll"  #
 changelog: |2-
   # Changelog
 
