@@ -74,5 +74,7 @@ namespace Viperinius.Plugin.SpotifyImport
         protected abstract Task<ProviderPlaylistInfo?> GetPlaylist(string playlistId, CancellationToken? cancellationToken = null);
 
         protected abstract Task<ProviderTrackInfo?> GetTrack(string trackId, CancellationToken? cancellationToken = null);
+
+        protected abstract string CreatePlaylistState<T>(T data);
     }
 }

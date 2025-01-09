@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 using MediaBrowser.Controller.Playlists;
 using Microsoft.Extensions.Logging;
-using SpotifyAPI.Web;
 using Viperinius.Plugin.SpotifyImport.Configuration;
 using Viperinius.Plugin.SpotifyImport.Utils;
 
@@ -173,6 +172,16 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             throw new NotImplementedException();
         }
 
+        protected override string CreatePlaylistState<T>(T data)
+        {
+            if (data is JsonElement playlist && playlist.TryGetProperty("revisionId", out var jsonRevision))
+            {
+                return jsonRevision.GetString() ?? string.Empty;
+            }
+
+            return string.Empty;
+        }
+
         private void RefreshAuthToken()
         {
             if (AuthToken != null && ((SpotifyAltAuthToken)AuthToken).ExpirationUnixMs > DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeMilliseconds())
@@ -303,6 +312,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 OwnerId = ownerId,
                 Tracks = tracks,
                 ProviderName = ProviderName,
+                State = CreatePlaylistState(jsonPlaylist),
             };
         }
 

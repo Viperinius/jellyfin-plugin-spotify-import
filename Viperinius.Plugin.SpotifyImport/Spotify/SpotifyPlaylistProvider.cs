@@ -185,6 +185,16 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             throw new NotImplementedException();
         }
 
+        protected override string CreatePlaylistState<T>(T data)
+        {
+            if (data is FullPlaylist playlist)
+            {
+                return playlist.SnapshotId ?? string.Empty;
+            }
+
+            return string.Empty;
+        }
+
         private static ProviderTrackInfo? GetTrackInfo(PlaylistTrack<IPlayableItem> track)
         {
             if (track == null || track.Track == null)
