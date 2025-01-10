@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
@@ -40,6 +41,11 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     /// Gets the base path for the plugin API.
     /// </summary>
     public static string PluginApiBase => $"{nameof(Viperinius)}.{nameof(Viperinius.Plugin)}.{nameof(SpotifyImport)}";
+
+    /// <summary>
+    /// Gets the path to the db file.
+    /// </summary>
+    public string DbPath => Path.Combine(DataFolderPath, "plugin.db");
 
     /// <summary>
     /// Gets the current plugin instance.

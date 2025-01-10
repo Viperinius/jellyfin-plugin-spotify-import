@@ -95,9 +95,11 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
                 _logger.LogWarning("Failed to load manual track map, but continuing without it");
             }
 
-            var spotify = new SpotifyPlaylistProvider(_loggerFactory.CreateLogger<SpotifyPlaylistProvider>(), _loggerFactory.CreateLogger<SpotifyLogger>());
+            using var db = new Utils.DbRepository(Plugin.Instance!.DbPath);
+
+            var spotify = new SpotifyPlaylistProvider(db, _loggerFactory.CreateLogger<SpotifyPlaylistProvider>(), _loggerFactory.CreateLogger<SpotifyLogger>());
             spotify.SetUpProvider();
-            var spotifyAlt = new SpotifyAltPlaylistProvider(_loggerFactory.CreateLogger<SpotifyAltPlaylistProvider>(), _loggerFactory.CreateLogger<Utils.HttpRequest>());
+            var spotifyAlt = new SpotifyAltPlaylistProvider(db, _loggerFactory.CreateLogger<SpotifyAltPlaylistProvider>(), _loggerFactory.CreateLogger<Utils.HttpRequest>());
             spotifyAlt.SetUpProvider();
 
             // check if any users are given whose playlists need to be included

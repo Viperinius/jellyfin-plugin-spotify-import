@@ -23,8 +23,9 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
         private readonly HttpRequest _httpRequest;
 
         public SpotifyAltPlaylistProvider(
+            DbRepository dbRepository,
             ILogger<SpotifyAltPlaylistProvider> logger,
-            ILogger<HttpRequest> httpLogger) : base(logger)
+            ILogger<HttpRequest> httpLogger) : base(dbRepository, logger)
         {
             _logger = logger;
             _httpRequest = new HttpRequest(httpLogger);
@@ -118,7 +119,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             return playlists;
         }
 
-        protected override async Task<ProviderPlaylistInfo?> GetPlaylist(string playlistId, CancellationToken? cancellationToken = null)
+        protected override async Task<ProviderPlaylistInfo?> GetPlaylist(string playlistId, bool includeTracks, CancellationToken? cancellationToken = null)
         {
             var pageLimit = 100;
             var offset = 0;
@@ -148,6 +149,11 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 if (!jsonPlaylist.TryGetProperty("content", out var jsonContent))
                 {
                     return null;
+                }
+
+                if (!includeTracks)
+                {
+                    break;
                 }
 
                 totalTrackCount = GetApiItemsCount(jsonContent);

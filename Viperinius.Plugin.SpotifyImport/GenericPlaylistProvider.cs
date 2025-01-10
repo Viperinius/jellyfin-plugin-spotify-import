@@ -6,16 +6,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Viperinius.Plugin.SpotifyImport.Configuration;
+using Viperinius.Plugin.SpotifyImport.Utils;
 
 namespace Viperinius.Plugin.SpotifyImport
 {
     internal abstract class GenericPlaylistProvider
     {
         private readonly ILogger<GenericPlaylistProvider> _logger;
+        private readonly DbRepository _dbRepository;
 
-        protected GenericPlaylistProvider(ILogger<GenericPlaylistProvider> logger)
+        protected GenericPlaylistProvider(DbRepository dbRepository, ILogger<GenericPlaylistProvider> logger)
         {
             _logger = logger;
+            _dbRepository = dbRepository;
             Playlists = new List<ProviderPlaylistInfo>();
         }
 
@@ -55,12 +58,30 @@ namespace Viperinius.Plugin.SpotifyImport
 
             foreach (var playlistId in playlistIds)
             {
-                var playlist = await GetPlaylist(playlistId, cancellationToken).ConfigureAwait(false);
+                var playlist = await GetPlaylist(playlistId, false, cancellationToken).ConfigureAwait(false);
                 if (playlist != null)
                 {
-                    Playlists.Add(playlist);
+                    var previousState = _dbRepository.GetLastProviderPlaylistState(Name, playlist.Id);
+                    if (!string.IsNullOrEmpty(previousState) && playlist.State == previousState)
+                    {
+                        _logger.LogInformation("Skipped playlist {Name} ({Id}) as there are no changes", playlist.Name, playlist.Id);
+                        // TODO: dont fully skip the playlist but load the previous tracks from db to pass to playlist sync (in case new jellyfin matches are available)
+                        continue;
+                    }
+
+                    playlist = await GetPlaylist(playlistId, true, cancellationToken).ConfigureAwait(false);
+                    if (playlist != null)
+                    {
+                        if (!_dbRepository.UpsertProviderPlaylist(Name, playlist))
+                        {
+                            _logger.LogError("Failed to update / insert playlist {Name} ({Id}) into db", playlist.Name, playlistId);
+                        }
+
+                        Playlists.Add(playlist);
+                    }
                 }
-                else
+
+                if (playlist == null)
                 {
                     _logger.LogError("Failed to get playlist with id {Id}", playlistId);
                 }
@@ -71,7 +92,7 @@ namespace Viperinius.Plugin.SpotifyImport
             TargetUserConfiguration target,
             CancellationToken? cancellationToken = null);
 
-        protected abstract Task<ProviderPlaylistInfo?> GetPlaylist(string playlistId, CancellationToken? cancellationToken = null);
+        protected abstract Task<ProviderPlaylistInfo?> GetPlaylist(string playlistId, bool includeTracks, CancellationToken? cancellationToken = null);
 
         protected abstract Task<ProviderTrackInfo?> GetTrack(string trackId, CancellationToken? cancellationToken = null);
 
