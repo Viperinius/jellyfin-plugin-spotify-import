@@ -218,8 +218,17 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
 
                         var hasIsrc = fullTrack.ExternalIds.TryGetValue("isrc", out var isrc);
 
+                        var id = fullTrack.Id;
+                        if (id == null)
+                        {
+                            id = fullTrack.Uri ?? string.Empty;
+                            id = id.Replace("spotify:track:", string.Empty, StringComparison.InvariantCulture);
+                            id = id.Replace("spotify:local:", string.Empty, StringComparison.InvariantCulture);
+                        }
+
                         return new ProviderTrackInfo
                         {
+                            Id = id,
                             Name = fullTrack.Name,
                             IsrcId = hasIsrc ? isrc : null,
                             TrackNumber = (uint)fullTrack.TrackNumber,

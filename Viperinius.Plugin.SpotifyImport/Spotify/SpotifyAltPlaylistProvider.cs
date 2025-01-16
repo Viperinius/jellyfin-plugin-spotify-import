@@ -327,6 +327,14 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             if (jsonTrack.TryGetProperty("itemV2", out var jsonItem) &&
                 jsonItem.TryGetProperty("data", out var jsonData))
             {
+                var id = string.Empty;
+                if (jsonData.TryGetProperty("uri", out var jsonUri))
+                {
+                    id = jsonUri.GetString() ?? string.Empty;
+                    id = id.Replace("spotify:track:", string.Empty, StringComparison.InvariantCulture);
+                    id = id.Replace("spotify:local:", string.Empty, StringComparison.InvariantCulture);
+                }
+
                 var name = string.Empty;
                 if (jsonData.TryGetProperty("name", out var jsonName))
                 {
@@ -387,6 +395,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
 
                 return new ProviderTrackInfo
                 {
+                    Id = id,
                     Name = name,
                     AlbumName = albumName,
                     AlbumArtistNames = albumArtists,

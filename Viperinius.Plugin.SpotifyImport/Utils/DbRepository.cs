@@ -11,12 +11,13 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
     internal class DbRepository : IDisposable
     {
         private const string TableProviderPlaylistsName = "ProviderPlaylists";
-        /*private const string TableProviderTracksName = "ProviderTracks";
-        private const string TableProviderPlaylistTracksName = "ProviderPlaylistTracks";
+        private const string TableProviderTracksName = "ProviderTracks";
+        /*private const string TableProviderPlaylistTracksName = "ProviderPlaylistTracks";
         private const string TableProviderTrackMatchesName = "ProviderTrackMatches";*/
 
-        private const string UpdateProviderPlaylistGeneric = $"UPDATE {TableProviderPlaylistsName} SET ProviderId = $ProviderId, PlaylistId = $PlaylistId, LastState = $LastState, LastTimestamp = $LastTimestamp";
-        private const string InsertProviderPlaylist = $"INSERT INTO {TableProviderPlaylistsName} (ProviderId, PlaylistId, LastState, LastTimestamp) VALUES ($ProviderId, $PlaylistId, $LastState, $LastTimestamp)";
+        private const string UpdateProviderPlaylistGenericCmd = $"UPDATE {TableProviderPlaylistsName} SET ProviderId = $ProviderId, PlaylistId = $PlaylistId, LastState = $LastState, LastTimestamp = $LastTimestamp";
+        private const string InsertProviderPlaylistCmd = $"INSERT INTO {TableProviderPlaylistsName} (ProviderId, PlaylistId, LastState, LastTimestamp) VALUES ($ProviderId, $PlaylistId, $LastState, $LastTimestamp)";
+        private const string InsertProviderTrackCmd = $"INSERT INTO {TableProviderTracksName} (ProviderId, TrackId, IsrcId) VALUES ($ProviderId, $TrackId, $IsrcId)";
 
         private static readonly string[] _createTableQueries = new[]
         {
@@ -27,13 +28,13 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
                 LastState TEXT,
                 LastTimestamp TEXT
             )",
-            /*@$"CREATE TABLE IF NOT EXISTS {TableProviderTracksName} (
+            @$"CREATE TABLE IF NOT EXISTS {TableProviderTracksName} (
                 Id INTEGER PRIMARY KEY,
                 ProviderId TEXT,
                 TrackId TEXT,
                 IsrcId TEXT
             )",
-            @$"CREATE TABLE IF NOT EXISTS {TableProviderPlaylistTracksName} (
+            /*@$"CREATE TABLE IF NOT EXISTS {TableProviderPlaylistTracksName} (
                 Id INTEGER PRIMARY KEY,
                 PlaylistId TEXT,
                 TrackId TEXT,
@@ -135,13 +136,13 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
                 reader.Read();
                 var id = reader.GetInt32(0);
                 // update entry with playlist data
-                putCmd.CommandText = UpdateProviderPlaylistGeneric + " WHERE Id = $Id";
+                putCmd.CommandText = UpdateProviderPlaylistGenericCmd + " WHERE Id = $Id";
                 putCmd.Parameters.AddWithValue("$Id", id);
             }
             else
             {
                 // add new entry
-                putCmd.CommandText = InsertProviderPlaylist;
+                putCmd.CommandText = InsertProviderPlaylistCmd;
             }
 
             putCmd.Parameters.AddWithValue("$ProviderId", providerId);
@@ -149,6 +150,35 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             putCmd.Parameters.AddWithValue("$LastState", playlist.State);
             putCmd.Parameters.AddWithValue("$LastTimestamp", DateTime.UtcNow);
             return putCmd.ExecuteNonQuery() == 1;
+        }
+
+        public bool InsertProviderTrack(string providerId, ProviderTrackInfo track)
+        {
+            // check for existing item in db first
+            using var selectCmd = Connection.CreateCommand();
+            selectCmd.CommandText = $"SELECT Id FROM {TableProviderTracksName} WHERE ProviderId = $ProviderId AND TrackId = $TrackId";
+            selectCmd.Parameters.AddWithValue("$ProviderId", providerId);
+            selectCmd.Parameters.AddWithValue("$TrackId", track.Id);
+            using var reader = selectCmd.ExecuteReader();
+            if (reader.HasRows)
+            {
+                return true;
+            }
+
+            using var insertCmd = Connection.CreateCommand();
+            insertCmd.CommandText = InsertProviderTrackCmd;
+            insertCmd.Parameters.AddWithValue("$ProviderId", providerId);
+            insertCmd.Parameters.AddWithValue("$TrackId", track.Id);
+            if (track.IsrcId != null)
+            {
+                insertCmd.Parameters.AddWithValue("$IsrcId", track.IsrcId);
+            }
+            else
+            {
+                insertCmd.Parameters.AddWithValue("$IsrcId", DBNull.Value);
+            }
+
+            return insertCmd.ExecuteNonQuery() == 1;
         }
 
         public void Dispose()

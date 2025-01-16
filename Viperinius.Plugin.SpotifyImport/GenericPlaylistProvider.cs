@@ -78,6 +78,20 @@ namespace Viperinius.Plugin.SpotifyImport
                         }
 
                         Playlists.Add(playlist);
+
+                        foreach (var track in playlist.Tracks)
+                        {
+                            if (string.IsNullOrEmpty(track.Id))
+                            {
+                                _logger.LogError("Track has empty / invalid id: {Name}", track.Name);
+                                continue;
+                            }
+
+                            if (!_dbRepository.InsertProviderTrack(Name, track))
+                            {
+                                _logger.LogError("Failed to insert track {Name} ({Id}) into db", track.Name, track.Id);
+                            }
+                        }
                     }
                 }
 
