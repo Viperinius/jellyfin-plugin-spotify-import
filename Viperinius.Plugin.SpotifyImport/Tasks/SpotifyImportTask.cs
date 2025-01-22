@@ -158,6 +158,10 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
                     userPlaylistMapping,
                     manualMapStore);
             await playlistSync.Execute(cancellationToken).ConfigureAwait(false);
+
+            // replace old trackset in db with current one
+            spotify.UpdatePlaylistTracksInDb(cancellationToken);
+            spotifyAlt.UpdatePlaylistTracksInDb(cancellationToken);
         }
 
         /// <inheritdoc/>

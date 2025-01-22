@@ -64,15 +64,20 @@ namespace Viperinius.Plugin.SpotifyImport
                     var previousState = _dbRepository.GetLastProviderPlaylistState(Name, playlist.Id);
                     if (!string.IsNullOrEmpty(previousState) && playlist.State == previousState)
                     {
-                        _logger.LogInformation("Skipped playlist {Name} ({Id}) as there are no changes", playlist.Name, playlist.Id);
-                        // TODO: dont fully skip the playlist but load the previous tracks from db to pass to playlist sync (in case new jellyfin matches are available)
-                        continue;
+                        var tracks = GetCachedPlaylistTracksFromDb(playlist.Id);
+                        if (tracks != null)
+                        {
+                            playlist.Tracks = tracks;
+                            Playlists.Add(playlist);
+                            _logger.LogInformation("Using cached last state for provider playlist {Name} ({Id}) as there are no changes", playlist.Name, playlist.Id);
+                            continue;
+                        }
                     }
 
                     playlist = await GetPlaylist(playlistId, true, cancellationToken).ConfigureAwait(false);
                     if (playlist != null)
                     {
-                        if (!_dbRepository.UpsertProviderPlaylist(Name, playlist))
+                        if (_dbRepository.UpsertProviderPlaylist(Name, playlist) == null)
                         {
                             _logger.LogError("Failed to update / insert playlist {Name} ({Id}) into db", playlist.Name, playlistId);
                         }
@@ -87,7 +92,7 @@ namespace Viperinius.Plugin.SpotifyImport
                                 continue;
                             }
 
-                            if (!_dbRepository.InsertProviderTrack(Name, track))
+                            if (_dbRepository.InsertProviderTrack(Name, track) == null)
                             {
                                 _logger.LogError("Failed to insert track {Name} ({Id}) into db", track.Name, track.Id);
                             }
@@ -102,6 +107,58 @@ namespace Viperinius.Plugin.SpotifyImport
             }
         }
 
+        public virtual bool UpdatePlaylistTracksInDb(CancellationToken? cancellationToken = null)
+        {
+            _logger.LogInformation("Starting to update tracks of {Amount} playlists from {Name} in db", Playlists.Count, Name);
+            var result = true;
+
+            foreach (var playlist in Playlists)
+            {
+                if (cancellationToken?.IsCancellationRequested ?? false)
+                {
+                    _logger.LogWarning("Updating playlist tracks in db cancelled before saving playlist {Name} ({Id})",  playlist.Name, playlist.Id);
+                    return false;
+                }
+
+                var playlistDbId = _dbRepository.GetProviderPlaylistDbId(Name, playlist.Id);
+                if (playlistDbId == null)
+                {
+                    result = false;
+                    _logger.LogError("No playlist with name {Name} ({Id}) found in db for provider {Prov}", playlist.Name, playlist.Id, Name);
+                    continue;
+                }
+
+                _dbRepository.DeleteProviderPlaylistTracks((int)playlistDbId);
+
+                for (int ii = 0; ii < playlist.Tracks.Count; ii++)
+                {
+                    var track = playlist.Tracks[ii];
+                    if (string.IsNullOrEmpty(track.Id))
+                    {
+                        result = false;
+                        _logger.LogError("Track has empty / invalid id: {Name}", track.Name);
+                        continue;
+                    }
+
+                    var trackDbId = _dbRepository.GetProviderTrackDbId(Name, track.Id);
+                    if (trackDbId == null)
+                    {
+                        result = false;
+                        _logger.LogError("No track with name {Name} ({Id}) found in db for provider {Prov}", track.Name, track.Id, Name);
+                        continue;
+                    }
+
+                    if (_dbRepository.UpsertProviderPlaylistTrack((int)playlistDbId, (int)trackDbId, ii) == null)
+                    {
+                        result = false;
+                        _logger.LogError("Failed to insert playlist track {Name} ({Id}) into db", track.Name, track.Id);
+                    }
+                }
+            }
+
+            return result;
+        }
+
         protected abstract Task<List<ProviderPlaylistInfo>?> GetUserPlaylistsInfo(
             TargetUserConfiguration target,
             CancellationToken? cancellationToken = null);
@@ -111,5 +168,34 @@ namespace Viperinius.Plugin.SpotifyImport
         protected abstract Task<ProviderTrackInfo?> GetTrack(string trackId, CancellationToken? cancellationToken = null);
 
         protected abstract string CreatePlaylistState<T>(T data);
+
+        private List<ProviderTrackInfo>? GetCachedPlaylistTracksFromDb(string providerPlaylistId)
+        {
+            var playlistDbId = _dbRepository.GetProviderPlaylistDbId(Name, providerPlaylistId);
+            if (playlistDbId == null)
+            {
+                return null;
+            }
+
+            var result = new List<ProviderTrackInfo>();
+            foreach (var (trackDbId, position) in _dbRepository.GetProviderPlaylistTracks((int)playlistDbId))
+            {
+                var track = _dbRepository.GetProviderTrack(Name, trackDbId);
+                if (track == null)
+                {
+                    _logger.LogError("No track with id {Id} found in db for provider {Prov}", trackDbId, Name);
+                    return null;
+                }
+
+                if (result.Count <= position)
+                {
+                    result.AddRange(new ProviderTrackInfo[position + 1 - result.Count]);
+                }
+
+                result[position] = track;
+            }
+
+            return result;
+        }
     }
 }
