@@ -20,6 +20,7 @@ namespace Viperinius.Plugin.SpotifyImport
             _logger = logger;
             _dbRepository = dbRepository;
             Playlists = new List<ProviderPlaylistInfo>();
+            CachedPlaylists = new List<string>();
         }
 
         /// <summary>
@@ -41,6 +42,11 @@ namespace Viperinius.Plugin.SpotifyImport
         /// Gets or sets the list of playlist sources.
         /// </summary>
         public List<ProviderPlaylistInfo> Playlists { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets the list of playlists that were populated from cache.
+        /// </summary>
+        public List<string> CachedPlaylists { get; protected set; }
 
         public abstract void SetUpProvider();
 
@@ -69,6 +75,7 @@ namespace Viperinius.Plugin.SpotifyImport
                         {
                             playlist.Tracks = tracks;
                             Playlists.Add(playlist);
+                            CachedPlaylists.Add(playlist.Id);
                             _logger.LogInformation("Using cached last state for provider playlist {Name} ({Id}) as there are no changes", playlist.Name, playlist.Id);
                             continue;
                         }
@@ -118,6 +125,16 @@ namespace Viperinius.Plugin.SpotifyImport
                 {
                     _logger.LogWarning("Updating playlist tracks in db cancelled before saving playlist {Name} ({Id})",  playlist.Name, playlist.Id);
                     return false;
+                }
+
+                if (CachedPlaylists.Contains(playlist.Id))
+                {
+                    if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
+                    {
+                        _logger.LogInformation("Skipped updating cached playlist tracks in db for {Name} ({Id})", playlist.Name, playlist.Id);
+                    }
+
+                    continue;
                 }
 
                 var playlistDbId = _dbRepository.GetProviderPlaylistDbId(Name, playlist.Id);
