@@ -244,6 +244,14 @@ export default function (view) {
         ApiClient.getJSON(mapUrl, { 'api_key': ApiClient.accessToken() }).then(async result => {
             await loadTableRows(view, result);
             Dashboard.hideLoadingMsg();
+        }).catch(response => {
+            if (response.status == 404) {
+                // map is currently empty / not existing, simply continue
+                Dashboard.hideLoadingMsg();
+            }
+            else {
+                throw response;
+            }
         });
     });
 
