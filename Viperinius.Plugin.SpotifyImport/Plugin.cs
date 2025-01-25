@@ -42,6 +42,29 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     public static string PluginApiBase => $"{nameof(Viperinius)}.{nameof(Viperinius.Plugin)}.{nameof(SpotifyImport)}";
 
     /// <summary>
+    /// Gets the path used for storing plugin data.
+    /// </summary>
+    public string PluginDataPath
+    {
+        get
+        {
+            if (Path.Exists(DataFolderPath))
+            {
+                return DataFolderPath;
+            }
+
+            var path = Path.GetDirectoryName(GetType().Assembly.Location);
+            if (path == null)
+            {
+                Directory.CreateDirectory(DataFolderPath);
+                return DataFolderPath;
+            }
+
+            return path;
+        }
+    }
+
+    /// <summary>
     /// Gets the current plugin instance.
     /// </summary>
     public static Plugin? Instance { get; private set; }

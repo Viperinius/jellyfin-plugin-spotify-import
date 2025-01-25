@@ -51,7 +51,7 @@ namespace Viperinius.Plugin.SpotifyImport
             }
         }
 
-        public virtual string FilePath => Path.Combine(Plugin.Instance!.DataFolderPath, "manual_track_map.json");
+        public virtual string FilePath => Path.Combine(Plugin.Instance!.PluginDataPath, "manual_track_map.json");
 
         public int Count => _tracks.Count;
 
