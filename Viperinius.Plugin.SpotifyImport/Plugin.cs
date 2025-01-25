@@ -49,19 +49,12 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
         get
         {
-            if (Path.Exists(DataFolderPath))
-            {
-                return DataFolderPath;
-            }
-
-            var path = Path.GetDirectoryName(GetType().Assembly.Location);
-            if (path == null)
+            if (!Path.Exists(DataFolderPath))
             {
                 Directory.CreateDirectory(DataFolderPath);
-                return DataFolderPath;
             }
 
-            return path;
+            return DataFolderPath;
         }
     }
 
