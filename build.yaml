@@ -2,7 +2,7 @@
 name: "Spotify Import"
 guid: "F03D0ADB-289F-4986-BD6F-2468025249B3"
 imageUrl: "https://github.com/Viperinius/jellyfin-plugin-spotify-import/raw/master/viperinius-plugin-spotifyimport.png"
-version: "1.12.3.0"
+version: "1.12.3.1"
 targetAbi: "10.10.3.0"
 framework: "net8.0"
 overview: "This plugin imports playlists from Spotify."
@@ -22,6 +22,7 @@ artifacts:
 changelog: |2-
   # Changelog
 
+  ## [1.12.3.1] - 2025-01-25
   ## [1.12.3.0] - 2025-01-25
 
   ### Fixed
