@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.IO;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
@@ -62,7 +61,7 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     /// <summary>
     /// Gets the path to the db file.
     /// </summary>
-    public string DbPath => Path.Combine(DataFolderPath, "plugin.db");
+    public string DbPath => Path.Combine(PluginDataPath, "plugin.db");
 
     /// <summary>
     /// Gets the current plugin instance.
