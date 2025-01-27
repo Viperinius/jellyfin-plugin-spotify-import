@@ -605,7 +605,8 @@ namespace Viperinius.Plugin.SpotifyImport
             }
 
             playlist.Tagline = $"Synced {totalTracks - missingTracks} out of {totalTracks} tracks " +
-                               $"from {providerPlaylistInfo.ProviderName} playlist {providerPlaylistInfo.Id} (at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} [UTC])";
+                               $"from {providerPlaylistInfo.ProviderName.Replace("Alt", string.Empty, StringComparison.InvariantCulture)} " +
+                               $"playlist {providerPlaylistInfo.Id} (at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} [UTC])";
 
             await _libraryManager.UpdateItemAsync(playlist, playlist.GetParent(), ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
         }

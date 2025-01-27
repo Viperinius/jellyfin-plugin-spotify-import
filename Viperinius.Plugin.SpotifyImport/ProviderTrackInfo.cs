@@ -21,11 +21,18 @@ namespace Viperinius.Plugin.SpotifyImport
         /// </summary>
         public ProviderTrackInfo()
         {
+            Id = string.Empty;
             Name = string.Empty;
             AlbumName = string.Empty;
             AlbumArtistNames = new List<string>();
             ArtistNames = new List<string>();
         }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        [JsonIgnore]
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the track name.

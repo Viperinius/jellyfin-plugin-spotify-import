@@ -64,6 +64,9 @@ namespace Viperinius.Plugin.SpotifyImport
                     {
                         Plugin.Instance.IsInitialised = true;
                     }
+
+                    using var db = new Utils.DbRepository(Plugin.Instance.DbPath);
+                    db.InitDb();
                 }
                 catch (Exception e)
                 {
