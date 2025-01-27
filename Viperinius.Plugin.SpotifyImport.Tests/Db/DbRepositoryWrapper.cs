@@ -20,5 +20,20 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
         {
             return new DbRepositoryWrapper(":memory:");
         }
+
+        public string GetInsertProviderPlaylistCmd()
+        {
+            return InsertProviderPlaylistCmd;
+        }
+
+        public string GetInsertProviderTrackCmd()
+        {
+            return InsertProviderTrackCmd;
+        }
+
+        public string GetInsertProviderPlaylistTrackCmd()
+        {
+            return InsertProviderPlaylistTrackCmd;
+        }
     }
 }
