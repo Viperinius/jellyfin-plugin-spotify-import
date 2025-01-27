@@ -18,10 +18,10 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
         /*private const string TableProviderTrackMatchesName = "ProviderTrackMatches";*/
 
         private const string UpdateProviderPlaylistGenericCmd = $"UPDATE {TableProviderPlaylistsName} SET ProviderId = $ProviderId, PlaylistId = $PlaylistId, LastState = $LastState, LastTimestamp = $LastTimestamp";
-        private const string InsertProviderPlaylistCmd = $"INSERT INTO {TableProviderPlaylistsName} (ProviderId, PlaylistId, LastState, LastTimestamp) VALUES ($ProviderId, $PlaylistId, $LastState, $LastTimestamp)";
-        private const string InsertProviderTrackCmd = $"INSERT INTO {TableProviderTracksName} (ProviderId, TrackId, Name, AlbumName, AlbumArtistNames, ArtistNames, Number, IsrcId) VALUES ($ProviderId, $TrackId, $Name, $AlbumName, $AlbumArtistNames, $ArtistNames, $Number, $IsrcId)";
+        protected const string InsertProviderPlaylistCmd = $"INSERT INTO {TableProviderPlaylistsName} (ProviderId, PlaylistId, LastState, LastTimestamp) VALUES ($ProviderId, $PlaylistId, $LastState, $LastTimestamp)";
+        protected const string InsertProviderTrackCmd = $"INSERT INTO {TableProviderTracksName} (ProviderId, TrackId, Name, AlbumName, AlbumArtistNames, ArtistNames, Number, IsrcId) VALUES ($ProviderId, $TrackId, $Name, $AlbumName, $AlbumArtistNames, $ArtistNames, $Number, $IsrcId)";
         private const string UpdateProviderPlaylistTrackGenericCmd = $"UPDATE {TableProviderPlaylistTracksName} SET PlaylistId = $PlaylistId, TrackId = $TrackId, Position = $Position";
-        private const string InsertProviderPlaylistTrackCmd = $"INSERT INTO {TableProviderPlaylistTracksName} (PlaylistId, TrackId, Position) VALUES ($PlaylistId, $TrackId, $Position)";
+        protected const string InsertProviderPlaylistTrackCmd = $"INSERT INTO {TableProviderPlaylistTracksName} (PlaylistId, TrackId, Position) VALUES ($PlaylistId, $TrackId, $Position)";
 
         private static readonly string[] _tableNames = new[]
         {
@@ -81,7 +81,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             };
         }
 
-        private SqliteConnection Connection
+        protected SqliteConnection Connection
         {
             get
             {
