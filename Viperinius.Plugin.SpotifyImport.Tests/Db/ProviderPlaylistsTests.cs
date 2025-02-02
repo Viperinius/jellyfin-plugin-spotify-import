@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using static SpotifyAPI.Web.PlayerSetRepeatRequest;
 
 namespace Viperinius.Plugin.SpotifyImport.Tests.Db
 {
@@ -112,7 +111,6 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
             Assert.Equal(1, cmd.ExecuteNonQuery());
 
             cmd.Parameters.Clear();
-            cmd.CommandText = db.GetInsertProviderPlaylistCmd();
             cmd.Parameters.AddWithValue("$ProviderId", "a");
             cmd.Parameters.AddWithValue("$PlaylistId", "b");
             cmd.Parameters.AddWithValue("$LastState", string.Empty);

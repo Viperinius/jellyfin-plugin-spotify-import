@@ -10,7 +10,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
 {
     internal class DbRepository : IDisposable
     {
-        private const string ArtistListSeparator = "|\n|";
+        protected const string ArtistListSeparator = "|\n|";
 
         private const string TableProviderPlaylistsName = "ProviderPlaylists";
         private const string TableProviderTracksName = "ProviderTracks";

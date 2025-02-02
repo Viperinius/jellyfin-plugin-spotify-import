@@ -21,6 +21,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
             return new DbRepositoryWrapper(":memory:");
         }
 
+        public static string InternalArtistListSeparator => ArtistListSeparator;
+
         public string GetInsertProviderPlaylistCmd()
         {
             return InsertProviderPlaylistCmd;
