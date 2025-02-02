@@ -16,6 +16,7 @@ namespace Viperinius.Plugin.SpotifyImport
             OwnerId = string.Empty;
             Tracks = new List<ProviderTrackInfo>();
             ProviderName = "Generic";
+            State = string.Empty;
         }
 
         public string Id { get; set; }
@@ -31,5 +32,7 @@ namespace Viperinius.Plugin.SpotifyImport
         public List<ProviderTrackInfo> Tracks { get; set; }
 
         public string ProviderName { get; set; }
+
+        public string State { get; set; }
     }
 }

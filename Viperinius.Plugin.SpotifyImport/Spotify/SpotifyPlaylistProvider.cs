@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
 using Viperinius.Plugin.SpotifyImport.Configuration;
+using Viperinius.Plugin.SpotifyImport.Utils;
 
 namespace Viperinius.Plugin.SpotifyImport.Spotify
 {
@@ -19,8 +20,9 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
         private static readonly SpotifyClientConfig _defaultSpotifyConfig = SpotifyClientConfig.CreateDefault();
 
         public SpotifyPlaylistProvider(
+            DbRepository dbRepository,
             ILogger<SpotifyPlaylistProvider> logger,
-            ILogger<SpotifyLogger> apiLogger) : base(logger)
+            ILogger<SpotifyLogger> apiLogger) : base(dbRepository, logger)
         {
             _logger = logger;
             _apiLogger = apiLogger;
@@ -101,6 +103,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                         Description = playlist.Description ?? string.Empty,
                         OwnerId = ownerId,
                         ProviderName = ProviderName,
+                        State = CreatePlaylistState(playlist),
                     });
                 }
 
@@ -120,6 +123,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
 
         protected override async Task<ProviderPlaylistInfo?> GetPlaylist(
             string playlistId,
+            bool includeTracks,
             CancellationToken? cancellationToken = null)
         {
             if (_spotifyClient == null)
@@ -136,7 +140,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 var rawImageUrl = playlist.Images?.FirstOrDefault((Image?)null)?.Url;
 
                 var tracks = new List<ProviderTrackInfo>();
-                if (playlist.Tracks != null)
+                if (includeTracks && playlist.Tracks != null)
                 {
                     await foreach (var track in _spotifyClient.Paginate(playlist.Tracks).ConfigureAwait(false))
                     {
@@ -166,6 +170,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                     OwnerId = playlist.Owner != null ? playlist.Owner.Id : string.Empty,
                     Tracks = tracks,
                     ProviderName = ProviderName,
+                    State = CreatePlaylistState(playlist),
                 };
             }
             catch (APIException e)
@@ -183,6 +188,16 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
         protected override Task<ProviderTrackInfo?> GetTrack(string trackId, CancellationToken? cancellationToken = null)
         {
             throw new NotImplementedException();
+        }
+
+        protected override string CreatePlaylistState<T>(T data)
+        {
+            if (data is FullPlaylist playlist)
+            {
+                return playlist.SnapshotId ?? string.Empty;
+            }
+
+            return string.Empty;
         }
 
         private static ProviderTrackInfo? GetTrackInfo(PlaylistTrack<IPlayableItem> track)
@@ -203,8 +218,17 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
 
                         var hasIsrc = fullTrack.ExternalIds.TryGetValue("isrc", out var isrc);
 
+                        var id = fullTrack.Id;
+                        if (id == null)
+                        {
+                            id = fullTrack.Uri ?? string.Empty;
+                            id = id.Replace("spotify:track:", string.Empty, StringComparison.InvariantCulture);
+                            id = id.Replace("spotify:local:", string.Empty, StringComparison.InvariantCulture);
+                        }
+
                         return new ProviderTrackInfo
                         {
+                            Id = id,
                             Name = fullTrack.Name,
                             IsrcId = hasIsrc ? isrc : null,
                             TrackNumber = (uint)fullTrack.TrackNumber,

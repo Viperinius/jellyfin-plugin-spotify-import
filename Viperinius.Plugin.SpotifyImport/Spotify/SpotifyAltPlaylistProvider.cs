@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 using MediaBrowser.Controller.Playlists;
 using Microsoft.Extensions.Logging;
-using SpotifyAPI.Web;
 using Viperinius.Plugin.SpotifyImport.Configuration;
 using Viperinius.Plugin.SpotifyImport.Utils;
 
@@ -24,8 +23,9 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
         private readonly HttpRequest _httpRequest;
 
         public SpotifyAltPlaylistProvider(
+            DbRepository dbRepository,
             ILogger<SpotifyAltPlaylistProvider> logger,
-            ILogger<HttpRequest> httpLogger) : base(logger)
+            ILogger<HttpRequest> httpLogger) : base(dbRepository, logger)
         {
             _logger = logger;
             _httpRequest = new HttpRequest(httpLogger);
@@ -119,7 +119,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             return playlists;
         }
 
-        protected override async Task<ProviderPlaylistInfo?> GetPlaylist(string playlistId, CancellationToken? cancellationToken = null)
+        protected override async Task<ProviderPlaylistInfo?> GetPlaylist(string playlistId, bool includeTracks, CancellationToken? cancellationToken = null)
         {
             var pageLimit = 100;
             var offset = 0;
@@ -151,6 +151,11 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                     return null;
                 }
 
+                if (!includeTracks)
+                {
+                    break;
+                }
+
                 totalTrackCount = GetApiItemsCount(jsonContent);
 
                 foreach (var jsonTrack in IterateApiItems(jsonContent))
@@ -171,6 +176,16 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
         protected override Task<ProviderTrackInfo?> GetTrack(string trackId, CancellationToken? cancellationToken = null)
         {
             throw new NotImplementedException();
+        }
+
+        protected override string CreatePlaylistState<T>(T data)
+        {
+            if (data is JsonElement playlist && playlist.TryGetProperty("revisionId", out var jsonRevision))
+            {
+                return jsonRevision.GetString() ?? string.Empty;
+            }
+
+            return string.Empty;
         }
 
         private void RefreshAuthToken()
@@ -302,7 +317,8 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 Description = description,
                 OwnerId = ownerId,
                 Tracks = tracks,
-                ProviderName = ProviderName.Replace("Alt", string.Empty, StringComparison.InvariantCulture),
+                ProviderName = ProviderName,
+                State = CreatePlaylistState(jsonPlaylist),
             };
         }
 
@@ -311,6 +327,14 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             if (jsonTrack.TryGetProperty("itemV2", out var jsonItem) &&
                 jsonItem.TryGetProperty("data", out var jsonData))
             {
+                var id = string.Empty;
+                if (jsonData.TryGetProperty("uri", out var jsonUri))
+                {
+                    id = jsonUri.GetString() ?? string.Empty;
+                    id = id.Replace("spotify:track:", string.Empty, StringComparison.InvariantCulture);
+                    id = id.Replace("spotify:local:", string.Empty, StringComparison.InvariantCulture);
+                }
+
                 var name = string.Empty;
                 if (jsonData.TryGetProperty("name", out var jsonName))
                 {
@@ -371,6 +395,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
 
                 return new ProviderTrackInfo
                 {
+                    Id = id,
                     Name = name,
                     AlbumName = albumName,
                     AlbumArtistNames = albumArtists,
