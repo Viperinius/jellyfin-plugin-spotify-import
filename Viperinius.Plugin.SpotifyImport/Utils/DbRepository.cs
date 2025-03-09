@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Playlists;
 using Microsoft.Data.Sqlite;
+using Viperinius.Plugin.SpotifyImport.Matchers;
 
 namespace Viperinius.Plugin.SpotifyImport.Utils
 {
@@ -15,19 +15,21 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
         private const string TableProviderPlaylistsName = "ProviderPlaylists";
         private const string TableProviderTracksName = "ProviderTracks";
         private const string TableProviderPlaylistTracksName = "ProviderPlaylistTracks";
-        /*private const string TableProviderTrackMatchesName = "ProviderTrackMatches";*/
+        private const string TableProviderTrackMatchesName = "ProviderTrackMatches";
 
         private const string UpdateProviderPlaylistGenericCmd = $"UPDATE {TableProviderPlaylistsName} SET ProviderId = $ProviderId, PlaylistId = $PlaylistId, LastState = $LastState, LastTimestamp = $LastTimestamp";
         protected const string InsertProviderPlaylistCmd = $"INSERT INTO {TableProviderPlaylistsName} (ProviderId, PlaylistId, LastState, LastTimestamp) VALUES ($ProviderId, $PlaylistId, $LastState, $LastTimestamp)";
         protected const string InsertProviderTrackCmd = $"INSERT INTO {TableProviderTracksName} (ProviderId, TrackId, Name, AlbumName, AlbumArtistNames, ArtistNames, Number, IsrcId) VALUES ($ProviderId, $TrackId, $Name, $AlbumName, $AlbumArtistNames, $ArtistNames, $Number, $IsrcId)";
         private const string UpdateProviderPlaylistTrackGenericCmd = $"UPDATE {TableProviderPlaylistTracksName} SET PlaylistId = $PlaylistId, TrackId = $TrackId, Position = $Position";
         protected const string InsertProviderPlaylistTrackCmd = $"INSERT INTO {TableProviderPlaylistTracksName} (PlaylistId, TrackId, Position) VALUES ($PlaylistId, $TrackId, $Position)";
+        protected const string InsertProviderTrackMatchCmd = $"INSERT INTO {TableProviderTrackMatchesName} (TrackId, JellyfinMatchId, MatchLevel, MatchCriteria) VALUES ($TrackId, $JellyfinMatchId, $MatchLevel, $MatchCriteria)";
 
         private static readonly string[] _tableNames = new[]
         {
             TableProviderPlaylistsName,
             TableProviderTracksName,
             TableProviderPlaylistTracksName,
+            TableProviderTrackMatchesName,
         };
 
         private static readonly string[] _createTableQueries = new[]
@@ -55,17 +57,17 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
                 PlaylistId INTEGER,
                 TrackId INTEGER,
                 Position INTEGER,
-                FOREIGN KEY (PlaylistId) REFERENCES {TableProviderPlaylistsName}(Id),
-                FOREIGN KEY (TrackId) REFERENCES {TableProviderTracksName}(Id)
+                FOREIGN KEY (PlaylistId) REFERENCES {TableProviderPlaylistsName}(Id) ON DELETE CASCADE,
+                FOREIGN KEY (TrackId) REFERENCES {TableProviderTracksName}(Id) ON DELETE CASCADE
             )",
-            /*@$"CREATE TABLE IF NOT EXISTS {TableProviderTrackMatchesName} (
+            @$"CREATE TABLE IF NOT EXISTS {TableProviderTrackMatchesName} (
                 Id INTEGER PRIMARY KEY,
-                TrackId TEXT,
+                TrackId INTEGER,
                 JellyfinMatchId TEXT,
                 MatchLevel INTEGER,
                 MatchCriteria INTEGER,
-                FOREIGN KEY (TrackId) REFERENCES {TableProviderTracksName}(Id)
-            )",*/
+                FOREIGN KEY (TrackId) REFERENCES {TableProviderTracksName}(Id) ON DELETE CASCADE
+            )",
         };
 
         private readonly SqliteConnectionStringBuilder _connectionStringBuilder;
@@ -299,6 +301,40 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             deleteCmd.CommandText = $"DELETE FROM {TableProviderPlaylistTracksName} WHERE PlaylistId = $PlaylistId";
             deleteCmd.Parameters.AddWithValue("$PlaylistId", playlistDbId);
             return deleteCmd.ExecuteNonQuery() > 0;
+        }
+
+        public IEnumerable<DbProviderTrackMatch> GetProviderTrackMatch(long trackDbId)
+        {
+            using var selectCmd = Connection.CreateCommand();
+            selectCmd.CommandText = $"SELECT Id, JellyfinMatchId, MatchLevel, MatchCriteria FROM {TableProviderTrackMatchesName} WHERE TrackId = $TrackId";
+            selectCmd.Parameters.AddWithValue("$TrackId", trackDbId);
+            using var reader = selectCmd.ExecuteReader();
+            while (reader.Read())
+            {
+                var id = reader.GetInt64(0);
+                var matchIdRaw = reader.GetString(1);
+                if (!Guid.TryParse(matchIdRaw, out var matchId))
+                {
+                    continue;
+                }
+
+                var level = (ItemMatchLevel)reader.GetInt32(2);
+                var criteria = (ItemMatchCriteria)reader.GetInt32(3);
+
+                yield return new DbProviderTrackMatch(id, matchId, level, criteria);
+            }
+        }
+
+        public long? InsertProviderTrackMatch(long trackDbId, string jellyfinTrackId, ItemMatchLevel level, ItemMatchCriteria criteria)
+        {
+            using var insertCmd = Connection.CreateCommand();
+            insertCmd.CommandText = InsertProviderTrackMatchCmd + " RETURNING Id";
+            insertCmd.Parameters.AddWithValue("$TrackId", trackDbId);
+            insertCmd.Parameters.AddWithValue("$JellyfinMatchId", jellyfinTrackId);
+            insertCmd.Parameters.AddWithValue("$MatchLevel", (int)level);
+            insertCmd.Parameters.AddWithValue("$MatchCriteria", (int)criteria);
+
+            return (long?)insertCmd.ExecuteScalar();
         }
 
         public void Dispose()
