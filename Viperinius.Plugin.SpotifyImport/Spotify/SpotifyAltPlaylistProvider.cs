@@ -7,10 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using HtmlAgilityPack;
-using MediaBrowser.Controller.Playlists;
 using Microsoft.Extensions.Logging;
-using SpotifyAPI.Web;
 using Viperinius.Plugin.SpotifyImport.Configuration;
 using Viperinius.Plugin.SpotifyImport.Utils;
 
@@ -191,13 +188,16 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 }
             }
 
-            // get a new bearer token for an anonymous session
-            var response = _httpRequest.Get(_providerUrl, cookies: cookies.GetCookieHeader(_providerUrl)).Result;
+            // get a new bearer token for a session
+            var uriBuilder = new UriBuilder(_providerUrl)
+            {
+                Path = "get_access_token",
+                Query = "reason=init&productType=web-player"
+            };
+            var response = _httpRequest.Get(uriBuilder.Uri, cookies: cookies.GetCookieHeader(_providerUrl)).Result;
             if (response != null)
             {
-                var htmlDoc = new HtmlDocument();
-                htmlDoc.LoadHtml(WebUtility.HtmlDecode(HttpRequest.GetResponseContentString(response)));
-                AuthToken = JsonSerializer.Deserialize<SpotifyAltAuthToken>(htmlDoc.DocumentNode.SelectSingleNode("//script[@id='session']").InnerText);
+                AuthToken = JsonSerializer.Deserialize<SpotifyAltAuthToken>(response.Content.ReadAsStringAsync().Result);
             }
         }
 
