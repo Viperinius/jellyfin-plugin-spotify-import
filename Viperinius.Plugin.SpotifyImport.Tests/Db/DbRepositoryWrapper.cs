@@ -37,5 +37,10 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
         {
             return InsertProviderPlaylistTrackCmd;
         }
+
+        public string GetInsertProviderTrackMatchCmd()
+        {
+            return InsertProviderTrackMatchCmd;
+        }
     }
 }

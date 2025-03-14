@@ -156,7 +156,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
                     _userManager,
                     spotify.Playlists.Concat(spotifyAlt.Playlists),
                     userPlaylistMapping,
-                    manualMapStore);
+                    manualMapStore,
+                    db);
             await playlistSync.Execute(cancellationToken).ConfigureAwait(false);
 
             // replace old trackset in db with current one

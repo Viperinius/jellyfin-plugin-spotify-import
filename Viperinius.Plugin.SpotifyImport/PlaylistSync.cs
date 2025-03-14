@@ -14,6 +14,7 @@ using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 using Viperinius.Plugin.SpotifyImport.Configuration;
 using Viperinius.Plugin.SpotifyImport.Matchers;
+using Viperinius.Plugin.SpotifyImport.Utils;
 
 namespace Viperinius.Plugin.SpotifyImport
 {
@@ -28,6 +29,7 @@ namespace Viperinius.Plugin.SpotifyImport
         private readonly IEnumerable<ProviderPlaylistInfo> _providerPlaylists;
         private readonly Dictionary<string, string> _userPlaylistIds;
         private readonly ManualMapStore _manualMapStore;
+        private readonly DbRepository _dbRepository;
 
         public PlaylistSync(
             ILogger<PlaylistSync> logger,
@@ -36,7 +38,8 @@ namespace Viperinius.Plugin.SpotifyImport
             IUserManager userManager,
             IEnumerable<ProviderPlaylistInfo> playlists,
             Dictionary<string, string> userPlaylistIds,
-            ManualMapStore manualMapStore)
+            ManualMapStore manualMapStore,
+            DbRepository dbRepository)
         {
             _logger = logger;
             _playlistManager = playlistManager;
@@ -45,6 +48,7 @@ namespace Viperinius.Plugin.SpotifyImport
             _providerPlaylists = playlists;
             _userPlaylistIds = userPlaylistIds;
             _manualMapStore = manualMapStore;
+            _dbRepository = dbRepository;
         }
 
         public async Task Execute(CancellationToken cancellationToken = default)
@@ -142,9 +146,9 @@ namespace Viperinius.Plugin.SpotifyImport
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (!CheckPlaylistForTrack(playlist, user, providerTrack))
+                if (!CheckPlaylistForTrack(playlist, user, providerPlaylistInfo.ProviderName, providerTrack))
                 {
-                    var track = GetMatchingTrack(providerTrack, out var failedCriterium);
+                    var track = GetMatchingTrack(providerPlaylistInfo.ProviderName, providerTrack, out var failedCriterium);
                     if (failedCriterium != ItemMatchCriteria.None && (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false))
                     {
                         _logger.LogInformation(
@@ -182,7 +186,7 @@ namespace Viperinius.Plugin.SpotifyImport
             }
         }
 
-        protected Audio? GetMatchingTrack(ProviderTrackInfo providerTrackInfo, out ItemMatchCriteria failedMatchCriterium)
+        protected Audio? GetMatchingTrack(string providerId, ProviderTrackInfo providerTrackInfo, out ItemMatchCriteria failedMatchCriterium)
         {
             failedMatchCriterium = ItemMatchCriteria.None;
             if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
@@ -195,20 +199,39 @@ namespace Viperinius.Plugin.SpotifyImport
                     string.Join("#", providerTrackInfo.ArtistNames));
             }
 
-            var manualTrack = _manualMapStore.GetByProviderTrackInfo(providerTrackInfo);
-            if (manualTrack?.Provider.Equals(providerTrackInfo) ?? false)
+            if (TryGetCachedMatch(providerId, providerTrackInfo, out var cacheMatch) && cacheMatch != null)
             {
                 if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                 {
-                    _logger.LogInformation("Found manual mapping for track with id {Id}", manualTrack.Jellyfin.Track);
+                    _logger.LogInformation("Found cached match for track with id {Id}", cacheMatch.MatchId);
                 }
 
-                return _libraryManager.GetItemById<Audio>(Guid.Parse(manualTrack.Jellyfin.Track));
+                return _libraryManager.GetItemById<Audio>(cacheMatch.MatchId);
+            }
+
+            var manualTrack = _manualMapStore.GetByProviderTrackInfo(providerTrackInfo);
+            if (manualTrack?.Provider.Equals(providerTrackInfo) ?? false)
+            {
+                var jellyfinId = Guid.Parse(manualTrack.Jellyfin.Track);
+
+                if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
+                {
+                    _logger.LogInformation("Found manual mapping for track with id {Id}", jellyfinId);
+                }
+
+                SaveMatchInCache(providerId, providerTrackInfo, jellyfinId);
+                return _libraryManager.GetItemById<Audio>(jellyfinId);
             }
 
             if (Plugin.Instance?.Configuration.UseLegacyMatching ?? false)
             {
-                return GetMatchingTrackLegacy(providerTrackInfo, out failedMatchCriterium);
+                var match = GetMatchingTrackLegacy(providerTrackInfo, out failedMatchCriterium);
+                if (match != null)
+                {
+                    SaveMatchInCache(providerId, providerTrackInfo, match.Id);
+                }
+
+                return match;
             }
 
             var matchCandidates = new List<(int, ItemMatchLevel, Audio)>();
@@ -278,7 +301,10 @@ namespace Viperinius.Plugin.SpotifyImport
                     return result;
                 });
                 failedMatchCriterium = ItemMatchCriteria.None;
-                return matchCandidates.First().Item3;
+                var match = matchCandidates.First().Item3;
+                SaveMatchInCache(providerId, providerTrackInfo, match.Id);
+
+                return match;
             }
 
             return null;
@@ -493,13 +519,19 @@ namespace Viperinius.Plugin.SpotifyImport
             yield break;
         }
 
-        private bool CheckPlaylistForTrack(Playlist playlist, User user, ProviderTrackInfo providerTrackInfo)
+        private bool CheckPlaylistForTrack(Playlist playlist, User user, string providerId, ProviderTrackInfo providerTrackInfo)
         {
+            var foundCacheMatch = TryGetCachedMatch(providerId, providerTrackInfo, out var match);
             foreach (var item in playlist.GetChildren(user, false))
             {
                 if (item is not Audio audioItem)
                 {
                     continue;
+                }
+
+                if (foundCacheMatch && match?.MatchId == audioItem.Id)
+                {
+                    return true;
                 }
 
                 var manualTrack = _manualMapStore.GetByTrackId(audioItem.Id);
@@ -619,6 +651,50 @@ namespace Viperinius.Plugin.SpotifyImport
             }
 
             return _userManager.Users.FirstOrDefault(u => u?.HasPermission(PermissionKind.IsAdministrator) ?? false, null);
+        }
+
+        protected bool TryGetCachedMatch(string providerId, ProviderTrackInfo providerTrackInfo, out DbProviderTrackMatch? match)
+        {
+            match = null;
+            if (Plugin.Instance == null)
+            {
+                return false;
+            }
+
+            var trackId = _dbRepository.GetProviderTrackDbId(providerId, providerTrackInfo.Id);
+            if (trackId == null)
+            {
+                return false;
+            }
+
+            var matches = _dbRepository.GetProviderTrackMatch((long)trackId);
+            match = matches.FirstOrDefault(
+                potentialMatch =>
+                {
+                    // check if the cached match has compatible match level and criteria (meaning same or stricter requirements)
+                    var isLevelApplicable = potentialMatch?.Level <= Plugin.Instance.Configuration.ItemMatchLevel;
+                    var isCritApplicable = (potentialMatch?.Criteria & Plugin.Instance.Configuration.ItemMatchCriteria) == Plugin.Instance.Configuration.ItemMatchCriteria;
+                    return isLevelApplicable && isCritApplicable;
+                },
+                null);
+
+            return match != null;
+        }
+
+        protected bool SaveMatchInCache(string providerId, ProviderTrackInfo providerTrackInfo, Guid jellyfinTrackId)
+        {
+            var trackDbId = _dbRepository.GetProviderTrackDbId(providerId, providerTrackInfo.Id);
+            if (trackDbId == null)
+            {
+                return false;
+            }
+
+            var insertedId = _dbRepository.InsertProviderTrackMatch(
+                (long)trackDbId,
+                jellyfinTrackId.ToString(),
+                Plugin.Instance!.Configuration.ItemMatchLevel,
+                Plugin.Instance.Configuration.ItemMatchCriteria);
+            return insertedId != null;
         }
     }
 }

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Viperinius.Plugin.SpotifyImport.Matchers;
 using Viperinius.Plugin.SpotifyImport.Tests.TestHelpers;
+using Viperinius.Plugin.SpotifyImport.Utils;
 using Xunit;
 
 namespace Viperinius.Plugin.SpotifyImport.Tests
@@ -22,14 +23,25 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             MediaBrowser.Controller.Library.IUserManager userManager,
             IEnumerable<ProviderPlaylistInfo> playlists,
             Dictionary<string, string> userPlaylistIds,
-            ManualMapStore manualMapStore)
-            : base(logger, playlistManager, libraryManager, userManager, playlists, userPlaylistIds, manualMapStore)
+            ManualMapStore manualMapStore,
+            DbRepository dbRepository)
+            : base(logger, playlistManager, libraryManager, userManager, playlists, userPlaylistIds, manualMapStore, dbRepository)
         {
         }
 
-        public Audio? WrapGetMatchingTrack(ProviderTrackInfo trackInfo, out ItemMatchCriteria failedCriterium)
+        public Audio? WrapGetMatchingTrack(string providerId, ProviderTrackInfo trackInfo, out ItemMatchCriteria failedCriterium)
         {
-            return GetMatchingTrack(trackInfo, out failedCriterium);
+            return GetMatchingTrack(providerId, trackInfo, out failedCriterium);
+        }
+
+        public bool WrapTryGetCachedMatch(string providerId, ProviderTrackInfo providerTrackInfo, out DbProviderTrackMatch? match)
+        {
+            return TryGetCachedMatch(providerId, providerTrackInfo, out match);
+        }
+
+        public bool WrapSaveMatchInCache(string providerId, ProviderTrackInfo providerTrackInfo, Guid jellyfinTrackId)
+        {
+            return SaveMatchInCache(providerId, providerTrackInfo, jellyfinTrackId);
         }
     }
 
@@ -78,17 +90,27 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             var plManagerMock = Substitute.For<MediaBrowser.Controller.Playlists.IPlaylistManager>();
             var userManagerMock = Substitute.For<MediaBrowser.Controller.Library.IUserManager>();
             var libManagerMock = Substitute.For<MediaBrowser.Controller.Library.ILibraryManager>();
+            using var db = new DbRepository(":memory:");
+            db.InitDb();
             SetUpLibManagerMock(libManagerMock, artist);
-            var wrapper = new PlaylistSyncWrapper(loggerMock, plManagerMock, libManagerMock, userManagerMock, new List<ProviderPlaylistInfo>(), new Dictionary<string, string>(), new ManualMapStore(Substitute.For<ILogger<ManualMapStore>>()));
+            var wrapper = new PlaylistSyncWrapper(
+                loggerMock,
+                plManagerMock,
+                libManagerMock,
+                userManagerMock,
+                new List<ProviderPlaylistInfo>(),
+                new Dictionary<string, string>(),
+                new ManualMapStore(Substitute.For<ILogger<ManualMapStore>>()),
+                db);
 
             ItemMatchCriteria failedCrit;
             if (shouldMatch)
             {
-                Assert.True(wrapper.WrapGetMatchingTrack(prov, out failedCrit) == audio, $"{TrackHelper.GetErrorString(audio)}\n{AlbumHelper.GetErrorString(album)}\n{ArtistHelper.GetErrorString(artist)}");
+                Assert.True(wrapper.WrapGetMatchingTrack(string.Empty, prov, out failedCrit) == audio, $"{TrackHelper.GetErrorString(audio)}\n{AlbumHelper.GetErrorString(album)}\n{ArtistHelper.GetErrorString(artist)}");
             }
             else
             {
-                Assert.True(wrapper.WrapGetMatchingTrack(prov, out failedCrit) == null, $"{TrackHelper.GetErrorString(audio)}\n{AlbumHelper.GetErrorString(album)}\n{ArtistHelper.GetErrorString(artist)}");
+                Assert.True(wrapper.WrapGetMatchingTrack(string.Empty, prov, out failedCrit) == null, $"{TrackHelper.GetErrorString(audio)}\n{AlbumHelper.GetErrorString(album)}\n{ArtistHelper.GetErrorString(artist)}");
             }
 
             if (expectedFailedCriteria != null)
@@ -478,10 +500,20 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             var plManagerMock = Substitute.For<MediaBrowser.Controller.Playlists.IPlaylistManager>();
             var userManagerMock = Substitute.For<MediaBrowser.Controller.Library.IUserManager>();
             var libManagerMock = Substitute.For<MediaBrowser.Controller.Library.ILibraryManager>();
+            using var db = new DbRepository(":memory:");
+            db.InitDb();
             SetUpLibManagerMock(libManagerMock, jfArtist);
-            var wrapper = new PlaylistSyncWrapper(loggerMock, plManagerMock, libManagerMock, userManagerMock, new List<ProviderPlaylistInfo>(), new Dictionary<string, string>(), new ManualMapStore(Substitute.For<ILogger<ManualMapStore>>()));
+            var wrapper = new PlaylistSyncWrapper(
+                loggerMock,
+                plManagerMock,
+                libManagerMock,
+                userManagerMock,
+                new List<ProviderPlaylistInfo>(),
+                new Dictionary<string, string>(),
+                new ManualMapStore(Substitute.For<ILogger<ManualMapStore>>()),
+                db);
 
-            var result = wrapper.WrapGetMatchingTrack(prov, out var failedCrit);
+            var result = wrapper.WrapGetMatchingTrack(string.Empty, prov, out var failedCrit);
             Assert.NotNull(result);
             Assert.Equal(result.Name, jfTrackCorrect.Name);
             Assert.Contains("Acoustic", result.Name);
@@ -490,16 +522,24 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
             jfArtist = ArtistHelper.CreateJfItem("Ephixa", new List<MusicAlbum> { jfAlbumCorrect, jfAlbumOther1, jfAlbumOther2, jfAlbumOther3 });
             SetUpLibManagerMock(libManagerMock, jfArtist);
-            wrapper = new PlaylistSyncWrapper(loggerMock, plManagerMock, libManagerMock, userManagerMock, new List<ProviderPlaylistInfo>(), new Dictionary<string, string>(), new ManualMapStore(Substitute.For<ILogger<ManualMapStore>>()));
+            wrapper = new PlaylistSyncWrapper(
+                loggerMock,
+                plManagerMock,
+                libManagerMock,
+                userManagerMock,
+                new List<ProviderPlaylistInfo>(),
+                new Dictionary<string, string>(),
+                new ManualMapStore(Substitute.For<ILogger<ManualMapStore>>()),
+                db);
 
-            result = wrapper.WrapGetMatchingTrack(prov, out failedCrit);
+            result = wrapper.WrapGetMatchingTrack(string.Empty, prov, out failedCrit);
             Assert.Equal(result, jfTrackCorrect);
             Assert.Contains("Acoustic", result!.Name);
             Assert.Contains("Richards", result!.Name);
             Assert.True(failedCrit == ItemMatchCriteria.None);
 
             Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.Fuzzy;
-            result = wrapper.WrapGetMatchingTrack(prov, out failedCrit);
+            result = wrapper.WrapGetMatchingTrack(string.Empty, prov, out failedCrit);
             Assert.Equal(result, jfTrackCorrect);
             Assert.Contains("Acoustic", result!.Name);
             Assert.Contains("Richards", result!.Name);
@@ -528,19 +568,89 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             var plManagerMock = Substitute.For<MediaBrowser.Controller.Playlists.IPlaylistManager>();
             var userManagerMock = Substitute.For<MediaBrowser.Controller.Library.IUserManager>();
             var libManagerMock = Substitute.For<MediaBrowser.Controller.Library.ILibraryManager>();
+            using var db = new DbRepository(":memory:");
+            db.InitDb();
             SetUpLibManagerMock(libManagerMock, new List<MediaBrowser.Controller.Entities.BaseItem>
             {
                 jfArtistOther1,
                 jfArtistCorrect,
                 jfArtistOther2
             });
-            var wrapper = new PlaylistSyncWrapper(loggerMock, plManagerMock, libManagerMock, userManagerMock, new List<ProviderPlaylistInfo>(), new Dictionary<string, string>(), new ManualMapStore(Substitute.For<ILogger<ManualMapStore>>()));
+            var wrapper = new PlaylistSyncWrapper(
+                loggerMock,
+                plManagerMock,
+                libManagerMock,
+                userManagerMock,
+                new List<ProviderPlaylistInfo>(),
+                new Dictionary<string, string>(),
+                new ManualMapStore(Substitute.For<ILogger<ManualMapStore>>()),
+                db);
 
-            var result = wrapper.WrapGetMatchingTrack(prov, out var failedCrit);
+            var result = wrapper.WrapGetMatchingTrack(string.Empty, prov, out var failedCrit);
             Assert.NotNull(result);
             Assert.Equal(result.Name, jfTrackCorrect.Name);
             Assert.Equal(result.Id, jfTrackCorrect.Id);
             Assert.True(failedCrit == ItemMatchCriteria.None);
+        }
+
+        [Fact]
+        public void AddTrackMatchToCacheAndRetrieve()
+        {
+            TrackHelper.SetValidPluginInstance();
+            Plugin.Instance!.Configuration.ItemMatchLevel = ItemMatchLevel.IgnoreParensPunctuationAndCase;
+            Plugin.Instance!.Configuration.ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.TrackName | ItemMatchCriteria.AlbumName | ItemMatchCriteria.Artists);
+
+            var jfTrackCorrectId = Guid.Parse("99999999-0000-0000-0000-000000000000");
+            var correctProviderId = "ABCDEF";
+            var correctProviderTrackInfo = new ProviderTrackInfo
+            {
+                Id = "948basd",
+                Name = "diufsbief",
+                AlbumName = "%IAIdbfieuvr",
+                AlbumArtistNames = new List<string> { "x", "y" },
+                ArtistNames = new List<string> { "m", "n" },
+                TrackNumber = 42,
+                IsrcId = "a4iotbaSD",
+            };
+
+            var loggerMock = Substitute.For<ILogger<PlaylistSync>>();
+            var plManagerMock = Substitute.For<MediaBrowser.Controller.Playlists.IPlaylistManager>();
+            var userManagerMock = Substitute.For<MediaBrowser.Controller.Library.IUserManager>();
+            var libManagerMock = Substitute.For<MediaBrowser.Controller.Library.ILibraryManager>();
+            using var db = new DbRepository(":memory:");
+            db.InitDb();
+            SetUpLibManagerMock(libManagerMock, new List<MediaBrowser.Controller.Entities.BaseItem>());
+            var wrapper = new PlaylistSyncWrapper(
+                loggerMock,
+                plManagerMock,
+                libManagerMock,
+                userManagerMock,
+                new List<ProviderPlaylistInfo>(),
+                new Dictionary<string, string>(),
+                new ManualMapStore(Substitute.For<ILogger<ManualMapStore>>()),
+                db);
+
+            // no provider track in known in db yet, so it should fail
+            Assert.False(wrapper.WrapSaveMatchInCache(correctProviderId, correctProviderTrackInfo, jfTrackCorrectId));
+
+            var insertedTrack = db.InsertProviderTrack(correctProviderId, correctProviderTrackInfo);
+            Assert.NotNull(insertedTrack);
+
+            Assert.True(wrapper.WrapSaveMatchInCache(correctProviderId, correctProviderTrackInfo, jfTrackCorrectId));
+            Assert.NotEmpty(db.GetProviderTrackMatch((long)insertedTrack));
+
+            Assert.True(wrapper.WrapTryGetCachedMatch(correctProviderId, correctProviderTrackInfo, out var foundMatch));
+            Assert.NotNull(foundMatch);
+            Assert.Equal(jfTrackCorrectId, foundMatch.MatchId);
+            Assert.Equal(Plugin.Instance!.Configuration.ItemMatchLevel, foundMatch.Level);
+            Assert.Equal(Plugin.Instance!.Configuration.ItemMatchCriteria, foundMatch.Criteria);
+
+            foundMatch = null;
+            Assert.False(wrapper.WrapTryGetCachedMatch(string.Empty, correctProviderTrackInfo, out foundMatch));
+            Assert.Null(foundMatch);
+
+            Assert.False(wrapper.WrapTryGetCachedMatch(correctProviderId, new ProviderTrackInfo(), out foundMatch));
+            Assert.Null(foundMatch);
         }
     }
 }

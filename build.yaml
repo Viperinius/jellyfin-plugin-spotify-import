@@ -2,7 +2,7 @@
 name: "Spotify Import"
 guid: "F03D0ADB-289F-4986-BD6F-2468025249B3"
 imageUrl: "https://github.com/Viperinius/jellyfin-plugin-spotify-import/raw/master/viperinius-plugin-spotifyimport.png"
-version: "1.12.3.1"
+version: "1.12.4.0"
 targetAbi: "10.10.3.0"
 framework: "net8.0"
 overview: "This plugin imports playlists from Spotify."
@@ -18,13 +18,18 @@ artifacts:
 - "Json.More.dll"
 - "JsonPointer.Net.dll"
 - "JsonSchema.Net.dll"
-- "HtmlAgilityPack.dll"
 #- "Microsoft.Data.Sqlite.dll"            # not needed as long as jellyfin uses the library as well and we keep the version in sync
 #- "SQLitePCLRaw.batteries_v2.dll         # 
 #- "SQLitePCLRaw.core.dll"                #
 #- "SQLitePCLRaw.provider.e_sqlite3.dll"  #
 changelog: |2-
   # Changelog
+
+  ## [1.12.4.0] - 2025-03-11
+
+  ### Fixed
+
+  - Fix procedure to aquire auth token for alternative Spotify provider after recent changes made by Spotify
 
   ## [1.12.3.1] - 2025-01-25
   ## [1.12.3.0] - 2025-01-25

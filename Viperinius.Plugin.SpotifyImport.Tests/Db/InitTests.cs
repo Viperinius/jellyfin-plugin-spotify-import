@@ -16,6 +16,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
             { "ProviderPlaylists", [("Id", "INTEGER"), ("ProviderId", "TEXT"), ("PlaylistId", "TEXT"), ("LastState", "TEXT"), ("LastTimestamp", "TEXT")] },
             { "ProviderTracks", [("Id", "INTEGER"), ("ProviderId", "TEXT"), ("TrackId", "TEXT"), ("Name", "TEXT"), ("AlbumName", "TEXT"), ("AlbumArtistNames", "TEXT"), ("ArtistNames", "TEXT"), ("Number", "INTEGER"), ("IsrcId", "TEXT")] },
             { "ProviderPlaylistTracks", [("Id", "INTEGER"), ("PlaylistId", "INTEGER"), ("TrackId", "INTEGER"), ("Position", "INTEGER")] },
+            { "ProviderTrackMatches", [("Id", "INTEGER"), ("TrackId", "INTEGER"), ("JellyfinMatchId", "TEXT"), ("MatchLevel", "INTEGER"), ("MatchCriteria", "INTEGER")] },
         };
 
         [Fact]

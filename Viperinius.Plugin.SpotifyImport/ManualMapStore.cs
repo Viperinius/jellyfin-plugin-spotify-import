@@ -161,12 +161,12 @@ namespace Viperinius.Plugin.SpotifyImport
 
         public ManualMapTrack? GetByTrackId(Guid jellyfinId)
         {
-            return _tracks.Where(t => t.Jellyfin.Track.Equals(jellyfinId.ToString(), StringComparison.OrdinalIgnoreCase)).FirstOrDefault((ManualMapTrack?)null);
+            return _tracks.FirstOrDefault(t => t?.Jellyfin.Track.Equals(jellyfinId.ToString(), StringComparison.OrdinalIgnoreCase) ?? false, null);
         }
 
         public ManualMapTrack? GetByProviderTrackInfo(ProviderTrackInfo providerTrackInfo)
         {
-            return _tracks.Where(t => t.Provider.Equals(providerTrackInfo)).FirstOrDefault((ManualMapTrack?)null);
+            return _tracks.FirstOrDefault(t => t?.Provider.Equals(providerTrackInfo) ?? false, null);
         }
 
         public int IndexOf(ManualMapTrack item)
