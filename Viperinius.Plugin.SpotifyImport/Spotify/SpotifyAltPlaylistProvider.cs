@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using OtpNet;
 using Viperinius.Plugin.SpotifyImport.Configuration;
 using Viperinius.Plugin.SpotifyImport.Utils;
 
@@ -17,6 +18,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
     {
         private const string ProviderName = "SpotifyAlt";
         private static readonly Uri _providerUrl = new Uri("https://open.spotify.com");
+        private static readonly byte[] _totpCipher = { 12, 56, 76, 33, 88, 44, 88, 33, 78, 78, 11, 66, 22, 22, 55, 69, 54 };
         private readonly ILogger<SpotifyAltPlaylistProvider> _logger;
         private readonly HttpRequest _httpRequest;
 
@@ -186,6 +188,39 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             return string.Empty;
         }
 
+        // computation heavily inspired by generate_totp in https://github.com/misiektoja/spotify_monitor/blob/a6f6f59a3e4c695644750eb543c376a9fd7c5eb9/spotify_monitor.py#L692
+        private (Totp, long)? GenerateTotp(IEnumerable<byte> cipherBytes)
+        {
+            // compute secret from cipher bytes first
+            var transformedBytes = cipherBytes.Select((b, ii) => b ^ ((ii % 33) + 9));
+            var utf8Bytes = Encoding.UTF8.GetBytes(string.Join(string.Empty, transformedBytes));
+
+            var uriBuilder = new UriBuilder(_providerUrl)
+            {
+                Path = "server-time"
+            };
+            var response = _httpRequest.Get(uriBuilder.Uri).Result;
+            if (response != null)
+            {
+                long? serverTime = null;
+
+                try
+                {
+                    var json = JsonDocument.Parse(HttpRequest.GetResponseContentString(response));
+                    serverTime = json.RootElement.GetProperty("serverTime").GetInt64();
+                }
+                catch (JsonException)
+                {
+                    return null;
+                }
+
+                var totp = new Totp(utf8Bytes, step: 30, totpSize: 6);
+                return (totp, (long)serverTime);
+            }
+
+            return null;
+        }
+
         private void RefreshAuthToken()
         {
             if (AuthToken != null && ((SpotifyAltAuthToken)AuthToken).ExpirationUnixMs > DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeMilliseconds())
@@ -204,16 +239,31 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 }
             }
 
+            var totpResult = GenerateTotp(_totpCipher);
+            if (totpResult == null)
+            {
+                _logger.LogError("Failed to generate TOTP");
+                return;
+            }
+
+            var (totp, serverTime) = totpResult.Value;
+            var otp = totp.ComputeTotp(DateTime.UnixEpoch.AddSeconds(serverTime));
+            var clientTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
             // get a new bearer token for a session
             var uriBuilder = new UriBuilder(_providerUrl)
             {
                 Path = "get_access_token",
-                Query = "reason=init&productType=web-player"
+                Query = $"reason=init&productType=web-player&totp={otp}&totpServer={otp}&totpVer=5&sTime={serverTime}&cTime={clientTime}"
             };
             var response = _httpRequest.Get(uriBuilder.Uri, cookies: cookies.GetCookieHeader(_providerUrl)).Result;
             if (response != null)
             {
                 AuthToken = JsonSerializer.Deserialize<SpotifyAltAuthToken>(response.Content.ReadAsStringAsync().Result);
+            }
+            else
+            {
+                _logger.LogError("Failed to refresh auth token");
             }
         }
 
