@@ -2,7 +2,7 @@
 name: "Spotify Import"
 guid: "F03D0ADB-289F-4986-BD6F-2468025249B3"
 imageUrl: "https://github.com/Viperinius/jellyfin-plugin-spotify-import/raw/master/viperinius-plugin-spotifyimport.png"
-version: "1.12.4.0"
+version: "1.13.0.0"
 targetAbi: "10.10.3.0"
 framework: "net8.0"
 overview: "This plugin imports playlists from Spotify."
@@ -25,6 +25,17 @@ artifacts:
 #- "SQLitePCLRaw.provider.e_sqlite3.dll"  #
 changelog: |2-
   # Changelog
+
+  ## [1.13.0.0] - 2025-03-24
+
+  ### Added
+
+  - Caching of Spotify playlists (only query the full track data if the playlist state changed)
+  - Caching of track matches (reuse match of a track for all occurrences across playlists)
+
+  ### Fixed
+
+  - Fix procedure to aquire auth token for alternative Spotify provider after recent changes made by Spotify (again)
 
   ## [1.12.4.0] - 2025-03-11
 
