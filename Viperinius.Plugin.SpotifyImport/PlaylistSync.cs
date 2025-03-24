@@ -145,6 +145,10 @@ namespace Viperinius.Plugin.SpotifyImport
             foreach (var providerTrack in providerPlaylistInfo.Tracks)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                if (providerTrack == null)
+                {
+                    continue;
+                }
 
                 if (!CheckPlaylistForTrack(playlist, user, providerPlaylistInfo.ProviderName, providerTrack))
                 {
