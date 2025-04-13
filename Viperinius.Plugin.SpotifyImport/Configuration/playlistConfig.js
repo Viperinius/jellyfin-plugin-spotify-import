@@ -228,7 +228,13 @@ export default function (view) {
                 document.querySelector('#dbgSection').classList.remove('hide');
             }
 
-            document.querySelector('#SpotifyAuthRedirectUri').innerText = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/SpotifyAuthCallback');
+            const redirectUrl = new URL(ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/SpotifyAuthCallback'));
+            if (redirectUrl.hostname == 'localhost') {
+                // spotify forbids "localhost" in redirect URIs, only IP allowed
+                redirectUrl.hostname = '127.0.0.1';
+            }
+
+            document.querySelector('#SpotifyAuthRedirectUri').innerText = redirectUrl.href;
             if (config.SpotifyAuthToken && 'CreatedAt' in config.SpotifyAuthToken) {
                 document.querySelector('#authSpotifyAlreadyDesc').classList.remove('hide');
                 document.querySelector('#authSpotifyCreatedAt').innerText = config.SpotifyAuthToken['CreatedAt'].split('T')[0];
@@ -360,8 +366,14 @@ export default function (view) {
     });
 
     document.querySelector('#authSpotify').addEventListener('click', function () {
+        const redirectBaseUrl = new URL(ApiClient._serverAddress);
+        if (redirectBaseUrl.hostname == 'localhost') {
+            // spotify forbids "localhost" in redirect URIs, only IP allowed
+            redirectBaseUrl.hostname = '127.0.0.1';
+        }
+
         const fullAuthUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/SpotifyAuth', {
-            'baseUrl': ApiClient._serverAddress
+            'baseUrl': redirectBaseUrl.href.replace(/\/$/g, '')
         });
 
         ApiClient.fetch({

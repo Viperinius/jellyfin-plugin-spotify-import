@@ -48,8 +48,9 @@ This procedure needs a little bit of setup from your end (basically the same as 
 3. Copy the Client ID, you will need it in a second when configuring the plugin
 4. Go to the `Settings` page
 5. There, add a redirect URL in `Redirect URIs`. This URL is called after you grant the plugin read access to your playlists and must be the following value:\
-   `https://<YOUR JELLYFIN IP OR DOMAIN>/Viperinius.Plugin.SpotifyImport/SpotifyAuthCallback`, e.g. `http://localhost:8096/Viperinius.Plugin.SpotifyImport/SpotifyAuthCallback`\
-   The IP or domain must match the one you are using when configuring the plugin
+   `https://<YOUR JELLYFIN IP OR DOMAIN>/Viperinius.Plugin.SpotifyImport/SpotifyAuthCallback`, e.g. `http://127.0.0.1:8096/Viperinius.Plugin.SpotifyImport/SpotifyAuthCallback`\
+   The IP or domain must match the one you are using when configuring the plugin\
+   **Note:** If you want to use the localhost loopback address, you need to specify it as `http://127.0.0.1:8096` instead of `http://localhost:8096`, see [here](https://developer.spotify.com/documentation/web-api/concepts/redirect_uri)
 6. Save the settings
 
 ### Get started
