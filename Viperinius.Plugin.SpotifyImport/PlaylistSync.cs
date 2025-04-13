@@ -51,11 +51,16 @@ namespace Viperinius.Plugin.SpotifyImport
             _dbRepository = dbRepository;
         }
 
-        public async Task Execute(CancellationToken cancellationToken = default)
+        public async Task Execute(IProgress<double> progress, CancellationToken cancellationToken = default)
         {
+            var progressValue = 0d;
+            var providerPlaylistCount = _providerPlaylists.Count();
+            var providerPlaylistIndexProgress = 0;
             foreach (var providerPlaylist in _providerPlaylists)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                providerPlaylistIndexProgress++;
+                var nextProgress = 100d * providerPlaylistIndexProgress / providerPlaylistCount;
 
                 // get the targeted playlist configuration
                 var targetConfig = Plugin.Instance?.Configuration.Playlists.FirstOrDefault(p => p.Id == providerPlaylist.Id);
@@ -133,18 +138,24 @@ namespace Viperinius.Plugin.SpotifyImport
                     await _libraryManager.UpdateItemAsync(playlist, playlist.GetParent(), updateReason, cancellationToken).ConfigureAwait(false);
                 }
 
-                await FindTracksAndAddToPlaylist(playlist, providerPlaylist, user, cancellationToken).ConfigureAwait(false);
+                await FindTracksAndAddToPlaylist(playlist, providerPlaylist, user, progress, new Tuple<double, double>(progressValue, nextProgress), cancellationToken).ConfigureAwait(false);
+
+                progressValue = nextProgress;
+                progress.Report(progressValue);
             }
         }
 
-        private async Task FindTracksAndAddToPlaylist(Playlist playlist, ProviderPlaylistInfo providerPlaylistInfo, User user, CancellationToken cancellationToken)
+        private async Task FindTracksAndAddToPlaylist(Playlist playlist, ProviderPlaylistInfo providerPlaylistInfo, User user, IProgress<double> progress, Tuple<double, double> progressRange, CancellationToken cancellationToken)
         {
             var newTracks = new List<Guid>();
             var missingTracks = new List<ProviderTrackInfo>();
 
+            var providerTrackProgressIndex = 0;
+            var progressValue = progressRange.Item1;
             foreach (var providerTrack in providerPlaylistInfo.Tracks)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                providerTrackProgressIndex++;
                 if (providerTrack == null)
                 {
                     continue;
@@ -172,6 +183,9 @@ namespace Viperinius.Plugin.SpotifyImport
                         missingTracks.Add(providerTrack);
                     }
                 }
+
+                progressValue = ((double)providerTrackProgressIndex / providerPlaylistInfo.Tracks.Count * (progressRange.Item2 - progressRange.Item1)) + progressRange.Item1;
+                progress.Report(progressValue);
             }
 
             await _playlistManager.AddItemToPlaylistAsync(playlist.Id, newTracks, user.Id).ConfigureAwait(false);
