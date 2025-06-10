@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
@@ -147,7 +146,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
             }
 
             // try to get any missing and spotify owned playlists using alternative method
-            await spotifyAlt.PopulatePlaylists([..playlistIdsAlt, ..playlistIds], cancellationToken).ConfigureAwait(false);
+            await spotifyAlt.PopulatePlaylists([.. playlistIdsAlt, .. playlistIds], cancellationToken).ConfigureAwait(false);
 
             var playlistSync = new PlaylistSync(
                     _loggerFactory.CreateLogger<PlaylistSync>(),
@@ -173,7 +172,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
             {
                 new TaskTriggerInfo
                 {
-                    Type = TaskTriggerInfo.TriggerDaily,
+                    Type = TaskTriggerInfoType.DailyTrigger,
                     TimeOfDayTicks = TimeSpan.FromHours(3).Ticks,
                     MaxRuntimeTicks = TimeSpan.FromHours(3).Ticks,
                 }

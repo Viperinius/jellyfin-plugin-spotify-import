@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -123,7 +121,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                 }
 
                 // get track parents
-                int ii = 1;
+                var ii = 1;
                 var nextParent = item;
                 var nextRef = new ItemRef();
                 while (nextParent != null && !nextRef.IsTopParent && ii <= 10)
@@ -205,7 +203,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                             AlbumArtistIds = new[] { artist.Id },
                             IncludeItemTypes = new[] { BaseItemKind.MusicAlbum }
                         });
-                        for (int kk = 0; kk < albums.Count; kk++)
+                        for (var kk = 0; kk < albums.Count; kk++)
                         {
                             var album = albums[kk];
                             trackRefs.Add($"AlbumByAlbumArtist{jj}-{kk}[{itemIndex}][{artistIndex}]/{artistName}", new ItemRef

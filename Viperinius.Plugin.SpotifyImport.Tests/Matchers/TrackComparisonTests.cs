@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
 {
-    public class TrackComparisonTests : IDisposable
+    public sealed class TrackComparisonTests : IDisposable
     {
         public void Dispose()
         {
