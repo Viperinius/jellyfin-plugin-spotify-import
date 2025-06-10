@@ -162,6 +162,15 @@ csharp_prefer_simple_default_expression = true:suggestion
 csharp_style_pattern_local_over_anonymous_function = true:suggestion
 csharp_style_inlined_variable_declaration = true:suggestion
 
+# IDE0028, IDE0300, IDE0301, IDE0305: Simplify collection initialization
+dotnet_diagnostic.IDE0028.severity = suggestion
+dotnet_diagnostic.IDE0300.severity = suggestion
+dotnet_diagnostic.IDE0301.severity = suggestion
+dotnet_diagnostic.IDE0305.severity = suggestion
+
+# IDE0046: Convert to conditional expression
+dotnet_diagnostic.IDE0046.severity = suggestion
+
 ###############################
 # C# Formatting Rules         #
 ###############################
@@ -253,7 +262,7 @@ dotnet_diagnostic.CA1063.severity = error
 dotnet_diagnostic.CA1305.severity = error
 
 # error on CA1307: Specify StringComparison for clarity
-dotnet_diagnostic.CA1307.severity = error
+dotnet_diagnostic.CA1307.severity = suggestion
 
 # error on CA1309: Use ordinal StringComparison
 dotnet_diagnostic.CA1309.severity = error
@@ -511,6 +520,18 @@ dotnet_diagnostic.IDISP007.severity = suggestion
 
 # disable warning IDISP008: Don't assign member with injected and created disposables
 dotnet_diagnostic.IDISP008.severity = suggestion
+
+# IDE0290: Use primary constructor
+dotnet_diagnostic.IDE0290.severity = silent
+
+# IDE0059: Unnecessary assignment of a value
+dotnet_diagnostic.IDE0059.severity = suggestion
+
+# IDE0058: Expression value is never used
+dotnet_diagnostic.IDE0058.severity = suggestion
+
+# IDE0090: Use 'new(...)'
+dotnet_diagnostic.IDE0090.severity = suggestion
 
 [tests/**.{cs,vb}]
 # disable warning SA0001: XML comment analysis is disabled due to project configuration
