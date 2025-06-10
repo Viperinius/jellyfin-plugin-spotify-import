@@ -41,7 +41,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         }
     }
 
-    public class PlaylistSyncTests : IDisposable
+    public sealed class PlaylistSyncTests : IDisposable
     {
         private void SetUpLibManagerMock(MediaBrowser.Controller.Library.ILibraryManager libManagerMock, List<MediaBrowser.Controller.Entities.BaseItem> items)
         {

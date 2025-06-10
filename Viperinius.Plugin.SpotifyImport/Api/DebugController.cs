@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -139,7 +137,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                 }
 
                 // get track parents
-                int ii = 1;
+                var ii = 1;
                 var nextParent = item;
                 var currentRef = trackRef;
                 var nextRef = new TrackRef();

@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using Viperinius.Plugin.SpotifyImport.Matchers;
 
@@ -587,6 +585,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             return count > 0;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "for future reference")]
         private bool AddTableColumn(string table, string column, string type)
         {
             if (!_tableNames.Contains(table))
