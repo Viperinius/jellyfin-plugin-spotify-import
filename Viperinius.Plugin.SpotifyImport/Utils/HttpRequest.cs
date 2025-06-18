@@ -50,6 +50,11 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             return await Request(url, HttpMethod.Get, headers: headers, cookies: cookies).ConfigureAwait(false);
         }
 
+        public async Task<HttpResponseMessage?> Head(Uri url, HttpRequestHeaders? headers = null, string? cookies = null)
+        {
+            return await Request(url, HttpMethod.Head, headers: headers, cookies: cookies).ConfigureAwait(false);
+        }
+
         private async Task<HttpResponseMessage?> Request(Uri url, HttpMethod method, HttpContent? content = null, HttpRequestHeaders? headers = null, string? cookies = null)
         {
             for (int ii = 0; ii < MaxRetries; ii++)

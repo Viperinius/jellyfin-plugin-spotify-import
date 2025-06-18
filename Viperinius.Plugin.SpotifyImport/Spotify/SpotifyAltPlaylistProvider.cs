@@ -188,28 +188,18 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             return string.Empty;
         }
 
-        // computation heavily inspired by generate_totp in https://github.com/misiektoja/spotify_monitor/blob/a6f6f59a3e4c695644750eb543c376a9fd7c5eb9/spotify_monitor.py#L692
+        // computation heavily inspired by generate_totp in https://github.com/misiektoja/spotify_monitor/blob/b1abf1b451e511b333664c68ca17b48b199b7353/spotify_monitor.py#L1118
         private (Totp, long)? GenerateTotp(IEnumerable<byte> cipherBytes)
         {
             // compute secret from cipher bytes first
             var transformedBytes = cipherBytes.Select((b, ii) => b ^ ((ii % 33) + 9));
             var utf8Bytes = Encoding.UTF8.GetBytes(string.Join(string.Empty, transformedBytes));
 
-            var uriBuilder = new UriBuilder(_providerUrl)
-            {
-                Path = "server-time"
-            };
-            var response = _httpRequest.Get(uriBuilder.Uri).Result;
+            var response = _httpRequest.Head(_providerUrl).Result;
             if (response != null)
             {
-                long? serverTime = null;
-
-                try
-                {
-                    var json = JsonDocument.Parse(HttpRequest.GetResponseContentString(response));
-                    serverTime = json.RootElement.GetProperty("serverTime").GetInt64();
-                }
-                catch (JsonException)
+                long? serverTime = response.Headers.Date?.ToUnixTimeSeconds();
+                if (serverTime == null)
                 {
                     return null;
                 }
@@ -253,7 +243,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             // get a new bearer token for a session
             var uriBuilder = new UriBuilder(_providerUrl)
             {
-                Path = "get_access_token",
+                Path = "/api/token",
                 Query = $"reason=init&productType=web-player&totp={otp}&totpServer={otp}&totpVer=5&sTime={serverTime}&cTime={clientTime}"
             };
             var response = _httpRequest.Get(uriBuilder.Uri, cookies: cookies.GetCookieHeader(_providerUrl)).Result;
