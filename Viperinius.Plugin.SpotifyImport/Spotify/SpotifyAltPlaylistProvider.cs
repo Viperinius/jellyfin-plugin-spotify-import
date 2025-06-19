@@ -17,7 +17,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
     internal class SpotifyAltPlaylistProvider : GenericPlaylistProvider
     {
         private const string ProviderName = "SpotifyAlt";
-        private static readonly Uri _providerUrl = new Uri("https://open.spotify.com");
+        private static readonly Uri _providerUrl = new Uri(Plugin.SpotifyBaseUrl);
         private static readonly byte[] _totpCipher = { 12, 56, 76, 33, 88, 44, 88, 33, 78, 78, 11, 66, 22, 22, 55, 69, 54 };
         private readonly ILogger<SpotifyAltPlaylistProvider> _logger;
         private readonly HttpRequest _httpRequest;

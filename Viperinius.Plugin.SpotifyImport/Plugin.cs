@@ -40,7 +40,12 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     /// <summary>
     /// Gets the base path for the plugin API.
     /// </summary>
-    public static string PluginApiBase => $"{nameof(Viperinius)}.{nameof(Viperinius.Plugin)}.{nameof(SpotifyImport)}";
+    public static string PluginQualifiedName => $"{nameof(Viperinius)}.{nameof(Viperinius.Plugin)}.{nameof(SpotifyImport)}";
+
+    /// <summary>
+    /// Gets the Spotify base URL.
+    /// </summary>
+    public static string SpotifyBaseUrl => "https://open.spotify.com";
 
     /// <summary>
     /// Gets the path used for storing plugin data.

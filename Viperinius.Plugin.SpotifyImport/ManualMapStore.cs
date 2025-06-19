@@ -14,7 +14,7 @@ namespace Viperinius.Plugin.SpotifyImport
 {
     internal class ManualMapStore : IList<ManualMapTrack>
     {
-        private static readonly string _schemaResourceName = $"{Plugin.PluginApiBase}.manual_track_map.schema.json";
+        private static readonly string _schemaResourceName = $"{Plugin.PluginQualifiedName}.manual_track_map.schema.json";
 
         private readonly ILogger<ManualMapStore>? _logger;
         private List<ManualMapTrack> _tracks;

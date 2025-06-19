@@ -62,7 +62,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
             Uri? callbackEndpoint = null;
             try
             {
-                callbackEndpoint = new Uri($"{baseUrl}/{Plugin.PluginApiBase}/SpotifyAuthCallback");
+                callbackEndpoint = new Uri($"{baseUrl}/{Plugin.PluginQualifiedName}/SpotifyAuthCallback");
             }
             catch (Exception)
             {
