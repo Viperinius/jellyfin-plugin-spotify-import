@@ -238,7 +238,6 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                     }
 
                 case ItemType.Chapter:
-                    break;
                 case ItemType.Episode:
                 default:
                     break;
