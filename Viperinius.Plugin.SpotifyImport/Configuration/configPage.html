@@ -8,7 +8,7 @@
 
 <body>
     <div id="SpotifyImportConfigPage" data-role="page" class="page type-interior pluginConfigurationPage"
-         data-require="emby-input,emby-button,emby-select,emby-checkbox,emby-textarea"
+         data-require="emby-input,emby-button,emby-select,emby-checkbox"
          data-controller="__plugin/playlistconfigjs">
         <style>
             .playlistContainer, .usersContainer, .multiCheckboxContainer {
@@ -67,23 +67,24 @@
                     </div>
 
                     <div class="inputContainer">
-                        <textarea id="SpotifyOAuthTokenJson" is="emby-textarea" label="Spotify Auth Token (JSON)"></textarea>
+                        <textarea id="SpotifyOAuthTokenJson" is="emby-input" label="Spotify Auth Token (JSON)"></textarea>
                         <div class="fieldDescription">
-                            Enter the JSON representation of a PKCETokenResponse object from SpotifyAPI.Web.
+                            Enter the JSON representation of a Spotify OAuth Access Token.
                             The CreatedAt field is optional and will be automatically set to a past date if omitted.
+                            Ensure you also have supplied the client id that was used to create this token. Spotify default client id + tokens are accepted.
+                            Refresh functionality is currently unavailable. Generate a token and you should have access for an hour.
+                            <em>WARNING DANGEROUS: If valid, this field will automatically replace any stored token.</em>
                             <br><br>
                             <strong>Required fields:</strong> AccessToken, TokenType, ExpiresIn, RefreshToken, Scope<br>
                             <strong>Optional fields:</strong> CreatedAt
                             <br><br>
                             <strong>Example:</strong>
                             <pre style="background-color: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 12px; margin: 10px 0;">
-{
-  "AccessToken": "BQC4liRpfwMiW-NmU9h3cszJqHksTXzY8UZG0b7wLrABCDEF1234567890abcdef",
-  "TokenType": "Bearer",
-  "ExpiresIn": 3600,
-  "RefreshToken": "AQD-ExampleRefreshToken1234567890abcdefghijklmnopqrstuvwxyz",
-  "Scope": "playlist-read-private playlist-read-collaborative"
-}</pre>
+                            {"AccessToken": "BeArEr-ExAMPle_ACCESSTOKEN-abcde",
+                            "TokenType": "Bearer",
+                            "ExpiresIn": 3600,
+                            "RefreshToken": "AQD-ExampleRefreshToken12345",
+                            "Scope": "playlist-read playlist-read-private playlist-read-collaborative"}</pre>
                             <small><em>Note: Replace the example values with your actual Spotify token data.</em></small>
                         </div>
                     </div>
