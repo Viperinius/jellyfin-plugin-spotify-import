@@ -156,7 +156,7 @@ function getPlaylistTableData(page) {
                 Name: renameTo,
                 UserName: jellyfinUser,
                 IsPrivate: isPrivate,
-                RecreateFromScratch : recreateFromScratch,
+                RecreateFromScratch: recreateFromScratch,
             };
         });
 
@@ -244,6 +244,27 @@ export default function (view) {
             document.querySelector('#ShowCompletenessInformation').checked = config.ShowCompletenessInformation;
             document.querySelector('#SpotifyClientId').value = config.SpotifyClientId;
             document.querySelector('#SpotifyCookie').value = config.SpotifyCookie;
+            document.querySelector('#SpotifyOAuthTokenJson').value = config.SpotifyOAuthTokenJson || '';
+
+            // Parse the SpotifyOAuthTokenJson and update SpotifyAuthToken if valid JSON is provided
+            if (config.SpotifyOAuthTokenJson && config.SpotifyOAuthTokenJson.trim() !== '') {
+                try {
+                    const parsedToken = JSON.parse(config.SpotifyOAuthTokenJson);
+                    // Validate that required fields are present (CreatedAt is optional)
+                    if (parsedToken.AccessToken && parsedToken.TokenType && parsedToken.ExpiresIn &&
+                        parsedToken.RefreshToken && parsedToken.Scope) {
+                        config.SpotifyAuthToken = parsedToken;
+                    } else {
+                        Dashboard.alert('Invalid JSON structure for SpotifyOAuthToken. Required fields: AccessToken, TokenType, ExpiresIn, RefreshToken, Scope. Optional fields: CreatedAt');
+                        Dashboard.hideLoadingMsg();
+                        return;
+                    }
+                } catch (jsonError) {
+                    Dashboard.alert('Invalid JSON format for SpotifyOAuthToken: ' + jsonError.message);
+                    Dashboard.hideLoadingMsg();
+                    return;
+                }
+            }
 
             document.querySelector('#GenerateMissingTrackLists').checked = config.GenerateMissingTrackLists;
             document.querySelector('#MissingTrackListsDateFormat').value = config.MissingTrackListsDateFormat;
@@ -318,6 +339,27 @@ export default function (view) {
             config.ShowCompletenessInformation = document.querySelector('#ShowCompletenessInformation').checked;
             config.SpotifyClientId = document.querySelector('#SpotifyClientId').value;
             config.SpotifyCookie = document.querySelector('#SpotifyCookie').value;
+            config.SpotifyOAuthTokenJson = document.querySelector('#SpotifyOAuthTokenJson').value;
+
+            // Parse the SpotifyOAuthTokenJson and update SpotifyAuthToken if valid JSON is provided
+            if (config.SpotifyOAuthTokenJson && config.SpotifyOAuthTokenJson.trim() !== '') {
+                try {
+                    const parsedToken = JSON.parse(config.SpotifyOAuthTokenJson);
+                    // Validate that required fields are present (CreatedAt is optional)
+                    if (parsedToken.AccessToken && parsedToken.TokenType && parsedToken.ExpiresIn &&
+                        parsedToken.RefreshToken && parsedToken.Scope) {
+                        config.SpotifyAuthToken = parsedToken;
+                    } else {
+                        Dashboard.alert('Invalid JSON structure for SpotifyOAuthToken. Required fields: AccessToken, TokenType, ExpiresIn, RefreshToken, Scope. Optional fields: CreatedAt');
+                        Dashboard.hideLoadingMsg();
+                        return;
+                    }
+                } catch (jsonError) {
+                    Dashboard.alert('Invalid JSON format for SpotifyOAuthToken: ' + jsonError.message);
+                    Dashboard.hideLoadingMsg();
+                    return;
+                }
+            }
 
             config.Playlists = [];
             const playlists = getPlaylistTableData(view) || [];
