@@ -14,7 +14,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
     internal class HttpRequest
     {
         private const int MaxRetries = 3;
-        private readonly string _userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0"; // use a hardcoded UA for now
+        private readonly string _userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) Gecko/20100101 Firefox/140.0"; // use a hardcoded UA for now
         private readonly ILogger<HttpRequest> _logger;
 
         private static readonly HttpClient _httpClient = new HttpClient(new HttpClientHandler

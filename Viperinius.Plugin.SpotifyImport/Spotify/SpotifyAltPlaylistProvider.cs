@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -17,8 +18,10 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
     internal class SpotifyAltPlaylistProvider : GenericPlaylistProvider
     {
         private const string ProviderName = "SpotifyAlt";
+        private const int TotpVersionFallback = 13;
+        private static readonly byte[] _totpCipherFallback = { 59, 92, 64, 70, 99, 78, 117, 75, 99, 103, 116, 67, 103, 51, 87, 63, 93, 59, 70, 45, 32 };
+        private static readonly Uri _dumpedSecretsUrl = new Uri("https://raw.githubusercontent.com/Thereallo1026/spotify-secrets/refs/heads/main/secrets/secretBytes.json");
         private static readonly Uri _providerUrl = new Uri(Plugin.SpotifyBaseUrl);
-        private static readonly byte[] _totpCipher = { 12, 56, 76, 33, 88, 44, 88, 33, 78, 78, 11, 66, 22, 22, 55, 69, 54 };
         private readonly ILogger<SpotifyAltPlaylistProvider> _logger;
         private readonly HttpRequest _httpRequest;
 
@@ -211,6 +214,26 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             return null;
         }
 
+        private DumpedSecretsResultJson? TryRetrieveScrapedSecrets()
+        {
+            var response = _httpRequest.Get(_dumpedSecretsUrl).Result;
+            if (response != null)
+            {
+                try
+                {
+                    var dump = JsonSerializer.Deserialize<DumpedSecretsResultJson[]>(response.Content.ReadAsStringAsync().Result);
+                    // use newest version
+                    return dump?.Aggregate((x, y) => x.Version > y.Version ? x : y);
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogError(ex, "Failed to retrieve pre-scraped secrets");
+                }
+            }
+
+            return null;
+        }
+
         private void RefreshAuthToken()
         {
             if (AuthToken != null && ((SpotifyAltAuthToken)AuthToken).ExpirationUnixMs > DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeMilliseconds())
@@ -229,7 +252,16 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 }
             }
 
-            var totpResult = GenerateTotp(_totpCipher);
+            var totpVersion = TotpVersionFallback;
+            var totpCipher = _totpCipherFallback;
+            var dumpedSecret = TryRetrieveScrapedSecrets();
+            if (dumpedSecret != null)
+            {
+                totpVersion = dumpedSecret.Value.Version;
+                totpCipher = dumpedSecret.Value.Secret.ToArray();
+            }
+
+            var totpResult = GenerateTotp(totpCipher);
             if (totpResult == null)
             {
                 _logger.LogError("Failed to generate TOTP");
@@ -244,7 +276,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             var uriBuilder = new UriBuilder(_providerUrl)
             {
                 Path = "/api/token",
-                Query = $"reason=init&productType=web-player&totp={otp}&totpServer={otp}&totpVer=5&sTime={serverTime}&cTime={clientTime}"
+                Query = $"reason=init&productType=web-player&totp={otp}&totpServer={otp}&totpVer={totpVersion}&sTime={serverTime}&cTime={clientTime}"
             };
             var response = _httpRequest.Get(uriBuilder.Uri, cookies: cookies.GetCookieHeader(_providerUrl)).Result;
             if (response != null)
@@ -446,6 +478,15 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             }
 
             return null;
+        }
+
+        private struct DumpedSecretsResultJson
+        {
+            [JsonPropertyName("version")]
+            public int Version { get; set; }
+
+            [JsonPropertyName("secret")]
+            public List<byte> Secret { get; set; }
         }
     }
 }
