@@ -1,6 +1,9 @@
 export default function (view) {
     view.dispatchEvent(new CustomEvent('create'));
 
+    const apiQueryOpts = {};
+    const users = [];
+
     var SpotifyImportConfig = {
         pluginUniqueId: 'F03D0ADB-289F-4986-BD6F-2468025249B3',
         pluginApiBaseUrl: 'Viperinius.Plugin.SpotifyImport'
@@ -238,24 +241,12 @@ export default function (view) {
         ApiClient.fetch({
             url: apiUrl,
             type: 'GET',
+            dataType: 'json',
             headers: {
                 accept: 'application/json'
             }
-        }, true).then(function (res) {
+        }, true).then(function (data) {
             getCurrentTokenBtn.disabled = false;
-            
-            // Handle both Response object and already parsed JSON
-            if (res && typeof res === 'object' && 'ok' in res) {
-                // It's a Response object
-                if (!res.ok) {
-                    throw "invalid response";
-                }
-                return res.json();
-            } else {
-                // It's already parsed JSON
-                return res;
-            }
-        }).then(function (data) {
             if (data && data.tokenJson) {
                 document.querySelector('#SpotifyOAuthTokenJson').value = data.tokenJson;
                 Dashboard.alert('Current token loaded successfully!');
@@ -286,37 +277,14 @@ export default function (view) {
         ApiClient.fetch({
             url: apiUrl,
             type: 'POST',
+            dataType: 'json',
             headers: {
                 'Content-Type': 'application/json',
                 accept: 'application/json'
             },
             data: JSON.stringify({ tokenJson: tokenJson })
-        }, true).then(function (res) {
+        }, true).then(function (data) {
             setCurrentTokenBtn.disabled = false;
-            
-            // Handle both Response object and already parsed JSON
-            if (res && typeof res === 'object' && 'ok' in res) {
-                // It's a Response object
-                if (!res.ok) {
-                    return res.json().then(function(errorData) {
-                        throw errorData.title || errorData.message || "Invalid response";
-                    }).catch(function(jsonError) {
-                        // If parsing error response fails, use the status text
-                        throw res.statusText || "Invalid response";
-                    });
-                }
-                return res.json();
-            } else {
-                // It's already parsed JSON - check for success/error indicators
-                if (res && res.success) {
-                    return res;
-                } else if (res && (res.title || res.message)) {
-                    throw res.title || res.message || "Unknown error";
-                } else {
-                    return res;
-                }
-            }
-        }).then(function (data) {
             if (data && data.success) {
                 Dashboard.alert('Token set successfully! The token has been parsed and stored in the configuration.');
             } else {
