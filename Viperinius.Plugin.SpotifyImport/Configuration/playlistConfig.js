@@ -243,10 +243,18 @@ export default function (view) {
             }
         }, true).then(function (res) {
             getCurrentTokenBtn.disabled = false;
-            if (!res || !res.ok) {
-                throw "invalid response";
+            
+            // Handle both Response object and already parsed JSON
+            if (res && typeof res === 'object' && 'ok' in res) {
+                // It's a Response object
+                if (!res.ok) {
+                    throw "invalid response";
+                }
+                return res.json();
+            } else {
+                // It's already parsed JSON
+                return res;
             }
-            return res.json();
         }).then(function (data) {
             if (data && data.tokenJson) {
                 document.querySelector('#SpotifyOAuthTokenJson').value = data.tokenJson;
@@ -285,12 +293,29 @@ export default function (view) {
             data: JSON.stringify({ tokenJson: tokenJson })
         }, true).then(function (res) {
             setCurrentTokenBtn.disabled = false;
-            if (!res || !res.ok) {
-                return res.json().then(function(errorData) {
-                    throw errorData.title || "Invalid response";
-                });
+            
+            // Handle both Response object and already parsed JSON
+            if (res && typeof res === 'object' && 'ok' in res) {
+                // It's a Response object
+                if (!res.ok) {
+                    return res.json().then(function(errorData) {
+                        throw errorData.title || errorData.message || "Invalid response";
+                    }).catch(function(jsonError) {
+                        // If parsing error response fails, use the status text
+                        throw res.statusText || "Invalid response";
+                    });
+                }
+                return res.json();
+            } else {
+                // It's already parsed JSON - check for success/error indicators
+                if (res && res.success) {
+                    return res;
+                } else if (res && (res.title || res.message)) {
+                    throw res.title || res.message || "Unknown error";
+                } else {
+                    return res;
+                }
             }
-            return res.json();
         }).then(function (data) {
             if (data && data.success) {
                 Dashboard.alert('Token set successfully! The token has been parsed and stored in the configuration.');
