@@ -72,24 +72,22 @@
                     <div class="inputContainer">
                         <textarea id="SpotifyOAuthTokenJson" is="emby-textarea" label="Spotify Auth Token JSON" style="min-width: 100%; min-height: 10em; max-width: 50vw; field-sizing: content"></textarea>
                         <div class="fieldDescription">
-                            Enter the JSON representation of a Spotify OAuth Access Token to set using the button below. <br>
-                            This field is only for input - the token is stored in parsed form only. <br>
-                            The CreatedAt field is optional and will be automatically set to a past date if omitted. <br>
-                            Ensure you also have supplied the client id that was used to create this token. Spotify default client id + tokens are accepted. <br>
-                            Refresh functionality is currently unavailable. Generate a token and you should have access for an hour. <br>
-                            <br>
-                            <strong>Note:</strong> This field is cleared after each page load. Use the "Get Current Token JSON" button to retrieve the current token.
-                            <br>
+                            Get or set the current Spotify OAuth Access Token in JSON format using the buttons below. <br>
+                            Ensure you also have supplied the client id that was used to create this token. <br>
                             <strong>Required fields:</strong> AccessToken, TokenType, ExpiresIn, RefreshToken, Scope<br>
                             <strong>Optional fields:</strong> CreatedAt
                             <br><br>
                             <strong>Example:</strong>
                             <pre style="background-color: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 12px; margin: 10px 0; color: black">
-{"AccessToken": "BeArEr-ExAMPle_ACCESSTOKEN-abcde",
-"TokenType": "Bearer",
-"ExpiresIn": 3600,
-"RefreshToken": "AQD-ExampleRefreshToken12345",
-"Scope": "playlist-read playlist-read-private playlist-read-collaborative"}</pre>
+{
+   "AccessToken": "BeArEr-ExAMPle_ACCESSTOKEN-abcde",
+   "TokenType": "Bearer",
+   "ExpiresIn": 3600,
+   "RefreshToken": "AQD-ExampleRefreshToken12345",
+   "Scope": "playlist-read playlist-read-private playlist-read-collaborative",
+   "CreatedAt": "2025-07-14T11:07:17.7015253Z",
+   "IsExpired": false
+}</pre>
                             <small><em>Note: Replace the example values with your actual Spotify token data.</em></small>
                         </div>
                     </div>
