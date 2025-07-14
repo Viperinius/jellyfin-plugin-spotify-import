@@ -8,15 +8,17 @@
 
 <body>
     <div id="SpotifyImportConfigPage" data-role="page" class="page type-interior pluginConfigurationPage"
-        data-require="emby-input,emby-button,emby-select,emby-checkbox,emby-textarea"
-        data-controller="__plugin/playlistconfigjs">
+         data-require="emby-input,emby-button,emby-select,emby-checkbox,emby-textarea"
+         data-controller="__plugin/playlistconfigjs">
         <style>
             .playlistContainer, .usersContainer, .multiCheckboxContainer {
                 margin-bottom: 1.8em;
             }
-            .multiCheckboxContainer .emby-checkbox-label {
-                margin-bottom: 0.25em;
-            }
+
+                .multiCheckboxContainer .emby-checkbox-label {
+                    margin-bottom: 0.25em;
+                }
+
             .multiCheckboxContainerTitle {
                 margin-bottom: 0.25em;
             }
@@ -63,6 +65,41 @@
                             Make sure to use "<span id="SpotifyAuthRedirectUri"></span>" as Redirect URI.
                         </div>
                     </div>
+
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h5 class="sectionTitle">Spotify Auth Token JSON </h5>
+                    </div>
+                    <div class="inputContainer">
+                        <textarea id="SpotifyOAuthTokenJson" is="emby-textarea" label="Spotify Auth Token JSON" style="min-width: 100%; min-height: 10em; max-width: 50vw; field-sizing: content"></textarea>
+                        <div class="fieldDescription">
+                            Get or set the current Spotify OAuth Access Token in JSON format using the buttons below. <br>
+                            Ensure you also have supplied the client id that was used to create this token. <br>
+                            <strong>Required fields:</strong> AccessToken, TokenType, ExpiresIn, RefreshToken, Scope<br>
+                            <strong>Optional fields:</strong> CreatedAt
+                            <br><br>
+                            <strong>Example:</strong>
+                            <pre style="background-color: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 12px; margin: 10px 0; color: black">
+{
+   "AccessToken": "BeArEr-ExAMPle_ACCESSTOKEN-abcde",
+   "TokenType": "Bearer",
+   "ExpiresIn": 3600,
+   "RefreshToken": "AQD-ExampleRefreshToken12345",
+   "Scope": "playlist-read playlist-read-private playlist-read-collaborative",
+   "CreatedAt": "2025-07-14T11:07:17.7015253Z",
+   "IsExpired": false
+}</pre>
+                            <small><em>Note: Replace the example values with your actual Spotify token data.</em></small>
+                        </div>
+                    </div>
+                    <div class="verticalSection">
+                        <button is="emby-button" type="button" id="getCurrentToken" class="raised block" style="margin-bottom: 0.5em;">
+                            <span>Get Current Token JSON</span>
+                        </button>
+                        <button is="emby-button" type="button" id="setCurrentToken" class="raised block">
+                            <span>Set Token from JSON Above</span>
+                        </button>
+                    </div>
+
                     <div class="verticalSection">
                         <div class="fieldDescription hide" id="authSpotifyAlreadyDesc">
                             Found an existing authorization. (Created at: <span id="authSpotifyCreatedAt"></span>)
@@ -96,12 +133,12 @@
                         <div class="innerPlaylistContainer">
                             <table id="playlistTable" class="stripedTable ui-responsive table-stroke detailTable" data-role="table">
                                 <thead>
-                                    <th class="detailTableHeaderCell" data-priority="persist">Spotify ID</th>
-                                    <th class="detailTableHeaderCell" data-priority="persist">Target Name</th>
-                                    <th class="detailTableHeaderCell" data-priority="persist">Target User</th>
-                                    <th class="detailTableHeaderCell" data-priority="persist">Set To Private</th>
-                                    <th class="detailTableHeaderCell" data-priority="persist">Always From Scratch</th>
-                                    <th></th>
+                                <th class="detailTableHeaderCell" data-priority="persist">Spotify ID</th>
+                                <th class="detailTableHeaderCell" data-priority="persist">Target Name</th>
+                                <th class="detailTableHeaderCell" data-priority="persist">Target User</th>
+                                <th class="detailTableHeaderCell" data-priority="persist">Set To Private</th>
+                                <th class="detailTableHeaderCell" data-priority="persist">Always From Scratch</th>
+                                <th></th>
                                 </thead>
                                 <tbody>
                                 </tbody>
@@ -129,11 +166,11 @@
                         <div class="innerUsersContainer">
                             <table id="userlistTable" class="stripedTable ui-responsive table-stroke detailTable" data-role="table">
                                 <thead>
-                                    <th class="detailTableHeaderCell" data-priority="persist">Spotify ID</th>
-                                    <th class="detailTableHeaderCell" data-priority="persist">Target User</th>
-                                    <th class="detailTableHeaderCell" data-priority="persist">Set To Private</th>
-                                    <th class="detailTableHeaderCell" data-priority="persist">Only Original Playlists</th>
-                                    <th></th>
+                                <th class="detailTableHeaderCell" data-priority="persist">Spotify ID</th>
+                                <th class="detailTableHeaderCell" data-priority="persist">Target User</th>
+                                <th class="detailTableHeaderCell" data-priority="persist">Set To Private</th>
+                                <th class="detailTableHeaderCell" data-priority="persist">Only Original Playlists</th>
+                                <th></th>
                                 </thead>
                                 <tbody>
                                 </tbody>

@@ -156,7 +156,7 @@ function getPlaylistTableData(page) {
                 Name: renameTo,
                 UserName: jellyfinUser,
                 IsPrivate: isPrivate,
-                RecreateFromScratch : recreateFromScratch,
+                RecreateFromScratch: recreateFromScratch,
             };
         });
 
@@ -209,6 +209,7 @@ function getItemMatchCriteriaFromCheckboxes() {
     return result;
 }
 
+
 export default function (view) {
     view.dispatchEvent(new CustomEvent('create'));
 
@@ -244,6 +245,7 @@ export default function (view) {
             document.querySelector('#ShowCompletenessInformation').checked = config.ShowCompletenessInformation;
             document.querySelector('#SpotifyClientId').value = config.SpotifyClientId;
             document.querySelector('#SpotifyCookie').value = config.SpotifyCookie;
+            // Note: SpotifyOAuthTokenJson removed - textarea will be empty by default
 
             document.querySelector('#GenerateMissingTrackLists').checked = config.GenerateMissingTrackLists;
             document.querySelector('#MissingTrackListsDateFormat').value = config.MissingTrackListsDateFormat;
@@ -318,6 +320,7 @@ export default function (view) {
             config.ShowCompletenessInformation = document.querySelector('#ShowCompletenessInformation').checked;
             config.SpotifyClientId = document.querySelector('#SpotifyClientId').value;
             config.SpotifyCookie = document.querySelector('#SpotifyCookie').value;
+            // Note: SpotifyOAuthTokenJson removed - not saved to config anymore
 
             config.Playlists = [];
             const playlists = getPlaylistTableData(view) || [];
@@ -413,6 +416,7 @@ export default function (view) {
             console.error(error);
         });
     });
+
     const dbgDumpRefsBtn = document.querySelector('#dbgDumpRefs');
     dbgDumpRefsBtn.addEventListener('click', function () {
         const name = document.querySelector('#dbgDumpRefsTrackName').value;
@@ -433,6 +437,71 @@ export default function (view) {
             console.log('dump done');
         }).catch(function (error) {
             console.error(error);
+        });
+    });
+
+    // Get Current Token JSON button
+    const getCurrentTokenBtn = document.querySelector('#getCurrentToken');
+    getCurrentTokenBtn.addEventListener('click', function () {
+        const apiUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/SpotifyAuthToken');
+        
+        getCurrentTokenBtn.disabled = true;
+
+        ApiClient.fetch({
+            url: apiUrl,
+            type: 'GET',
+            dataType: 'json',
+            headers: {
+                accept: 'application/json'
+            }
+        }, true).then(function (data) {
+            getCurrentTokenBtn.disabled = false;
+            if (data && data.tokenJson) {
+                document.querySelector('#SpotifyOAuthTokenJson').value = data.tokenJson;
+                Dashboard.alert('Current token loaded successfully!');
+            } else {
+                document.querySelector('#SpotifyOAuthTokenJson').value = '';
+                Dashboard.alert('No current token found.');
+            }
+        }).catch(function (error) {
+            console.error(error);
+            Dashboard.alert('Failed to get current token: ' + error);
+        });
+    });
+
+    // Set Token from JSON button
+    const setCurrentTokenBtn = document.querySelector('#setCurrentToken');
+    setCurrentTokenBtn.addEventListener('click', function () {
+        const tokenJson = document.querySelector('#SpotifyOAuthTokenJson').value;
+        
+        if (!tokenJson || tokenJson.trim() === '') {
+            Dashboard.alert('Please enter a valid JSON token first.');
+            return;
+        }
+
+        const apiUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/SpotifyAuthToken');
+        
+        setCurrentTokenBtn.disabled = true;
+
+        ApiClient.fetch({
+            url: apiUrl,
+            type: 'POST',
+            dataType: 'json',
+            headers: {
+                'Content-Type': 'application/json',
+                accept: 'application/json'
+            },
+            data: JSON.stringify({ tokenJson: tokenJson })
+        }, true).then(function (data) {
+            setCurrentTokenBtn.disabled = false;
+            if (data && data.success) {
+                Dashboard.alert('Token set successfully! The token has been parsed and stored in the configuration.');
+            } else {
+                throw data.message || "Unknown error";
+            }
+        }).catch(function (error) {
+            console.error(error);
+            Dashboard.alert('Failed to set token: ' + error);
         });
     });
 }

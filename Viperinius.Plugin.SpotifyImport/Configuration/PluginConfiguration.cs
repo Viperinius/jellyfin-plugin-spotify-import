@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 using MediaBrowser.Model.Plugins;
 using Viperinius.Plugin.SpotifyImport.Matchers;
