@@ -2,7 +2,6 @@
 
 using System;
 using System.Linq;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 using MediaBrowser.Model.Plugins;
@@ -15,14 +14,6 @@ namespace Viperinius.Plugin.SpotifyImport.Configuration;
 /// </summary>
 public class PluginConfiguration : BasePluginConfiguration
 {
-    private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
-    {
-        PropertyNameCaseInsensitive = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
-
-    private string _spotifyOAuthTokenJson;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PluginConfiguration"/> class.
     /// </summary>
@@ -31,7 +22,6 @@ public class PluginConfiguration : BasePluginConfiguration
         Version = string.Empty;
         SpotifyClientId = string.Empty;
         SpotifyCookie = string.Empty;
-        _spotifyOAuthTokenJson = string.Empty;
         Playlists = Array.Empty<TargetPlaylistConfiguration>();
         Users = Array.Empty<TargetUserConfiguration>();
         ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.TrackName | ItemMatchCriteria.AlbumName | ItemMatchCriteria.AlbumArtists | ItemMatchCriteria.Artists);
@@ -126,47 +116,4 @@ public class PluginConfiguration : BasePluginConfiguration
     /// </summary>
     [XmlElement(IsNullable = true)]
     public SpotifyAPI.Web.PKCETokenResponse? SpotifyAuthToken { get; set; }
-
-    /// <summary>
-    /// Gets or sets the Spotify OAuth token in JSON format.
-    /// </summary>
-    public string SpotifyOAuthTokenJson
-    {
-        get => _spotifyOAuthTokenJson;
-        set
-        {
-            _spotifyOAuthTokenJson = value;
-
-            // If JSON is provided, try to parse it and update SpotifyAuthToken
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                try
-                {
-                    var parsedToken = JsonSerializer.Deserialize<SpotifyAPI.Web.PKCETokenResponse>(value, _jsonSerializerOptions);
-                    if (parsedToken != null &&
-                        !string.IsNullOrEmpty(parsedToken.AccessToken) &&
-                        !string.IsNullOrEmpty(parsedToken.TokenType) &&
-                        parsedToken.ExpiresIn > 0 &&
-                        !string.IsNullOrEmpty(parsedToken.RefreshToken) &&
-                        !string.IsNullOrEmpty(parsedToken.Scope))
-                    {
-                        // If CreatedAt was not provided or is default, set it to a date in the past
-                        // to ensure the token doesn't appear "fresh" when it might be old
-                        if (parsedToken.CreatedAt == default || parsedToken.CreatedAt == DateTime.MinValue)
-                        {
-                            // Set to 1 hour ago to account for typical token expiration times
-                            parsedToken.CreatedAt = DateTime.UtcNow.AddHours(-1);
-                        }
-
-                        SpotifyAuthToken = parsedToken;
-                    }
-                }
-                catch (JsonException)
-                {
-                    // If parsing fails, keep the JSON but don't update SpotifyAuthToken
-                    // The validation will be handled in the frontend
-                }
-            }
-        }
-    }
 }

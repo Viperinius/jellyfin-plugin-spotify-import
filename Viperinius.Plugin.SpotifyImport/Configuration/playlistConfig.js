@@ -1,214 +1,3 @@
-const apiQueryOpts = {};
-const users = [];
-
-function getPlaylistIdElementHtml(id) {
-    let value = id;
-    if (!id) {
-        value = '';
-    }
-
-    return `<td class="detailTableBodyCell cellPlaylistId" contenteditable>${value}</td>`
-}
-
-function getNameElementHtml(name) {
-    let value = name;
-    if (!name) {
-        value = '';
-    }
-
-    return `<td class="detailTableBodyCell cellPlaylistName" contenteditable>${value}</td>`
-}
-
-function getUserSelectHtml(selectedUser) {
-    let userOptionsHtml = '';
-    users.forEach(user => {
-        userOptionsHtml += `<option value="${user.id}" ${user.id === selectedUser ? 'selected' : ''}>${user.name}</option>`;
-    });
-
-    return `<td class="detailTableBodyCell cellPlaylistUser"><select class="emby-select-withcolor emby-select" is="emby-select">${userOptionsHtml}</select></td>`;
-}
-
-function getRecreateFromScratchHtml(alwaysFromScratch) {
-    return `<td class="detailTableBodyCell cellPlaylistFromScratch">
-        <label class="emby-checkbox-label">
-            <input type="checkbox" is="emby-checkbox" ${alwaysFromScratch ? 'checked' : ''}/>
-            <span></span>
-        </label>
-    </td>`;
-}
-
-function getIsPrivateHtml(isPrivate) {
-    return `<td class="detailTableBodyCell cellPlaylistIsPrivate">
-        <label class="emby-checkbox-label">
-            <input type="checkbox" is="emby-checkbox" ${isPrivate ? 'checked' : ''}/>
-            <span></span>
-        </label>
-    </td>`;
-}
-
-function getOnlyOwnHtml(onlyOwn) {
-    return `<td class="detailTableBodyCell cellPlaylistOnlyOwn">
-        <label class="emby-checkbox-label">
-            <input type="checkbox" is="emby-checkbox" ${onlyOwn ? 'checked' : ''}/>
-            <span></span>
-        </label>
-    </td>`;
-}
-
-function createPlaylistRowHtml(playlistId, name, user, isPrivate, alwaysFromScratch) {
-    const row = `<tr class="detailTableBodyRow detailTableBodyRow-shaded">
-        ${getPlaylistIdElementHtml(playlistId)}
-        ${getNameElementHtml(name)}
-        ${getUserSelectHtml(user)}
-        ${getIsPrivateHtml(isPrivate)}
-        ${getRecreateFromScratchHtml(alwaysFromScratch)}
-        <td>
-            <button class="paper-icon-button-light" type="button" onclick="this.closest('tr').remove()">
-                <span class="material-icons delete"></span>
-            </button>
-        </td>
-    </tr>`;
-
-    return row;
-}
-
-function createUserRowHtml(spotifyUser, jellyfinUser, isPrivate, onlyOwn) {
-    const row = `<tr class="detailTableBodyRow detailTableBodyRow-shaded">
-        ${getPlaylistIdElementHtml(spotifyUser)}
-        ${getUserSelectHtml(jellyfinUser)}
-        ${getIsPrivateHtml(isPrivate)}
-        ${getOnlyOwnHtml(onlyOwn)}
-        <td>
-            <button class="paper-icon-button-light" type="button" onclick="this.closest('tr').remove()">
-                <span class="material-icons delete"></span>
-            </button>
-        </td>
-    </tr>`;
-
-    return row;
-}
-
-
-
-function loadPlaylistTable(page, config) {
-    const tableBody = page.querySelector('#playlistTable > tbody');
-    if (tableBody && config && config.Playlists) {
-        let rowsHtml = '';
-
-        config.Playlists.forEach(pl => {
-            const user = users.find(u => u.name === pl.UserName);
-            const userId = user?.id || '';
-            rowsHtml += createPlaylistRowHtml(pl.Id, pl.Name, userId, pl.IsPrivate, pl.RecreateFromScratch);
-        });
-
-        tableBody.innerHTML = rowsHtml;
-    }
-
-    const addBtn = page.querySelector('#addPlaylistId');
-    if (addBtn) {
-        addBtn.addEventListener('click', function () {
-            const tableBody = page.querySelector('#playlistTable > tbody');
-            if (tableBody) {
-                tableBody.insertAdjacentHTML('beforeend', createPlaylistRowHtml());
-            }
-        });
-    }
-}
-
-function loadUsersTable(page, config) {
-    const tableBody = page.querySelector('#userlistTable > tbody');
-    if (tableBody && config && config.Users) {
-        let rowsHtml = '';
-
-        config.Users.forEach(user => {
-            const spotifyUser = user.Id;
-            const jellyfinUser = users.find(u => u.name === user.UserName);
-            const jellyfinUserId = jellyfinUser?.id || '';
-
-            rowsHtml += createUserRowHtml(spotifyUser, jellyfinUserId, user.IsPrivate, user.OnlyOwnPlaylists);
-        });
-
-        tableBody.innerHTML = rowsHtml;
-    }
-
-    const addBtn = page.querySelector('#addUser');
-    addBtn.addEventListener('click', function () {
-        const tableBody = page.querySelector('#userlistTable > tbody');
-        if (tableBody) {
-            tableBody.insertAdjacentHTML('beforeend', createUserRowHtml());
-        }
-    });
-}
-
-function getPlaylistTableData(page) {
-    const tableRows = page.querySelectorAll('#playlistTable > tbody > tr');
-    if (tableRows) {
-        const playlistData = [...tableRows].map(r => {
-            const spotifyId = r.querySelector('td.cellPlaylistId').innerText.trim();
-            const renameTo = r.querySelector('td.cellPlaylistName').innerText.trim();
-            const userSelect = r.querySelector('td.cellPlaylistUser > select');
-            const jellyfinUser = userSelect.options[userSelect.selectedIndex].text.trim();
-            const isPrivate = r.querySelector('td.cellPlaylistIsPrivate > * input').checked;
-            const recreateFromScratch = r.querySelector('td.cellPlaylistFromScratch > * input').checked;
-
-            return {
-                Id: spotifyId,
-                Name: renameTo,
-                UserName: jellyfinUser,
-                IsPrivate: isPrivate,
-                RecreateFromScratch: recreateFromScratch,
-            };
-        });
-
-        return playlistData;
-    }
-
-    return [];
-}
-
-function getUsersTableData(page) {
-    const tableRows = page.querySelectorAll('#userlistTable > tbody > tr');
-    if (!tableRows) {
-        return [];
-    }
-
-    const userData = [...tableRows].map(r => {
-        const spotifyUser = r.querySelector('td.cellPlaylistId').innerText.trim();
-        const userSelect = r.querySelector('td.cellPlaylistUser > select');
-        const jellyfinUser = userSelect.options[userSelect.selectedIndex].text.trim();
-        const isPrivate = r.querySelector('td.cellPlaylistIsPrivate > * input').checked;
-        const onlyOwn = r.querySelector('td.cellPlaylistOnlyOwn > * input').checked;
-
-        return {
-            Id: spotifyUser,
-            UserName: jellyfinUser,
-            IsPrivate: isPrivate,
-            OnlyOwnPlaylists: onlyOwn
-        };
-
-    });
-
-    return userData;
-}
-
-
-function mapItemMatchCriteriaToCheckboxes(config) {
-    document.querySelector('#ItemMatchCriteriaTrack').checked = (config.ItemMatchCriteriaRaw & (1 << 0)) > 0;
-    document.querySelector('#ItemMatchCriteriaAlbum').checked = (config.ItemMatchCriteriaRaw & (1 << 1)) > 0;
-    document.querySelector('#ItemMatchCriteriaArtist').checked = (config.ItemMatchCriteriaRaw & (1 << 2)) > 0;
-    document.querySelector('#ItemMatchCriteriaAlbumArtist').checked = (config.ItemMatchCriteriaRaw & (1 << 3)) > 0;
-}
-
-function getItemMatchCriteriaFromCheckboxes() {
-    let result = 0;
-    if (document.querySelector('#ItemMatchCriteriaTrack').checked) result |= 1 << 0;
-    if (document.querySelector('#ItemMatchCriteriaAlbum').checked) result |= 1 << 1;
-    if (document.querySelector('#ItemMatchCriteriaArtist').checked) result |= 1 << 2;
-    if (document.querySelector('#ItemMatchCriteriaAlbumArtist').checked) result |= 1 << 3;
-
-    return result;
-}
-
 export default function (view) {
     view.dispatchEvent(new CustomEvent('create'));
 
@@ -244,27 +33,7 @@ export default function (view) {
             document.querySelector('#ShowCompletenessInformation').checked = config.ShowCompletenessInformation;
             document.querySelector('#SpotifyClientId').value = config.SpotifyClientId;
             document.querySelector('#SpotifyCookie').value = config.SpotifyCookie;
-            document.querySelector('#SpotifyOAuthTokenJson').value = config.SpotifyOAuthTokenJson || '';
-
-            // Parse the SpotifyOAuthTokenJson and update SpotifyAuthToken if valid JSON is provided
-            if (config.SpotifyOAuthTokenJson && config.SpotifyOAuthTokenJson.trim() !== '') {
-                try {
-                    const parsedToken = JSON.parse(config.SpotifyOAuthTokenJson);
-                    // Validate that required fields are present (CreatedAt is optional)
-                    if (parsedToken.AccessToken && parsedToken.TokenType && parsedToken.ExpiresIn &&
-                        parsedToken.RefreshToken && parsedToken.Scope) {
-                        config.SpotifyAuthToken = parsedToken;
-                    } else {
-                        Dashboard.alert('Invalid JSON structure for SpotifyOAuthToken. Required fields: AccessToken, TokenType, ExpiresIn, RefreshToken, Scope. Optional fields: CreatedAt');
-                        Dashboard.hideLoadingMsg();
-                        return;
-                    }
-                } catch (jsonError) {
-                    Dashboard.alert('Invalid JSON format for SpotifyOAuthToken: ' + jsonError.message);
-                    Dashboard.hideLoadingMsg();
-                    return;
-                }
-            }
+            // Note: SpotifyOAuthTokenJson removed - textarea will be empty by default
 
             document.querySelector('#GenerateMissingTrackLists').checked = config.GenerateMissingTrackLists;
             document.querySelector('#MissingTrackListsDateFormat').value = config.MissingTrackListsDateFormat;
@@ -339,27 +108,7 @@ export default function (view) {
             config.ShowCompletenessInformation = document.querySelector('#ShowCompletenessInformation').checked;
             config.SpotifyClientId = document.querySelector('#SpotifyClientId').value;
             config.SpotifyCookie = document.querySelector('#SpotifyCookie').value;
-            config.SpotifyOAuthTokenJson = document.querySelector('#SpotifyOAuthTokenJson').value;
-
-            // Parse the SpotifyOAuthTokenJson and update SpotifyAuthToken if valid JSON is provided
-            if (config.SpotifyOAuthTokenJson && config.SpotifyOAuthTokenJson.trim() !== '') {
-                try {
-                    const parsedToken = JSON.parse(config.SpotifyOAuthTokenJson);
-                    // Validate that required fields are present (CreatedAt is optional)
-                    if (parsedToken.AccessToken && parsedToken.TokenType && parsedToken.ExpiresIn &&
-                        parsedToken.RefreshToken && parsedToken.Scope) {
-                        config.SpotifyAuthToken = parsedToken;
-                    } else {
-                        Dashboard.alert('Invalid JSON structure for SpotifyOAuthToken. Required fields: AccessToken, TokenType, ExpiresIn, RefreshToken, Scope. Optional fields: CreatedAt');
-                        Dashboard.hideLoadingMsg();
-                        return;
-                    }
-                } catch (jsonError) {
-                    Dashboard.alert('Invalid JSON format for SpotifyOAuthToken: ' + jsonError.message);
-                    Dashboard.hideLoadingMsg();
-                    return;
-                }
-            }
+            // Note: SpotifyOAuthTokenJson removed - not saved to config anymore
 
             config.Playlists = [];
             const playlists = getPlaylistTableData(view) || [];
@@ -455,6 +204,7 @@ export default function (view) {
             console.error(error);
         });
     });
+
     const dbgDumpRefsBtn = document.querySelector('#dbgDumpRefs');
     dbgDumpRefsBtn.addEventListener('click', function () {
         const name = document.querySelector('#dbgDumpRefsTrackName').value;
@@ -475,6 +225,81 @@ export default function (view) {
             console.log('dump done');
         }).catch(function (error) {
             console.error(error);
+        });
+    });
+
+    // Get Current Token JSON button
+    const getCurrentTokenBtn = document.querySelector('#getCurrentToken');
+    getCurrentTokenBtn.addEventListener('click', function () {
+        const apiUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/SpotifyAuthToken');
+        
+        getCurrentTokenBtn.disabled = true;
+
+        ApiClient.fetch({
+            url: apiUrl,
+            type: 'GET',
+            headers: {
+                accept: 'application/json'
+            }
+        }, true).then(function (res) {
+            getCurrentTokenBtn.disabled = false;
+            if (!res || !res.ok) {
+                throw "invalid response";
+            }
+            return res.json();
+        }).then(function (data) {
+            if (data && data.tokenJson) {
+                document.querySelector('#SpotifyOAuthTokenJson').value = data.tokenJson;
+                Dashboard.alert('Current token loaded successfully!');
+            } else {
+                document.querySelector('#SpotifyOAuthTokenJson').value = '';
+                Dashboard.alert('No current token found.');
+            }
+        }).catch(function (error) {
+            console.error(error);
+            Dashboard.alert('Failed to get current token: ' + error);
+        });
+    });
+
+    // Set Token from JSON button
+    const setCurrentTokenBtn = document.querySelector('#setCurrentToken');
+    setCurrentTokenBtn.addEventListener('click', function () {
+        const tokenJson = document.querySelector('#SpotifyOAuthTokenJson').value;
+        
+        if (!tokenJson || tokenJson.trim() === '') {
+            Dashboard.alert('Please enter a valid JSON token first.');
+            return;
+        }
+
+        const apiUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/SpotifyAuthToken');
+        
+        setCurrentTokenBtn.disabled = true;
+
+        ApiClient.fetch({
+            url: apiUrl,
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                accept: 'application/json'
+            },
+            data: JSON.stringify({ tokenJson: tokenJson })
+        }, true).then(function (res) {
+            setCurrentTokenBtn.disabled = false;
+            if (!res || !res.ok) {
+                return res.json().then(function(errorData) {
+                    throw errorData.title || "Invalid response";
+                });
+            }
+            return res.json();
+        }).then(function (data) {
+            if (data && data.success) {
+                Dashboard.alert('Token set successfully! The token has been parsed and stored in the configuration.');
+            } else {
+                throw data.message || "Unknown error";
+            }
+        }).catch(function (error) {
+            console.error(error);
+            Dashboard.alert('Failed to set token: ' + error);
         });
     });
 }
