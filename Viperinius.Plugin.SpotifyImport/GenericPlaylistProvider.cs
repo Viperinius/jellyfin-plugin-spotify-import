@@ -48,6 +48,11 @@ namespace Viperinius.Plugin.SpotifyImport
         /// </summary>
         public List<string> CachedPlaylists { get; protected set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the provider is initialised.
+        /// </summary>
+        public abstract bool IsSetUp { get; protected set; }
+
         public abstract void SetUpProvider();
 
         public virtual async Task<List<string>?> GetUserPlaylistIds(

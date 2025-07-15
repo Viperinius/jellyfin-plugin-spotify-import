@@ -34,6 +34,8 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
 
         public override object? AuthToken { get; set; }
 
+        public override bool IsSetUp { get; protected set; }
+
         public override void SetUpProvider()
         {
             if (string.IsNullOrWhiteSpace(Plugin.Instance?.Configuration.SpotifyClientId) ||
@@ -56,13 +58,14 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             var config = _defaultSpotifyConfig.WithHTTPLogger(new SpotifyLogger(_apiLogger))
                                               .WithAuthenticator(authenticator);
             _spotifyClient = new SpotifyClient(config);
+            IsSetUp = true;
         }
 
         protected override async Task<List<ProviderPlaylistInfo>?> GetUserPlaylistsInfo(
             TargetUserConfiguration target,
             CancellationToken? cancellationToken = null)
         {
-            if (_spotifyClient == null)
+            if (!IsSetUp || _spotifyClient == null)
             {
                 return null;
             }
@@ -126,7 +129,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             bool includeTracks,
             CancellationToken? cancellationToken = null)
         {
-            if (_spotifyClient == null)
+            if (!IsSetUp || _spotifyClient == null)
             {
                 return null;
             }

@@ -40,6 +40,8 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
 
         public override object? AuthToken { get; set; }
 
+        public override bool IsSetUp { get; protected set; }
+
         public override void SetUpProvider()
         {
             if (string.IsNullOrWhiteSpace(Plugin.Instance?.Configuration.SpotifyCookie))
@@ -48,6 +50,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             }
 
             RefreshAuthToken();
+            IsSetUp = true;
         }
 
         protected override async Task<List<ProviderPlaylistInfo>?> GetUserPlaylistsInfo(TargetUserConfiguration target, CancellationToken? cancellationToken = null)
