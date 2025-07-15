@@ -24,14 +24,17 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
         private static readonly Uri _providerUrl = new Uri(Plugin.SpotifyBaseUrl);
         private readonly ILogger<SpotifyAltPlaylistProvider> _logger;
         private readonly HttpRequest _httpRequest;
+        private readonly SpotifyPlaylistProvider _spotifyApiProvider;
 
         public SpotifyAltPlaylistProvider(
             DbRepository dbRepository,
             ILogger<SpotifyAltPlaylistProvider> logger,
-            ILogger<HttpRequest> httpLogger) : base(dbRepository, logger)
+            ILogger<HttpRequest> httpLogger,
+            SpotifyPlaylistProvider spotifyProvider) : base(dbRepository, logger)
         {
             _logger = logger;
             _httpRequest = new HttpRequest(httpLogger);
+            _spotifyApiProvider = spotifyProvider;
         }
 
         public override string Name => ProviderName;
@@ -127,7 +130,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
 
         protected override async Task<ProviderPlaylistInfo?> GetPlaylist(string playlistId, bool includeTracks, CancellationToken? cancellationToken = null)
         {
-            var pageLimit = 100;
+            var pageLimit = 50;
             var offset = 0;
             var totalTrackCount = pageLimit;
 
@@ -163,7 +166,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 }
 
                 totalTrackCount = GetApiItemsCount(jsonContent);
-
+                var prevTracksCount = tracks.Count;
                 foreach (var jsonTrack in IterateApiItems(jsonContent))
                 {
                     var track = ParseTrack(jsonTrack);
@@ -172,6 +175,14 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                         tracks.Add(track);
                     }
                 }
+
+                if (!_spotifyApiProvider.IsSetUp)
+                {
+                    _spotifyApiProvider.SetUpProvider();
+                }
+
+                // fill any missing track data using api (playlist response does not contain all data, e.g. ISRC)
+                await _spotifyApiProvider.FillMissingTrackInfo(tracks, prevTracksCount, cancellationToken).ConfigureAwait(false);
 
                 offset += pageLimit;
             }

@@ -99,7 +99,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
 
             var spotify = new SpotifyPlaylistProvider(db, _loggerFactory.CreateLogger<SpotifyPlaylistProvider>(), _loggerFactory.CreateLogger<SpotifyLogger>());
             spotify.SetUpProvider();
-            var spotifyAlt = new SpotifyAltPlaylistProvider(db, _loggerFactory.CreateLogger<SpotifyAltPlaylistProvider>(), _loggerFactory.CreateLogger<Utils.HttpRequest>());
+            var spotifyAlt = new SpotifyAltPlaylistProvider(db, _loggerFactory.CreateLogger<SpotifyAltPlaylistProvider>(), _loggerFactory.CreateLogger<Utils.HttpRequest>(), spotify);
             spotifyAlt.SetUpProvider();
 
             // check if any users are given whose playlists need to be included

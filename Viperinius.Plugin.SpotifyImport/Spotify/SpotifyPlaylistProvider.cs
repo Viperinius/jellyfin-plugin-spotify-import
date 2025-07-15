@@ -152,7 +152,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                             return null;
                         }
 
-                        var trackInfo = GetTrackInfo(track);
+                        var trackInfo = track != null ? GetTrackInfo(track.Track) : null;
                         if (trackInfo != null)
                         {
                             tracks.Add(trackInfo);
@@ -203,18 +203,68 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             return string.Empty;
         }
 
-        private static ProviderTrackInfo? GetTrackInfo(PlaylistTrack<IPlayableItem> track)
+        public async Task<bool> FillMissingTrackInfo(List<ProviderTrackInfo> targetTracks, int? skipCount = null, CancellationToken? cancellationToken = null)
         {
-            if (track == null || track.Track == null)
+            if (!IsSetUp || _spotifyClient == null)
+            {
+                return false;
+            }
+
+            List<FullTrack>? tracks = null;
+
+            try
+            {
+                var trackIds = targetTracks.Skip(skipCount ?? 0).Select(t => t.Id).Distinct().ToList();
+                var response = await _spotifyClient.Tracks.GetSeveral(new TracksRequest(trackIds), cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
+                tracks = response.Tracks;
+            }
+            catch (APIException e)
+            {
+                _logger.LogError(e, "Failed to get full tracks");
+            }
+            catch (Newtonsoft.Json.JsonException e)
+            {
+                LogApiParseException(e, $"get several tracks", tracks);
+            }
+
+            if (tracks != null)
+            {
+                foreach (var track in tracks)
+                {
+                    var providerTrack = GetTrackInfo(track);
+                    if (providerTrack == null)
+                    {
+                        continue;
+                    }
+
+                    for (int ii = skipCount ?? 0; ii < targetTracks.Count; ii++)
+                    {
+                        if (targetTracks[ii].Id == providerTrack.Id)
+                        {
+                            targetTracks[ii] = providerTrack;
+                            break;
+                        }
+                    }
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private static ProviderTrackInfo? GetTrackInfo(IPlayableItem track)
+        {
+            if (track == null)
             {
                 return null;
             }
 
-            switch (track.Track.Type)
+            switch (track.Type)
             {
                 case ItemType.Track:
                     {
-                        if (track.Track is not FullTrack fullTrack)
+                        if (track is not FullTrack fullTrack)
                         {
                             break;
                         }
