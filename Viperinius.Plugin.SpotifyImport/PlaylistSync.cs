@@ -26,7 +26,7 @@ namespace Viperinius.Plugin.SpotifyImport
         private readonly IPlaylistManager _playlistManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
-        private readonly IEnumerable<ProviderPlaylistInfo> _providerPlaylists;
+        private readonly IList<ProviderPlaylistInfo> _providerPlaylists;
         private readonly Dictionary<string, string> _userPlaylistIds;
         private readonly ManualMapStore _manualMapStore;
         private readonly DbRepository _dbRepository;
@@ -36,7 +36,7 @@ namespace Viperinius.Plugin.SpotifyImport
             IPlaylistManager playlistManager,
             ILibraryManager libraryManager,
             IUserManager userManager,
-            IEnumerable<ProviderPlaylistInfo> playlists,
+            IList<ProviderPlaylistInfo> playlists,
             Dictionary<string, string> userPlaylistIds,
             ManualMapStore manualMapStore,
             DbRepository dbRepository)
@@ -54,7 +54,7 @@ namespace Viperinius.Plugin.SpotifyImport
         public async Task Execute(IProgress<double> progress, CancellationToken cancellationToken = default)
         {
             var progressValue = 0d;
-            var providerPlaylistCount = _providerPlaylists.Count();
+            var providerPlaylistCount = _providerPlaylists.Count;
             var providerPlaylistIndexProgress = 0;
             foreach (var providerPlaylist in _providerPlaylists)
             {
