@@ -21,7 +21,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             MediaBrowser.Controller.Playlists.IPlaylistManager playlistManager,
             MediaBrowser.Controller.Library.ILibraryManager libraryManager,
             MediaBrowser.Controller.Library.IUserManager userManager,
-            IEnumerable<ProviderPlaylistInfo> playlists,
+            IList<ProviderPlaylistInfo> playlists,
             Dictionary<string, string> userPlaylistIds,
             ManualMapStore manualMapStore,
             DbRepository dbRepository)
