@@ -16,7 +16,7 @@ using Viperinius.Plugin.SpotifyImport.Configuration;
 using Viperinius.Plugin.SpotifyImport.Matchers;
 using Viperinius.Plugin.SpotifyImport.Utils;
 
-namespace Viperinius.Plugin.SpotifyImport
+namespace Viperinius.Plugin.SpotifyImport.Sync
 {
     internal class PlaylistSync
     {
@@ -127,7 +127,7 @@ namespace Viperinius.Plugin.SpotifyImport
                     updateReason |= ItemUpdateType.MetadataEdit;
                 }
 
-                if ((!targetConfig.IsPrivate) != playlist.OpenAccess)
+                if (!targetConfig.IsPrivate != playlist.OpenAccess)
                 {
                     playlist.OpenAccess = !targetConfig.IsPrivate;
                     updateReason |= ItemUpdateType.MetadataEdit;

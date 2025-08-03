@@ -149,8 +149,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
             // try to get any missing and spotify owned playlists using alternative method
             await spotifyAlt.PopulatePlaylists([..playlistIdsAlt, ..playlistIds], cancellationToken).ConfigureAwait(false);
 
-            var playlistSync = new PlaylistSync(
-                    _loggerFactory.CreateLogger<PlaylistSync>(),
+            var playlistSync = new Sync.PlaylistSync(
+                    _loggerFactory.CreateLogger<Sync.PlaylistSync>(),
                     _playlistManager,
                     _libraryManager,
                     _userManager,

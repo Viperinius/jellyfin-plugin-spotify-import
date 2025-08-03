@@ -14,10 +14,10 @@ using Xunit;
 
 namespace Viperinius.Plugin.SpotifyImport.Tests
 {
-    internal class PlaylistSyncWrapper : PlaylistSync
+    internal class PlaylistSyncWrapper : Sync.PlaylistSync
     {
         public PlaylistSyncWrapper(
-            ILogger<PlaylistSync> logger,
+            ILogger<Sync.PlaylistSync> logger,
             MediaBrowser.Controller.Playlists.IPlaylistManager playlistManager,
             MediaBrowser.Controller.Library.ILibraryManager libraryManager,
             MediaBrowser.Controller.Library.IUserManager userManager,
@@ -86,7 +86,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             MusicArtist artist,
             ItemMatchCriteria? expectedFailedCriteria = null)
         {
-            var loggerMock = Substitute.For<ILogger<PlaylistSync>>();
+            var loggerMock = Substitute.For<ILogger<Sync.PlaylistSync>>();
             var plManagerMock = Substitute.For<MediaBrowser.Controller.Playlists.IPlaylistManager>();
             var userManagerMock = Substitute.For<MediaBrowser.Controller.Library.IUserManager>();
             var libManagerMock = Substitute.For<MediaBrowser.Controller.Library.ILibraryManager>();
@@ -496,7 +496,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
             var jfArtist = ArtistHelper.CreateJfItem("Ephixa", new List<MusicAlbum> { jfAlbumOther1, jfAlbumOther2, jfAlbumOther3, jfAlbumCorrect });
 
-            var loggerMock = Substitute.For<ILogger<PlaylistSync>>();
+            var loggerMock = Substitute.For<ILogger<Sync.PlaylistSync>>();
             var plManagerMock = Substitute.For<MediaBrowser.Controller.Playlists.IPlaylistManager>();
             var userManagerMock = Substitute.For<MediaBrowser.Controller.Library.IUserManager>();
             var libManagerMock = Substitute.For<MediaBrowser.Controller.Library.ILibraryManager>();
@@ -564,7 +564,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             var jfArtistOther2 = ArtistHelper.CreateJfItem("Daryl Hall & John Oates", new List<MusicAlbum>());
             jfArtistOther2.Id = Guid.Parse("00000000-0000-0000-0000-000000000002");
 
-            var loggerMock = Substitute.For<ILogger<PlaylistSync>>();
+            var loggerMock = Substitute.For<ILogger<Sync.PlaylistSync>>();
             var plManagerMock = Substitute.For<MediaBrowser.Controller.Playlists.IPlaylistManager>();
             var userManagerMock = Substitute.For<MediaBrowser.Controller.Library.IUserManager>();
             var libManagerMock = Substitute.For<MediaBrowser.Controller.Library.ILibraryManager>();
@@ -613,7 +613,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
                 IsrcId = "a4iotbaSD",
             };
 
-            var loggerMock = Substitute.For<ILogger<PlaylistSync>>();
+            var loggerMock = Substitute.For<ILogger<Sync.PlaylistSync>>();
             var plManagerMock = Substitute.For<MediaBrowser.Controller.Playlists.IPlaylistManager>();
             var userManagerMock = Substitute.For<MediaBrowser.Controller.Library.IUserManager>();
             var libManagerMock = Substitute.For<MediaBrowser.Controller.Library.ILibraryManager>();
