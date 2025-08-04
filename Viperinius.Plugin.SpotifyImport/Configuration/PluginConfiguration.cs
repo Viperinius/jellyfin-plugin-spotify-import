@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml.Serialization;
 using MediaBrowser.Model.Plugins;
 using Viperinius.Plugin.SpotifyImport.Matchers;
+using Viperinius.Plugin.SpotifyImport.Sync;
 
 namespace Viperinius.Plugin.SpotifyImport.Configuration;
 
@@ -88,6 +89,16 @@ public class PluginConfiguration : BasePluginConfiguration
     /// Gets or sets a value indicating whether to enable the legacy way of comparing tracks.
     /// </summary>
     public bool UseLegacyMatching { get; set; }
+
+    /// <summary>
+    /// Gets the enabled track match finders.
+    /// </summary>
+    internal EnabledTrackMatchFinders EnabledTrackMatchFinders => (EnabledTrackMatchFinders)EnabledTrackMatchFindersRaw;
+
+    /// <summary>
+    /// Gets or sets the enabled track match finders.
+    /// </summary>
+    public int EnabledTrackMatchFindersRaw { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to enable the creation of files containing missing tracks on the server.

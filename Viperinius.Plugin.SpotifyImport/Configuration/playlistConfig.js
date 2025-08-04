@@ -209,6 +209,17 @@ function getItemMatchCriteriaFromCheckboxes() {
     return result;
 }
 
+function mapEnabledTrackMatchFindersToCheckboxes(config) {
+    document.querySelector('#EnabledTrackMatchFindersMusicBrainz').checked = (config.EnabledTrackMatchFindersRaw & (1 << 0)) > 0;
+}
+
+function getEnabledTrackMatchFindersFromCheckboxes() {
+    let result = 0;
+    if (document.querySelector('#EnabledTrackMatchFindersMusicBrainz').checked) result |= 1 << 0;
+
+    return result;
+}
+
 export default function (view) {
     view.dispatchEvent(new CustomEvent('create'));
 
@@ -291,6 +302,7 @@ export default function (view) {
             document.querySelector('#FuzzyMaxDiff').value = config.MaxFuzzyCharDifference;
             mapItemMatchCriteriaToCheckboxes(config);
             document.querySelector('#UseLegacyMatching').checked = config.UseLegacyMatching;
+            mapEnabledTrackMatchFindersToCheckboxes(config);
 
             ApiClient.getJSON(ApiClient.getUrl('Users'), apiQueryOpts).then(function (result) {
                 users.length = 0;
@@ -355,6 +367,7 @@ export default function (view) {
                 return;
             }
             config.UseLegacyMatching = document.querySelector('#UseLegacyMatching').checked;
+            config.EnabledTrackMatchFindersRaw = getEnabledTrackMatchFindersFromCheckboxes();
 
             ApiClient.updatePluginConfiguration(SpotifyImportConfig.pluginUniqueId, config).then(function (result) {
                 Dashboard.processPluginConfigurationUpdateResult(result);
