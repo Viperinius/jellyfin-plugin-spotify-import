@@ -89,7 +89,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
             for (int ii = 0; ii < validIsrcs.Length; ii++)
             {
                 Guid? relGroupId = ii % 2 == 0 ? Guid.NewGuid() : null;
-                mbHelper.ResultMappings.Add(new DbIsrcMusicBrainzMapping(rnd.Next(), validIsrcs[ii], validLastCheck, Guid.NewGuid(), relGroupId));
+                mbHelper.ResultMappings.Add(new DbIsrcMusicBrainzMapping(rnd.Next(), validIsrcs[ii], validLastCheck, Guid.NewGuid(), Guid.NewGuid(), relGroupId));
             }
 
             return (validLastCheck, validIsrcs, nonValidIsrcs, uniqueIsrcCount, playlists, mbHelper);
@@ -134,6 +134,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     Assert.Equal(isrc, item.Isrc);
+                    Assert.Null(item.MusicBrainzRecordingId);
                     Assert.Null(item.MusicBrainzReleaseId);
                     Assert.Null(item.MusicBrainzReleaseGroupId);
                     Assert.True(item.LastCheck > testData.ValidLastCheck);
@@ -147,6 +148,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     var result = testData.MbHelper.ResultMappings.Find(m => m.Isrc == item.Isrc
+                                                                         && m.MusicBrainzRecordingId == item.MusicBrainzRecordingId
                                                                          && m.MusicBrainzReleaseId == item.MusicBrainzReleaseId
                                                                          && m.MusicBrainzReleaseGroupId == item.MusicBrainzReleaseGroupId
                                                                          && m.LastCheck == item.LastCheck);
@@ -193,6 +195,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     Assert.Equal(isrc, item.Isrc);
+                    Assert.Null(item.MusicBrainzRecordingId);
                     Assert.Null(item.MusicBrainzReleaseId);
                     Assert.Null(item.MusicBrainzReleaseGroupId);
                     Assert.Equal(testData.ValidLastCheck, item.LastCheck);
@@ -206,6 +209,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     var result = testData.MbHelper.ResultMappings.Find(m => m.Isrc == item.Isrc
+                                                                         && m.MusicBrainzRecordingId == item.MusicBrainzRecordingId
                                                                          && m.MusicBrainzReleaseId == item.MusicBrainzReleaseId
                                                                          && m.MusicBrainzReleaseGroupId == item.MusicBrainzReleaseGroupId
                                                                          && m.LastCheck == item.LastCheck);
@@ -258,6 +262,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     Assert.Equal(isrc, item.Isrc);
+                    Assert.Null(item.MusicBrainzRecordingId);
                     Assert.Null(item.MusicBrainzReleaseId);
                     Assert.Null(item.MusicBrainzReleaseGroupId);
                     if (ii == expectedQueriedNonValidIsrcIndex)
@@ -278,6 +283,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     var result = testData.MbHelper.ResultMappings.Find(m => m.Isrc == item.Isrc
+                                                                         && m.MusicBrainzRecordingId == item.MusicBrainzRecordingId
                                                                          && m.MusicBrainzReleaseId == item.MusicBrainzReleaseId
                                                                          && m.MusicBrainzReleaseGroupId == item.MusicBrainzReleaseGroupId
                                                                          && m.LastCheck == item.LastCheck);
@@ -333,6 +339,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     Assert.Equal(isrc, item.Isrc);
+                    Assert.Null(item.MusicBrainzRecordingId);
                     Assert.Null(item.MusicBrainzReleaseId);
                     Assert.Null(item.MusicBrainzReleaseGroupId);
                     Assert.Equal(testData.ValidLastCheck, item.LastCheck);
@@ -346,6 +353,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     var result = testData.MbHelper.ResultMappings.Find(m => m.Isrc == item.Isrc
+                                                                         && m.MusicBrainzRecordingId == item.MusicBrainzRecordingId
                                                                          && m.MusicBrainzReleaseId == item.MusicBrainzReleaseId
                                                                          && m.MusicBrainzReleaseGroupId == item.MusicBrainzReleaseGroupId
                                                                          && m.LastCheck == item.LastCheck);
@@ -410,6 +418,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     Assert.Equal(isrc, item.Isrc);
+                    Assert.Null(item.MusicBrainzRecordingId);
                     Assert.Null(item.MusicBrainzReleaseId);
                     Assert.Null(item.MusicBrainzReleaseGroupId);
                     if (ii == expectedQueriedNonValidIsrcIndex)
@@ -431,6 +440,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     var result = testData.MbHelper.ResultMappings.Find(m => m.Isrc == item.Isrc
+                                                                         && m.MusicBrainzRecordingId == item.MusicBrainzRecordingId
                                                                          && m.MusicBrainzReleaseId == item.MusicBrainzReleaseId
                                                                          && m.MusicBrainzReleaseGroupId == item.MusicBrainzReleaseGroupId
                                                                          && m.LastCheck == item.LastCheck);
@@ -488,6 +498,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     Assert.Equal(isrc, item.Isrc);
+                    Assert.Null(item.MusicBrainzRecordingId);
                     Assert.Null(item.MusicBrainzReleaseId);
                     Assert.Null(item.MusicBrainzReleaseGroupId);
                     Assert.Equal(testData.ValidLastCheck, item.LastCheck);
@@ -502,6 +513,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     var result = testData.MbHelper.ResultMappings.Find(m => m.Isrc == item.Isrc
+                                                                         && m.MusicBrainzRecordingId == item.MusicBrainzRecordingId
                                                                          && m.MusicBrainzReleaseId == item.MusicBrainzReleaseId
                                                                          && m.MusicBrainzReleaseGroupId == item.MusicBrainzReleaseGroupId
                                                                          && m.LastCheck == item.LastCheck);

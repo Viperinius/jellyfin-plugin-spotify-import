@@ -24,8 +24,8 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
         private const string UpdateProviderPlaylistTrackGenericCmd = $"UPDATE {TableProviderPlaylistTracksName} SET PlaylistId = $PlaylistId, TrackId = $TrackId, Position = $Position";
         protected const string InsertProviderPlaylistTrackCmd = $"INSERT INTO {TableProviderPlaylistTracksName} (PlaylistId, TrackId, Position) VALUES ($PlaylistId, $TrackId, $Position)";
         protected const string InsertProviderTrackMatchCmd = $"INSERT INTO {TableProviderTrackMatchesName} (TrackId, JellyfinMatchId, MatchLevel, MatchCriteria) VALUES ($TrackId, $JellyfinMatchId, $MatchLevel, $MatchCriteria)";
-        private const string UpdateIsrcMusicBrainzGenericCmd = $"UPDATE {TableIsrcMusicBrainzName} SET Isrc = $Isrc, MusicBrainzReleaseId = $MusicBrainzReleaseId, MusicBrainzReleaseGroupId = $MusicBrainzReleaseGroupId, LastCheck = $LastCheck";
-        protected const string InsertIsrcMusicBrainzCmd = $"INSERT INTO {TableIsrcMusicBrainzName} (Isrc, MusicBrainzReleaseId, MusicBrainzReleaseGroupId, LastCheck) VALUES ($Isrc, $MusicBrainzReleaseId, $MusicBrainzReleaseGroupId, $LastCheck)";
+        private const string UpdateIsrcMusicBrainzGenericCmd = $"UPDATE {TableIsrcMusicBrainzName} SET Isrc = $Isrc, MusicBrainzRecordingId = $MusicBrainzRecordingId, MusicBrainzReleaseId = $MusicBrainzReleaseId, MusicBrainzReleaseGroupId = $MusicBrainzReleaseGroupId, LastCheck = $LastCheck";
+        protected const string InsertIsrcMusicBrainzCmd = $"INSERT INTO {TableIsrcMusicBrainzName} (Isrc, MusicBrainzRecordingId, MusicBrainzReleaseId, MusicBrainzReleaseGroupId, LastCheck) VALUES ($Isrc, $MusicBrainzRecordingId, $MusicBrainzReleaseId, $MusicBrainzReleaseGroupId, $LastCheck)";
 
         private static readonly string[] _tableNames = new[]
         {
@@ -75,6 +75,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             $@"CREATE TABLE IF NOT EXISTS {TableIsrcMusicBrainzName} (
                 Id INTEGER PRIMARY KEY,
                 Isrc TEXT NOT NULL,
+                MusicBrainzRecordingId TEXT,
                 MusicBrainzReleaseId TEXT,
                 MusicBrainzReleaseGroupId TEXT,
                 LastCheck TEXT NOT NULL
@@ -356,7 +357,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             bool? logicalAnd = null)
         {
             using var selectCmd = Connection.CreateCommand();
-            selectCmd.CommandText = $"SELECT Id, Isrc, MusicBrainzReleaseId, MusicBrainzReleaseGroupId, LastCheck FROM {TableIsrcMusicBrainzName}";
+            selectCmd.CommandText = $"SELECT Id, Isrc, MusicBrainzRecordingId, MusicBrainzReleaseId, MusicBrainzReleaseGroupId, LastCheck FROM {TableIsrcMusicBrainzName}";
 
             var logicalOp = (logicalAnd == null || (bool)logicalAnd) ? " AND " : " OR ";
             var cmdWhere = new List<string>();
@@ -371,11 +372,11 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             {
                 if (hasAnyMbIdsSet.Value)
                 {
-                    cmdWhere.Add("(MusicBrainzReleaseId IS NOT NULL OR MusicBrainzReleaseGroupId IS NOT NULL)");
+                    cmdWhere.Add("(MusicBrainzRecordingId IS NOT NULL OR MusicBrainzReleaseId IS NOT NULL OR MusicBrainzReleaseGroupId IS NOT NULL)");
                 }
                 else
                 {
-                    cmdWhere.Add("(MusicBrainzReleaseId IS NULL AND MusicBrainzReleaseGroupId IS NULL)");
+                    cmdWhere.Add("(MusicBrainzRecordingId IS NULL AND MusicBrainzReleaseId IS NULL AND MusicBrainzReleaseGroupId IS NULL)");
                 }
             }
 
@@ -403,23 +404,31 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             {
                 var id = reader.GetInt64(0);
                 var readIsrc = reader.GetString(1);
-                var mbReleaseIdRaw = reader.IsDBNull(2) ? null : reader.GetString(2);
+
+                var mbRecordingIdRaw = reader.IsDBNull(2) ? null : reader.GetString(2);
+                Guid? mbRecordingId = null;
+                if (Guid.TryParse(mbRecordingIdRaw, out var tmpGuid))
+                {
+                    mbRecordingId = tmpGuid;
+                }
+
+                var mbReleaseIdRaw = reader.IsDBNull(3) ? null : reader.GetString(3);
                 Guid? mbReleaseId = null;
-                if (Guid.TryParse(mbReleaseIdRaw, out var tmpGuid))
+                if (Guid.TryParse(mbReleaseIdRaw, out tmpGuid))
                 {
                     mbReleaseId = tmpGuid;
                 }
 
-                var mbReleaseGroupIdRaw = reader.IsDBNull(3) ? null : reader.GetString(3);
+                var mbReleaseGroupIdRaw = reader.IsDBNull(4) ? null : reader.GetString(4);
                 Guid? mbReleaseGroupId = null;
                 if (Guid.TryParse(mbReleaseGroupIdRaw, out tmpGuid))
                 {
                     mbReleaseGroupId = tmpGuid;
                 }
 
-                var lastCheck = reader.GetDateTime(4);
+                var lastCheck = reader.GetDateTime(5);
 
-                yield return new DbIsrcMusicBrainzMapping(id, readIsrc, lastCheck, mbReleaseId, mbReleaseGroupId);
+                yield return new DbIsrcMusicBrainzMapping(id, readIsrc, lastCheck, mbRecordingId, mbReleaseId, mbReleaseGroupId);
             }
         }
 
@@ -448,6 +457,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             }
 
             putCmd.Parameters.AddWithValue("$Isrc", mapping.Isrc);
+            putCmd.Parameters.AddWithValue("$MusicBrainzRecordingId", mapping.MusicBrainzRecordingId != null ? mapping.MusicBrainzRecordingId : DBNull.Value);
             putCmd.Parameters.AddWithValue("$MusicBrainzReleaseId", mapping.MusicBrainzReleaseId != null ? mapping.MusicBrainzReleaseId : DBNull.Value);
             putCmd.Parameters.AddWithValue("$MusicBrainzReleaseGroupId", mapping.MusicBrainzReleaseGroupId != null ? mapping.MusicBrainzReleaseGroupId : DBNull.Value);
             putCmd.Parameters.AddWithValue("$LastCheck", mapping.LastCheck);

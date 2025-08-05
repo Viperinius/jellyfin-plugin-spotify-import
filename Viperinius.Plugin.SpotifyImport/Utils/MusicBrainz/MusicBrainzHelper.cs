@@ -100,7 +100,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils.MusicBrainz
             {
                 foreach (var isrc in recIsrcs)
                 {
-                    yield return new DbIsrcMusicBrainzMapping(-1, isrc, checkedAt, rel.Id, rel.ReleaseGroup?.Id);
+                    yield return new DbIsrcMusicBrainzMapping(-1, isrc, checkedAt, rec.Id, rel.Id, rel.ReleaseGroup?.Id);
                 }
             }
         }
