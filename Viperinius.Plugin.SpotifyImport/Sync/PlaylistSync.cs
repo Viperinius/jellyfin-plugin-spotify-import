@@ -31,6 +31,11 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
         private readonly ManualMapStore _manualMapStore;
         private readonly DbRepository _dbRepository;
 
+        private readonly CacheFinder _cacheFinder;
+        private readonly ManualMapFinder _manualMapFinder;
+        private readonly MusicBrainzFinder _musicBrainzFinder;
+        private readonly StringMatchFinder _stringMatchFinder;
+
         public PlaylistSync(
             ILogger<PlaylistSync> logger,
             IPlaylistManager playlistManager,
@@ -49,6 +54,11 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
             _userPlaylistIds = userPlaylistIds;
             _manualMapStore = manualMapStore;
             _dbRepository = dbRepository;
+
+            _cacheFinder = new CacheFinder(_libraryManager, _dbRepository);
+            _manualMapFinder = new ManualMapFinder(_libraryManager, _manualMapStore);
+            _musicBrainzFinder = new MusicBrainzFinder(_libraryManager, _dbRepository);
+            _stringMatchFinder = new StringMatchFinder(_logger, _libraryManager);
         }
 
         public async Task Execute(IProgress<double> progress, CancellationToken cancellationToken = default)
@@ -127,7 +137,7 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
                     updateReason |= ItemUpdateType.MetadataEdit;
                 }
 
-                if (!targetConfig.IsPrivate != playlist.OpenAccess)
+                if ((!targetConfig.IsPrivate) != playlist.OpenAccess)
                 {
                     playlist.OpenAccess = !targetConfig.IsPrivate;
                     updateReason |= ItemUpdateType.MetadataEdit;
@@ -217,115 +227,71 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
                     string.Join("#", providerTrackInfo.ArtistNames));
             }
 
-            if (TryGetCachedMatch(providerId, providerTrackInfo, out var cacheMatch) && cacheMatch != null)
+            // 1. check cache
+            var match = _cacheFinder.FindTrack(providerId, providerTrackInfo);
+            if (match != null)
             {
                 if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                 {
-                    _logger.LogInformation("Found cached match for track with id {Id}", cacheMatch.MatchId);
+                    _logger.LogInformation("Found cached match for track with id {Id}", match.Id);
                 }
 
-                return _libraryManager.GetItemById<Audio>(cacheMatch.MatchId);
+                return match;
             }
 
-            var manualTrack = _manualMapStore.GetByProviderTrackInfo(providerTrackInfo);
-            if (manualTrack?.Provider.Equals(providerTrackInfo) ?? false)
+            // 2. check manual mappings
+            match = _manualMapFinder.FindTrack(providerId, providerTrackInfo);
+            if (match != null)
             {
-                var jellyfinId = Guid.Parse(manualTrack.Jellyfin.Track);
-
                 if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                 {
-                    _logger.LogInformation("Found manual mapping for track with id {Id}", jellyfinId);
+                    _logger.LogInformation("Found manual mapping for track with id {Id}", match.Id);
                 }
 
-                SaveMatchInCache(providerId, providerTrackInfo, jellyfinId);
-                return _libraryManager.GetItemById<Audio>(jellyfinId);
+                SaveMatchInCache(providerId, providerTrackInfo, match.Id);
+                return match;
             }
 
+            // 3. check by isrc
+            match = _musicBrainzFinder.FindTrack(providerId, providerTrackInfo);
+            if (match != null)
+            {
+                if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
+                {
+                    _logger.LogInformation("Found match for track with id {Id} by ISRC and MusicBrainz id", match.Id);
+                }
+
+                SaveMatchInCache(providerId, providerTrackInfo, match.Id);
+                return match;
+            }
+
+            // 4.1 check using legacy string comparisons
             if (Plugin.Instance?.Configuration.UseLegacyMatching ?? false)
             {
-                var match = GetMatchingTrackLegacy(providerTrackInfo, out failedMatchCriterium);
-                if (match != null)
+                var legacyMatch = GetMatchingTrackLegacy(providerTrackInfo, out failedMatchCriterium);
+                if (legacyMatch != null)
                 {
-                    SaveMatchInCache(providerId, providerTrackInfo, match.Id);
+                    SaveMatchInCache(providerId, providerTrackInfo, legacyMatch.Id);
                 }
 
-                return match;
+                return legacyMatch;
             }
 
-            var matchCandidates = new List<(int, ItemMatchLevel, Audio)>();
-
-            var artistProviderNextIndex = 0;
-            var artistJfNextIndex = 0;
-            while (artistProviderNextIndex >= 0)
+            // 4.2 check using string comparisons
+            match = _stringMatchFinder.FindTrack(providerId, providerTrackInfo);
+            failedMatchCriterium = _stringMatchFinder.LastFailedCriteria;
+            if (match != null)
             {
-                var artist = GetArtist(providerTrackInfo, ref artistProviderNextIndex, ref artistJfNextIndex);
-                if (artist == null)
-                {
-                    failedMatchCriterium |= ItemMatchCriteria.Artists;
-                    continue;
-                }
-
                 if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                 {
-                    _logger.LogInformation("> Found matching artist {Name} {Id}", artist.Name, artist.Id);
+                    _logger.LogInformation("Found match for track with id {Id} by string comparison", match.Id);
                 }
 
-                var albumNextIndex = 0;
-                while (albumNextIndex >= 0)
-                {
-                    var album = GetAlbum(artist, providerTrackInfo, ref albumNextIndex);
-                    if (album == null)
-                    {
-                        failedMatchCriterium |= ItemMatchCriteria.AlbumName;
-                        continue;
-                    }
-
-                    if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
-                    {
-                        _logger.LogInformation("> Found matching album {Name} {Id}", album.Name, album.Id);
-                    }
-
-                    if (!CheckAlbumArtist(album, providerTrackInfo))
-                    {
-                        failedMatchCriterium |= ItemMatchCriteria.AlbumArtists;
-                        continue;
-                    }
-
-                    if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
-                    {
-                        _logger.LogInformation("> Album artists ok");
-                    }
-
-                    var tracks = GetTrack(album, providerTrackInfo);
-                    matchCandidates.AddRange(tracks);
-                    if (!tracks.Any())
-                    {
-                        failedMatchCriterium |= ItemMatchCriteria.TrackName;
-                    }
-                }
-            }
-
-            if (matchCandidates.Count > 0)
-            {
-                // sort by prio first, then match level
-                matchCandidates.Sort((a, b) =>
-                {
-                    var result = a.Item1.CompareTo(b.Item1);
-                    if (result == 0)
-                    {
-                        result = a.Item2.CompareTo(b.Item2);
-                    }
-
-                    return result;
-                });
-                failedMatchCriterium = ItemMatchCriteria.None;
-                var match = matchCandidates.First().Item3;
                 SaveMatchInCache(providerId, providerTrackInfo, match.Id);
-
                 return match;
             }
 
-            return null;
+            return match;
         }
 
         private Audio? GetMatchingTrackLegacy(ProviderTrackInfo providerTrackInfo, out ItemMatchCriteria failedMatchCriterium)
@@ -368,178 +334,9 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
             return null;
         }
 
-        private MusicArtist? GetArtist(ProviderTrackInfo providerTrackInfo, ref int nextProviderArtistIndex, ref int nextJfArtistIndex)
-        {
-            var artistName = providerTrackInfo.ArtistNames.ElementAtOrDefault(nextProviderArtistIndex);
-            if (string.IsNullOrEmpty(artistName))
-            {
-                if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
-                {
-                    _logger.LogInformation("> Reached end of provider artist list");
-                }
-
-                nextProviderArtistIndex = -1;
-                return null;
-            }
-
-            // only search for the first few characters to increase the chances of finding artists with slightly differing names between provider and jellyfin
-            var queryResult = _libraryManager.GetArtists(new MediaBrowser.Controller.Entities.InternalItemsQuery
-            {
-                SearchTerm = artistName[0..Math.Min(artistName.Length, MaxSearchChars)],
-            });
-
-            if (queryResult.Items.Count == nextJfArtistIndex || queryResult.Items.Count == 0)
-            {
-                if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
-                {
-                    _logger.LogInformation("> Reached end of jellyfin artist list");
-                    if (queryResult.Items.Count == 0)
-                    {
-                        _logger.LogInformation("> Did not find any artists for the name {Name}", artistName);
-                    }
-                }
-
-                nextProviderArtistIndex++;
-                nextJfArtistIndex = 0;
-                return null;
-            }
-
-            var (item, _) = queryResult.Items.ElementAt(nextJfArtistIndex);
-            nextJfArtistIndex++;
-
-            if (item is not MusicArtist artist)
-            {
-                return null;
-            }
-
-            if (Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.Artists) ?? false)
-            {
-                var level = Plugin.Instance?.Configuration.ItemMatchLevel ?? ItemMatchLevel.Default;
-                if (!TrackComparison.ArtistOneContained(artist, providerTrackInfo, level))
-                {
-                    if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
-                    {
-                        _logger.LogInformation(
-                            "> Artist did not match: {JName} [Jellyfin, {Id}], {PName} [Provider]",
-                            artist.Name,
-                            artist.Id,
-                            string.Join("#", providerTrackInfo.ArtistNames));
-                    }
-
-                    return null;
-                }
-            }
-
-            return artist;
-        }
-
-        private bool CheckAlbumArtist(MusicAlbum album, ProviderTrackInfo providerTrackInfo)
-        {
-            if (Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.AlbumArtists) ?? false)
-            {
-                var level = Plugin.Instance?.Configuration.ItemMatchLevel ?? ItemMatchLevel.Default;
-                return TrackComparison.AlbumArtistOneContained(album, providerTrackInfo, level);
-            }
-
-            return true;
-        }
-
-        private MusicAlbum? GetAlbum(MusicArtist artist, ProviderTrackInfo providerTrackInfo, ref int nextAlbumIndex)
-        {
-            var albums = artist.Children;
-            if (!albums.Any())
-            {
-                // for whatever reason albums are apparently not always set as children of the artist... so try to find them using album artist
-                albums = _libraryManager.GetItemList(new MediaBrowser.Controller.Entities.InternalItemsQuery
-                {
-                    AlbumArtistIds = new[] { artist.Id },
-                    IncludeItemTypes = new[] { BaseItemKind.MusicAlbum }
-                });
-                albums ??= new List<MediaBrowser.Controller.Entities.BaseItem>();
-            }
-
-            var item = albums.ElementAtOrDefault(nextAlbumIndex);
-            nextAlbumIndex++;
-            if (item == null)
-            {
-                if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
-                {
-                    _logger.LogInformation("> Reached end of album list (has {Count} entries)", albums.Count());
-                }
-
-                nextAlbumIndex = -1;
-                return null;
-            }
-
-            if (item is not MusicAlbum album)
-            {
-                return null;
-            }
-
-            if (Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.AlbumName) ?? false)
-            {
-                var level = Plugin.Instance?.Configuration.ItemMatchLevel ?? ItemMatchLevel.Default;
-                if (!TrackComparison.AlbumNameEqual(album, providerTrackInfo, level).ComparisonResult)
-                {
-                    if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
-                    {
-                        _logger.LogInformation(
-                            "> Album did not match: {JName} [Jellyfin, {Id}], {PName} [Provider]",
-                            album.Name,
-                            album.Id,
-                            providerTrackInfo.AlbumName);
-                    }
-
-                    return null;
-                }
-            }
-
-            return album;
-        }
-
-        private IEnumerable<(int Prio, ItemMatchLevel Level, Audio Item)> GetTrack(MusicAlbum album, ProviderTrackInfo providerTrackInfo)
-        {
-            foreach (var item in album.Tracks)
-            {
-                if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
-                {
-                    _logger.LogInformation(
-                        ">> Checking server track {Name} [{Album}][{AlbumArtist}][{Artist}]",
-                        item.Name,
-                        album.Name,
-                        string.Join("#", item.AlbumArtists),
-                        string.Join("#", item.Artists));
-                }
-
-                var prio = int.MaxValue;
-                var level = Plugin.Instance?.Configuration.ItemMatchLevel ?? ItemMatchLevel.Default;
-                if (Plugin.Instance?.Configuration.ItemMatchCriteria.HasFlag(ItemMatchCriteria.TrackName) ?? false)
-                {
-                    var checkResult = TrackComparison.TrackNameEqual(item, providerTrackInfo, level);
-                    if (!checkResult.ComparisonResult || checkResult.MatchedLevel == null || checkResult.MatchedPrio == null)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        prio = (int)checkResult.MatchedPrio;
-                        level = (ItemMatchLevel)checkResult.MatchedLevel;
-                        if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
-                        {
-                            _logger.LogInformation("> Found matching potential track {Name} {Id}", item.Name, item.Id);
-                        }
-                    }
-                }
-
-                yield return (prio, level, item);
-            }
-
-            yield break;
-        }
-
         private bool CheckPlaylistForTrack(Playlist playlist, User user, string providerId, ProviderTrackInfo providerTrackInfo)
         {
-            var foundCacheMatch = TryGetCachedMatch(providerId, providerTrackInfo, out var match);
+            var match = _cacheFinder.FindTrack(providerId, providerTrackInfo);
             foreach (var item in playlist.GetChildren(user, false))
             {
                 if (item is not Audio audioItem)
@@ -547,7 +344,7 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
                     continue;
                 }
 
-                if (foundCacheMatch && match?.MatchId == audioItem.Id)
+                if (match?.Id == audioItem.Id)
                 {
                     return true;
                 }
@@ -669,34 +466,6 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
             }
 
             return _userManager.Users.FirstOrDefault(u => u?.HasPermission(PermissionKind.IsAdministrator) ?? false, null);
-        }
-
-        protected bool TryGetCachedMatch(string providerId, ProviderTrackInfo providerTrackInfo, out DbProviderTrackMatch? match)
-        {
-            match = null;
-            if (Plugin.Instance == null)
-            {
-                return false;
-            }
-
-            var trackId = _dbRepository.GetProviderTrackDbId(providerId, providerTrackInfo.Id);
-            if (trackId == null)
-            {
-                return false;
-            }
-
-            var matches = _dbRepository.GetProviderTrackMatch((long)trackId);
-            match = matches.FirstOrDefault(
-                potentialMatch =>
-                {
-                    // check if the cached match has compatible match level and criteria (meaning same or stricter requirements)
-                    var isLevelApplicable = potentialMatch?.Level <= Plugin.Instance.Configuration.ItemMatchLevel;
-                    var isCritApplicable = (potentialMatch?.Criteria & Plugin.Instance.Configuration.ItemMatchCriteria) == Plugin.Instance.Configuration.ItemMatchCriteria;
-                    return isLevelApplicable && isCritApplicable;
-                },
-                null);
-
-            return match != null;
         }
 
         protected bool SaveMatchInCache(string providerId, ProviderTrackInfo providerTrackInfo, Guid jellyfinTrackId)

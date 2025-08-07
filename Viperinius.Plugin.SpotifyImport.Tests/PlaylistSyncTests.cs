@@ -8,16 +8,17 @@ using MediaBrowser.Controller.Entities.Audio;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Viperinius.Plugin.SpotifyImport.Matchers;
+using Viperinius.Plugin.SpotifyImport.Sync;
 using Viperinius.Plugin.SpotifyImport.Tests.TestHelpers;
 using Viperinius.Plugin.SpotifyImport.Utils;
 using Xunit;
 
 namespace Viperinius.Plugin.SpotifyImport.Tests
 {
-    internal class PlaylistSyncWrapper : Sync.PlaylistSync
+    internal class PlaylistSyncWrapper : PlaylistSync
     {
         public PlaylistSyncWrapper(
-            ILogger<Sync.PlaylistSync> logger,
+            ILogger<PlaylistSync> logger,
             MediaBrowser.Controller.Playlists.IPlaylistManager playlistManager,
             MediaBrowser.Controller.Library.ILibraryManager libraryManager,
             MediaBrowser.Controller.Library.IUserManager userManager,
@@ -32,11 +33,6 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
         public Audio? WrapGetMatchingTrack(string providerId, ProviderTrackInfo trackInfo, out ItemMatchCriteria failedCriterium)
         {
             return GetMatchingTrack(providerId, trackInfo, out failedCriterium);
-        }
-
-        public bool WrapTryGetCachedMatch(string providerId, ProviderTrackInfo providerTrackInfo, out DbProviderTrackMatch? match)
-        {
-            return TryGetCachedMatch(providerId, providerTrackInfo, out match);
         }
 
         public bool WrapSaveMatchInCache(string providerId, ProviderTrackInfo providerTrackInfo, Guid jellyfinTrackId)
@@ -86,7 +82,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             MusicArtist artist,
             ItemMatchCriteria? expectedFailedCriteria = null)
         {
-            var loggerMock = Substitute.For<ILogger<Sync.PlaylistSync>>();
+            var loggerMock = Substitute.For<ILogger<PlaylistSync>>();
             var plManagerMock = Substitute.For<MediaBrowser.Controller.Playlists.IPlaylistManager>();
             var userManagerMock = Substitute.For<MediaBrowser.Controller.Library.IUserManager>();
             var libManagerMock = Substitute.For<MediaBrowser.Controller.Library.ILibraryManager>();
@@ -496,7 +492,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
 
             var jfArtist = ArtistHelper.CreateJfItem("Ephixa", new List<MusicAlbum> { jfAlbumOther1, jfAlbumOther2, jfAlbumOther3, jfAlbumCorrect });
 
-            var loggerMock = Substitute.For<ILogger<Sync.PlaylistSync>>();
+            var loggerMock = Substitute.For<ILogger<PlaylistSync>>();
             var plManagerMock = Substitute.For<MediaBrowser.Controller.Playlists.IPlaylistManager>();
             var userManagerMock = Substitute.For<MediaBrowser.Controller.Library.IUserManager>();
             var libManagerMock = Substitute.For<MediaBrowser.Controller.Library.ILibraryManager>();
@@ -564,7 +560,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             var jfArtistOther2 = ArtistHelper.CreateJfItem("Daryl Hall & John Oates", new List<MusicAlbum>());
             jfArtistOther2.Id = Guid.Parse("00000000-0000-0000-0000-000000000002");
 
-            var loggerMock = Substitute.For<ILogger<Sync.PlaylistSync>>();
+            var loggerMock = Substitute.For<ILogger<PlaylistSync>>();
             var plManagerMock = Substitute.For<MediaBrowser.Controller.Playlists.IPlaylistManager>();
             var userManagerMock = Substitute.For<MediaBrowser.Controller.Library.IUserManager>();
             var libManagerMock = Substitute.For<MediaBrowser.Controller.Library.ILibraryManager>();
@@ -613,7 +609,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
                 IsrcId = "a4iotbaSD",
             };
 
-            var loggerMock = Substitute.For<ILogger<Sync.PlaylistSync>>();
+            var loggerMock = Substitute.For<ILogger<PlaylistSync>>();
             var plManagerMock = Substitute.For<MediaBrowser.Controller.Playlists.IPlaylistManager>();
             var userManagerMock = Substitute.For<MediaBrowser.Controller.Library.IUserManager>();
             var libManagerMock = Substitute.For<MediaBrowser.Controller.Library.ILibraryManager>();
@@ -639,17 +635,18 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             Assert.True(wrapper.WrapSaveMatchInCache(correctProviderId, correctProviderTrackInfo, jfTrackCorrectId));
             Assert.NotEmpty(db.GetProviderTrackMatch((long)insertedTrack));
 
-            Assert.True(wrapper.WrapTryGetCachedMatch(correctProviderId, correctProviderTrackInfo, out var foundMatch));
+            libManagerMock
+                .GetItemById<Audio>(Arg.Any<Guid>())
+                .Returns(info => new Audio { Id = info.ArgAt<Guid>(0) });
+            var finder = new CacheFinder(libManagerMock, db);
+            var foundMatch = finder.FindTrack(correctProviderId, correctProviderTrackInfo);
             Assert.NotNull(foundMatch);
-            Assert.Equal(jfTrackCorrectId, foundMatch.MatchId);
-            Assert.Equal(Plugin.Instance!.Configuration.ItemMatchLevel, foundMatch.Level);
-            Assert.Equal(Plugin.Instance!.Configuration.ItemMatchCriteria, foundMatch.Criteria);
+            Assert.Equal(jfTrackCorrectId, foundMatch.Id);
 
-            foundMatch = null;
-            Assert.False(wrapper.WrapTryGetCachedMatch(string.Empty, correctProviderTrackInfo, out foundMatch));
+            foundMatch = finder.FindTrack(string.Empty, correctProviderTrackInfo);
             Assert.Null(foundMatch);
 
-            Assert.False(wrapper.WrapTryGetCachedMatch(correctProviderId, new ProviderTrackInfo(), out foundMatch));
+            foundMatch = finder.FindTrack(correctProviderId, new ProviderTrackInfo());
             Assert.Null(foundMatch);
         }
     }
