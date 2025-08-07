@@ -149,12 +149,21 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
             // try to get any missing and spotify owned playlists using alternative method
             await spotifyAlt.PopulatePlaylists([..playlistIdsAlt, ..playlistIds], cancellationToken).ConfigureAwait(false);
 
+            var foundPlaylists = spotify.Playlists.Concat(spotifyAlt.Playlists).ToList();
+
+            // update direct mappings between ISRC and MusicBrainz, if used
+            if (Utils.MusicBrainz.MusicBrainzHelper.IsServerUsingMusicBrainz(_libraryManager))
+            {
+                using var isrcMapper = new Utils.MusicBrainz.IsrcMapping(_logger, db, new Utils.MusicBrainz.MusicBrainzHelper());
+                await isrcMapper.UpdateIsrcMusicBrainzMappings(foundPlaylists, cancellationToken).ConfigureAwait(false);
+            }
+
             var playlistSync = new Sync.PlaylistSync(
                     _loggerFactory.CreateLogger<Sync.PlaylistSync>(),
                     _playlistManager,
                     _libraryManager,
                     _userManager,
-                    spotify.Playlists.Concat(spotifyAlt.Playlists),
+                    foundPlaylists,
                     userPlaylistMapping,
                     manualMapStore,
                     db);
