@@ -76,7 +76,9 @@ namespace Viperinius.Plugin.SpotifyImport
                 new PluginPageInfo
                 {
                     Name = this.Name,
-                    EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.Configuration.configPage.html", GetType().Namespace)
+                    EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.Configuration.configPage.html", GetType().Namespace),
+                    EnableInMainMenu = true,
+                    MenuIcon = "music_note",
                 },
                 new PluginPageInfo
                 {
@@ -89,6 +91,7 @@ namespace Viperinius.Plugin.SpotifyImport
                     DisplayName = "Spotify Import - Map",
                     EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.Configuration.manualMapConfig.html", GetType().Namespace),
                     EnableInMainMenu = true,
+                    MenuIcon = "music_note",
                 },
                 new PluginPageInfo
                 {
