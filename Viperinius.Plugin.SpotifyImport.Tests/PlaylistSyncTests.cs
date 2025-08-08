@@ -54,6 +54,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
             libManagerMock
                 .GetArtists(Arg.Any<MediaBrowser.Controller.Entities.InternalItemsQuery>())
                 .Returns(_ => new MediaBrowser.Model.Querying.QueryResult<(MediaBrowser.Controller.Entities.BaseItem, MediaBrowser.Model.Dto.ItemCounts)>(list));
+            libManagerMock
+                .GetItemList(Arg.Any<MediaBrowser.Controller.Entities.InternalItemsQuery>())
+                .Returns(_ => []);
         }
 
         private void SetUpLibManagerMock(MediaBrowser.Controller.Library.ILibraryManager libManagerMock, MediaBrowser.Controller.Entities.BaseItem? item)
