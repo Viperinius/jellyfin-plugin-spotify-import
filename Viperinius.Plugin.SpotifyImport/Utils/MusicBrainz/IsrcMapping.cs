@@ -15,7 +15,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils.MusicBrainz
 
         private readonly ILogger _logger;
         private readonly DbRepository _dbRepository;
-        private IMusicBrainzHelper _musicBrainzHelper;
+        private readonly IMusicBrainzHelper _musicBrainzHelper;
 
         public IsrcMapping(ILogger logger, DbRepository dbRepository, IMusicBrainzHelper mbHelper)
         {

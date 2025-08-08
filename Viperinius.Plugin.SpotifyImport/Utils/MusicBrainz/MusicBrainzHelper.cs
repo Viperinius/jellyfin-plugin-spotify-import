@@ -18,7 +18,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils.MusicBrainz
     {
         private readonly int _mbQueryResultLimit = 100;
 
-        private Query _mbQuery;
+        private readonly Query _mbQuery;
 
         public MusicBrainzHelper()
         {

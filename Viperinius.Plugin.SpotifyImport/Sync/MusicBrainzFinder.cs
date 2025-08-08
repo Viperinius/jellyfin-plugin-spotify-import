@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using Viperinius.Plugin.SpotifyImport.Matchers;
 using Viperinius.Plugin.SpotifyImport.Utils;
-using static SpotifyAPI.Web.PlaylistRemoveItemsRequest;
 
 namespace Viperinius.Plugin.SpotifyImport.Sync
 {
@@ -135,7 +134,6 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
 
         private (int Prio, ItemMatchLevel Level, Audio Item)? MatchTrack(Audio track, ProviderTrackInfo providerTrackInfo)
         {
-            var prio = int.MaxValue;
             var level = Plugin.Instance?.Configuration.ItemMatchLevel ?? ItemMatchLevel.Default;
             var checkResult = TrackComparison.TrackNameEqual(track, providerTrackInfo, level);
             if (!checkResult.ComparisonResult || checkResult.MatchedLevel == null || checkResult.MatchedPrio == null)
@@ -143,7 +141,7 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
                 return null;
             }
 
-            prio = (int)checkResult.MatchedPrio;
+            var prio = (int)checkResult.MatchedPrio;
             level = (ItemMatchLevel)checkResult.MatchedLevel;
             return (prio, level, track);
         }

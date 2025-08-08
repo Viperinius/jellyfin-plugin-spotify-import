@@ -120,7 +120,6 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Sync
                 TrackNumber = 1,
                 IsrcId = "aeioda98r",
             };
-            var correctJfId = Guid.NewGuid();
 
             var libManagerMock = Substitute.For<MediaBrowser.Controller.Library.ILibraryManager>();
             libManagerMock
