@@ -283,7 +283,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                         {
                             Id = id,
                             Name = fullTrack.Name,
-                            IsrcId = hasIsrc ? isrc : null,
+                            IsrcId = hasIsrc ? isrc?.ToUpperInvariant().Replace("-", string.Empty, StringComparison.InvariantCulture) : null,
                             TrackNumber = (uint)fullTrack.TrackNumber,
                             AlbumName = fullTrack.Album.Name,
                             AlbumArtistNames = fullTrack.Album.Artists.Where(a => a != null && !string.IsNullOrWhiteSpace(a.Name)).Select(a => a.Name).ToList(),

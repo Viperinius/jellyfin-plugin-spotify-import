@@ -28,7 +28,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils.MusicBrainz
         {
             _logger.LogInformation("Starting to update mappings between ISRC and MusicBrainz IDs for {Amount} playlists", playlists.Count);
 
-            var tmpIsrcs = playlists.SelectMany(p => p.Tracks.Select(t => t.IsrcId).OfType<string>());
+            var tmpIsrcs = playlists.SelectMany(p => p.Tracks.Select(t => t?.IsrcId).OfType<string>());
             var isrcs = new HashSet<string>(tmpIsrcs);
 
             var checkedAt = DateTime.UtcNow;
