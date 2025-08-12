@@ -21,6 +21,7 @@ public class PluginConfiguration : BasePluginConfiguration
         Version = string.Empty;
         SpotifyClientId = string.Empty;
         SpotifyCookie = string.Empty;
+        SpotifyTotpSecretsUrl = "https://raw.githubusercontent.com/Thereallo1026/spotify-secrets/refs/heads/main/secrets/secretBytes.json";
         Playlists = Array.Empty<TargetPlaylistConfiguration>();
         Users = Array.Empty<TargetUserConfiguration>();
         ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.TrackName | ItemMatchCriteria.AlbumName | ItemMatchCriteria.AlbumArtists | ItemMatchCriteria.Artists);
@@ -53,6 +54,11 @@ public class PluginConfiguration : BasePluginConfiguration
     /// Gets or sets the Spotify session cookies.
     /// </summary>
     public string SpotifyCookie { get; set; }
+
+    /// <summary>
+    /// Gets or sets the URL to retrieve Spotify TOTP secrets from.
+    /// </summary>
+    public string SpotifyTotpSecretsUrl { get; set; }
 
     /// <summary>
     /// Gets or sets the targeted playlists.
