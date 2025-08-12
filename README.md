@@ -31,7 +31,7 @@ This is still work in progress, see [below](#to-do) for more details what might 
 
 Link to the repository manifest to get the plugin to show up in your catalogue:
 ```
-https://raw.githubusercontent.com/Viperinius/jellyfin-plugins/master/manifest.json
+https://codeberg.org/Viperinius/jellyfin-plugins/raw/branch/master/manifest.json
 ```
 
 [See the official documentation for install instructions](https://jellyfin.org/docs/general/server/plugins/index.html#installing).
