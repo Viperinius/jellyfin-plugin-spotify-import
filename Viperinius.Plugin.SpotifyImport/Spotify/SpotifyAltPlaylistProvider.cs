@@ -18,9 +18,6 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
     internal class SpotifyAltPlaylistProvider : GenericPlaylistProvider
     {
         private const string ProviderName = "SpotifyAlt";
-        private const int TotpVersionFallback = 13;
-        private static readonly byte[] _totpCipherFallback = { 59, 92, 64, 70, 99, 78, 117, 75, 99, 103, 116, 67, 103, 51, 87, 63, 93, 59, 70, 45, 32 };
-        private static readonly Uri _dumpedSecretsUrl = new Uri("https://raw.githubusercontent.com/Thereallo1026/spotify-secrets/refs/heads/main/secrets/secretBytes.json");
         private static readonly Uri _providerUrl = new Uri(Plugin.SpotifyBaseUrl);
         private readonly ILogger<SpotifyAltPlaylistProvider> _logger;
         private readonly HttpRequest _httpRequest;
@@ -230,7 +227,14 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
 
         private DumpedSecretsResultJson? TryRetrieveScrapedSecrets()
         {
-            var response = _httpRequest.Get(_dumpedSecretsUrl).Result;
+            var dumpedSecretsUrlStr = Plugin.Instance?.Configuration.SpotifyTotpSecretsUrl;
+            if (!Uri.TryCreate(dumpedSecretsUrlStr, UriKind.Absolute, out var dumpedSecretsUrl))
+            {
+                _logger.LogError("Failed to retrieve pre-scraped secrets: Invalid {Name} ({Value})", nameof(Plugin.Instance.Configuration.SpotifyTotpSecretsUrl), dumpedSecretsUrlStr);
+                return null;
+            }
+
+            var response = _httpRequest.Get(dumpedSecretsUrl).Result;
             if (response != null)
             {
                 try
@@ -266,14 +270,15 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 }
             }
 
-            var totpVersion = TotpVersionFallback;
-            var totpCipher = _totpCipherFallback;
             var dumpedSecret = TryRetrieveScrapedSecrets();
-            if (dumpedSecret != null)
+            if (dumpedSecret == null)
             {
-                totpVersion = dumpedSecret.Value.Version;
-                totpCipher = dumpedSecret.Value.Secret.ToArray();
+                _logger.LogError("Failed to find TOTP secrets");
+                return;
             }
+
+            var totpVersion = dumpedSecret.Value.Version;
+            var totpCipher = dumpedSecret.Value.Secret.ToArray();
 
             var totpResult = GenerateTotp(totpCipher);
             if (totpResult == null)
