@@ -16,7 +16,10 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
         private const string TableProviderTracksName = "ProviderTracks";
         private const string TableProviderPlaylistTracksName = "ProviderPlaylistTracks";
         private const string TableProviderTrackMatchesName = "ProviderTrackMatches";
-        private const string TableIsrcMusicBrainzName = "IsrcMusicBrainzMapping";
+        private const string TableIsrcMusicBrainzChecksName = "IsrcMusicBrainzChecks";
+        private const string TableIsrcMusicBrainzRecordingName = "IsrcMusicBrainzRecordingMapping";
+        private const string TableIsrcMusicBrainzReleaseName = "IsrcMusicBrainzReleaseMapping";
+        private const string TableIsrcMusicBrainzRelGroupName = "IsrcMusicBrainzReleaseGroupMapping";
 
         private const string UpdateProviderPlaylistGenericCmd = $"UPDATE {TableProviderPlaylistsName} SET ProviderId = $ProviderId, PlaylistId = $PlaylistId, LastState = $LastState, LastTimestamp = $LastTimestamp";
         protected const string InsertProviderPlaylistCmd = $"INSERT INTO {TableProviderPlaylistsName} (ProviderId, PlaylistId, LastState, LastTimestamp) VALUES ($ProviderId, $PlaylistId, $LastState, $LastTimestamp)";
@@ -24,8 +27,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
         private const string UpdateProviderPlaylistTrackGenericCmd = $"UPDATE {TableProviderPlaylistTracksName} SET PlaylistId = $PlaylistId, TrackId = $TrackId, Position = $Position";
         protected const string InsertProviderPlaylistTrackCmd = $"INSERT INTO {TableProviderPlaylistTracksName} (PlaylistId, TrackId, Position) VALUES ($PlaylistId, $TrackId, $Position)";
         protected const string InsertProviderTrackMatchCmd = $"INSERT INTO {TableProviderTrackMatchesName} (TrackId, JellyfinMatchId, MatchLevel, MatchCriteria) VALUES ($TrackId, $JellyfinMatchId, $MatchLevel, $MatchCriteria)";
-        private const string UpdateIsrcMusicBrainzGenericCmd = $"UPDATE {TableIsrcMusicBrainzName} SET Isrc = $Isrc, MusicBrainzRecordingId = $MusicBrainzRecordingId, MusicBrainzReleaseId = $MusicBrainzReleaseId, MusicBrainzReleaseGroupId = $MusicBrainzReleaseGroupId, LastCheck = $LastCheck";
-        protected const string InsertIsrcMusicBrainzCmd = $"INSERT INTO {TableIsrcMusicBrainzName} (Isrc, MusicBrainzRecordingId, MusicBrainzReleaseId, MusicBrainzReleaseGroupId, LastCheck) VALUES ($Isrc, $MusicBrainzRecordingId, $MusicBrainzReleaseId, $MusicBrainzReleaseGroupId, $LastCheck)";
+        protected const string UpsertIsrcMusicBrainzCheckCmd = $"INSERT INTO {TableIsrcMusicBrainzChecksName} (Isrc, LastCheck) VALUES ($Isrc, $LastCheck) ON CONFLICT (Isrc) DO UPDATE SET LastCheck = $LastCheck";
 
         private static readonly string[] _tableNames = new[]
         {
@@ -33,7 +35,10 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             TableProviderTracksName,
             TableProviderPlaylistTracksName,
             TableProviderTrackMatchesName,
-            TableIsrcMusicBrainzName,
+            TableIsrcMusicBrainzChecksName,
+            TableIsrcMusicBrainzRecordingName,
+            TableIsrcMusicBrainzReleaseName,
+            TableIsrcMusicBrainzRelGroupName,
         };
 
         private static readonly string[] _createTableQueries = new[]
@@ -72,13 +77,28 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
                 MatchCriteria INTEGER,
                 FOREIGN KEY (TrackId) REFERENCES {TableProviderTracksName}(Id) ON DELETE CASCADE
             )",
-            $@"CREATE TABLE IF NOT EXISTS {TableIsrcMusicBrainzName} (
+            $@"CREATE TABLE IF NOT EXISTS {TableIsrcMusicBrainzChecksName} (
+                Id INTEGER PRIMARY KEY,
+                Isrc TEXT UNIQUE NOT NULL,
+                LastCheck TEXT NOT NULL
+            )",
+            $@"CREATE TABLE IF NOT EXISTS {TableIsrcMusicBrainzRecordingName} (
                 Id INTEGER PRIMARY KEY,
                 Isrc TEXT NOT NULL,
-                MusicBrainzRecordingId TEXT,
-                MusicBrainzReleaseId TEXT,
-                MusicBrainzReleaseGroupId TEXT,
-                LastCheck TEXT NOT NULL
+                MusicBrainzRecordingId TEXT NOT NULL,
+                FOREIGN KEY (Isrc) REFERENCES {TableIsrcMusicBrainzChecksName}(Isrc) ON DELETE CASCADE
+            )",
+            $@"CREATE TABLE IF NOT EXISTS {TableIsrcMusicBrainzReleaseName} (
+                Id INTEGER PRIMARY KEY,
+                Isrc TEXT NOT NULL,
+                MusicBrainzReleaseId TEXT NOT NULL,
+                FOREIGN KEY (Isrc) REFERENCES {TableIsrcMusicBrainzChecksName}(Isrc) ON DELETE CASCADE
+            )",
+            $@"CREATE TABLE IF NOT EXISTS {TableIsrcMusicBrainzRelGroupName} (
+                Id INTEGER PRIMARY KEY,
+                Isrc TEXT NOT NULL,
+                MusicBrainzReleaseGroupId TEXT NOT NULL,
+                FOREIGN KEY (Isrc) REFERENCES {TableIsrcMusicBrainzChecksName}(Isrc) ON DELETE CASCADE
             )",
         };
 
@@ -356,112 +376,160 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             DateTime? maxLastCheck = null,
             bool? logicalAnd = null)
         {
-            using var selectCmd = Connection.CreateCommand();
-            selectCmd.CommandText = $"SELECT Id, Isrc, MusicBrainzRecordingId, MusicBrainzReleaseId, MusicBrainzReleaseGroupId, LastCheck FROM {TableIsrcMusicBrainzName}";
-
             var logicalOp = (logicalAnd == null || (bool)logicalAnd) ? " AND " : " OR ";
-            var cmdWhere = new List<string>();
-
-            if (!string.IsNullOrEmpty(isrc))
+            using var selectCmd = Connection.CreateCommand();
+            List<string> CreateBasicWhere(SqliteCommand cmd, string? isrcFilter = null)
             {
-                cmdWhere.Add("Isrc = $Isrc");
-                selectCmd.Parameters.AddWithValue("$Isrc", isrc);
+                var cmdWhere = new List<string>();
+                if (!string.IsNullOrEmpty(isrcFilter))
+                {
+                    cmdWhere.Add("Isrc = $Isrc");
+                    cmd.Parameters.AddWithValue("$Isrc", isrcFilter);
+                }
+
+                return cmdWhere;
             }
 
-            if (hasAnyMbIdsSet != null)
-            {
-                if (hasAnyMbIdsSet.Value)
-                {
-                    cmdWhere.Add("(MusicBrainzRecordingId IS NOT NULL OR MusicBrainzReleaseId IS NOT NULL OR MusicBrainzReleaseGroupId IS NOT NULL)");
-                }
-                else
-                {
-                    cmdWhere.Add("(MusicBrainzRecordingId IS NULL AND MusicBrainzReleaseId IS NULL AND MusicBrainzReleaseGroupId IS NULL)");
-                }
-            }
-
+            // lookup isrc
+            selectCmd.CommandText = $"SELECT Id, Isrc, LastCheck FROM {TableIsrcMusicBrainzChecksName}";
+            var where = CreateBasicWhere(selectCmd, isrc);
             if (minLastCheck != null)
             {
-                cmdWhere.Add("LastCheck >= $MinLastCheck");
+                where.Add("LastCheck >= $MinLastCheck");
                 selectCmd.Parameters.AddWithValue("$MinLastCheck", minLastCheck.Value.ToString("s"));
             }
 
             if (maxLastCheck != null)
             {
-                cmdWhere.Add("LastCheck <= $MaxLastCheck");
+                where.Add("LastCheck <= $MaxLastCheck");
                 selectCmd.Parameters.AddWithValue("$MaxLastCheck", maxLastCheck.Value.ToString("s"));
             }
 
-            if (cmdWhere.Count > 0)
+            if (where.Count > 0)
             {
-#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities --> cmdWhere, logicalOp only contain pre-defined strings
-                selectCmd.CommandText += $" WHERE {string.Join(logicalOp, cmdWhere)}";
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities --> where, logicalOp only contain pre-defined strings
+                selectCmd.CommandText += $" WHERE {string.Join(logicalOp, where)}";
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
             }
 
             using var reader = selectCmd.ExecuteReader();
+            using var innerCmd = Connection.CreateCommand();
             while (reader.Read())
             {
                 var id = reader.GetInt64(0);
                 var readIsrc = reader.GetString(1);
+                var lastCheck = reader.GetDateTime(2);
 
-                var mbRecordingIdRaw = reader.IsDBNull(2) ? null : reader.GetString(2);
-                Guid? mbRecordingId = null;
-                if (Guid.TryParse(mbRecordingIdRaw, out var tmpGuid))
+                // lookup associated MB ids
+                var recordings = new List<Guid>();
+                var releases = new List<Guid>();
+                var releaseGroups = new List<Guid>();
+
+                innerCmd.Parameters.Clear();
+                innerCmd.CommandText = $"SELECT MusicBrainzRecordingId FROM {TableIsrcMusicBrainzRecordingName}";
+                var innerWhere = CreateBasicWhere(innerCmd, readIsrc);
+                if (hasAnyMbIdsSet != null)
                 {
-                    mbRecordingId = tmpGuid;
+                    innerWhere.Add($"MusicBrainzRecordingId IS {(hasAnyMbIdsSet.Value ? "NOT" : string.Empty)} NULL");
+                }
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities --> innerWhere, logicalOp only contain pre-defined strings
+                innerCmd.CommandText += $" WHERE {string.Join(logicalOp, innerWhere)}";
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+                {
+                    using var innerReader = innerCmd.ExecuteReader();
+                    while (innerReader.Read())
+                    {
+                        var mbRecordingIdRaw = innerReader.GetString(0);
+                        if (Guid.TryParse(mbRecordingIdRaw, out var tmpGuid))
+                        {
+                            recordings.Add(tmpGuid);
+                        }
+                    }
                 }
 
-                var mbReleaseIdRaw = reader.IsDBNull(3) ? null : reader.GetString(3);
-                Guid? mbReleaseId = null;
-                if (Guid.TryParse(mbReleaseIdRaw, out tmpGuid))
+                innerCmd.Parameters.Clear();
+                innerCmd.CommandText = $"SELECT MusicBrainzReleaseId FROM {TableIsrcMusicBrainzReleaseName}";
+                innerWhere = CreateBasicWhere(innerCmd, readIsrc);
+                if (hasAnyMbIdsSet != null)
                 {
-                    mbReleaseId = tmpGuid;
+                    innerWhere.Add($"MusicBrainzReleaseId IS {(hasAnyMbIdsSet.Value ? "NOT" : string.Empty)} NULL");
+                }
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities --> innerWhere, logicalOp only contain pre-defined strings
+                innerCmd.CommandText += $" WHERE {string.Join(logicalOp, innerWhere)}";
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+                {
+                    using var innerReader = innerCmd.ExecuteReader();
+                    while (innerReader.Read())
+                    {
+                        var mbReleaseIdRaw = innerReader.GetString(0);
+                        if (Guid.TryParse(mbReleaseIdRaw, out var tmpGuid))
+                        {
+                            releases.Add(tmpGuid);
+                        }
+                    }
                 }
 
-                var mbReleaseGroupIdRaw = reader.IsDBNull(4) ? null : reader.GetString(4);
-                Guid? mbReleaseGroupId = null;
-                if (Guid.TryParse(mbReleaseGroupIdRaw, out tmpGuid))
+                innerCmd.Parameters.Clear();
+                innerCmd.CommandText = $"SELECT MusicBrainzReleaseGroupId FROM {TableIsrcMusicBrainzRelGroupName}";
+                innerWhere = CreateBasicWhere(innerCmd, readIsrc);
+                if (hasAnyMbIdsSet != null)
                 {
-                    mbReleaseGroupId = tmpGuid;
+                    innerWhere.Add($"MusicBrainzReleaseGroupId IS {(hasAnyMbIdsSet.Value ? "NOT" : string.Empty)} NULL");
+                }
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities --> innerWhere, logicalOp only contain pre-defined strings
+                innerCmd.CommandText += $" WHERE {string.Join(logicalOp, innerWhere)}";
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+                {
+                    using var innerReader = innerCmd.ExecuteReader();
+                    while (innerReader.Read())
+                    {
+                        var mbReleaseGroupIdRaw = innerReader.GetString(0);
+                        if (Guid.TryParse(mbReleaseGroupIdRaw, out var tmpGuid))
+                        {
+                            releaseGroups.Add(tmpGuid);
+                        }
+                    }
                 }
 
-                var lastCheck = reader.GetDateTime(5);
-
-                yield return new DbIsrcMusicBrainzMapping(id, readIsrc, lastCheck, mbRecordingId, mbReleaseId, mbReleaseGroupId);
+                yield return new DbIsrcMusicBrainzMapping(id, readIsrc, lastCheck, recordings, releases, releaseGroups);
             }
         }
 
         public long? UpsertIsrcMusicBrainzMapping(DbIsrcMusicBrainzMapping mapping)
         {
-            // check for existing item in db first
-            using var selectCmd = Connection.CreateCommand();
-            selectCmd.CommandText = $"SELECT Id FROM {TableIsrcMusicBrainzName} WHERE Id = $Id";
-            selectCmd.Parameters.AddWithValue("$Id", mapping.Id);
-            using var reader = selectCmd.ExecuteReader();
+            using var upsertCmd = Connection.CreateCommand();
+            upsertCmd.CommandText = UpsertIsrcMusicBrainzCheckCmd + " RETURNING Id";
+            upsertCmd.Parameters.AddWithValue("$Isrc", mapping.Isrc);
+            upsertCmd.Parameters.AddWithValue("$LastCheck", mapping.LastCheck);
 
-            using var putCmd = Connection.CreateCommand();
-
-            if (reader.HasRows)
+            for (int ii = 0; ii < mapping.MusicBrainzRecordingIds.Count; ii++)
             {
-                reader.Read();
-                var id = reader.GetInt32(0);
-                // update entry with playlist data
-                putCmd.CommandText = UpdateIsrcMusicBrainzGenericCmd + " WHERE Id = $Id RETURNING Id";
-                putCmd.Parameters.AddWithValue("$Id", id);
-            }
-            else
-            {
-                // add new entry
-                putCmd.CommandText = InsertIsrcMusicBrainzCmd + " RETURNING Id";
+                var recording = mapping.MusicBrainzRecordingIds[ii];
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities --> only variable is ii
+                upsertCmd.CommandText += $"; INSERT INTO {TableIsrcMusicBrainzRecordingName} (Isrc, MusicBrainzRecordingId) VALUES ($Isrc, $MusicBrainzRecordingId{ii})";
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+                upsertCmd.Parameters.AddWithValue($"$MusicBrainzRecordingId{ii}", recording);
             }
 
-            putCmd.Parameters.AddWithValue("$Isrc", mapping.Isrc);
-            putCmd.Parameters.AddWithValue("$MusicBrainzRecordingId", mapping.MusicBrainzRecordingId != null ? mapping.MusicBrainzRecordingId : DBNull.Value);
-            putCmd.Parameters.AddWithValue("$MusicBrainzReleaseId", mapping.MusicBrainzReleaseId != null ? mapping.MusicBrainzReleaseId : DBNull.Value);
-            putCmd.Parameters.AddWithValue("$MusicBrainzReleaseGroupId", mapping.MusicBrainzReleaseGroupId != null ? mapping.MusicBrainzReleaseGroupId : DBNull.Value);
-            putCmd.Parameters.AddWithValue("$LastCheck", mapping.LastCheck);
-            return (long?)putCmd.ExecuteScalar();
+            for (int ii = 0; ii < mapping.MusicBrainzReleaseIds.Count; ii++)
+            {
+                var release = mapping.MusicBrainzReleaseIds[ii];
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities --> only variable is ii
+                upsertCmd.CommandText += $"; INSERT INTO {TableIsrcMusicBrainzReleaseName} (Isrc, MusicBrainzReleaseId) VALUES ($Isrc, $MusicBrainzReleaseId{ii})";
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+                upsertCmd.Parameters.AddWithValue($"$MusicBrainzReleaseId{ii}", release);
+            }
+
+            for (int ii = 0; ii < mapping.MusicBrainzReleaseGroupIds.Count; ii++)
+            {
+                var relGroup = mapping.MusicBrainzReleaseGroupIds[ii];
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities --> only variable is ii
+                upsertCmd.CommandText += $"; INSERT INTO {TableIsrcMusicBrainzRelGroupName} (Isrc, MusicBrainzReleaseGroupId) VALUES ($Isrc, $MusicBrainzReleaseGroupId{ii})";
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+                upsertCmd.Parameters.AddWithValue($"$MusicBrainzReleaseGroupId{ii}", relGroup);
+            }
+
+            return (long?)upsertCmd.ExecuteScalar();
         }
 
         public bool DeleteIsrcMusicBrainzMapping(IList<long> dbIds)
@@ -474,7 +542,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             using var deleteCmd = Connection.CreateCommand();
             var idParams = string.Join(',', dbIds.Select((_, ii) => $"$Id{ii}"));
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities --> idParams only contains pre-defined strings
-            deleteCmd.CommandText = $"DELETE FROM {TableIsrcMusicBrainzName} WHERE Id IN ({idParams})";
+            deleteCmd.CommandText = $"DELETE FROM {TableIsrcMusicBrainzChecksName} WHERE Id IN ({idParams})";
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
             for (int ii = 0; ii < dbIds.Count; ii++)
             {

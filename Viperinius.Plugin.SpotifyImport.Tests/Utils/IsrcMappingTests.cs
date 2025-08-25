@@ -88,8 +88,23 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
             var rnd = new Random();
             for (int ii = 0; ii < validIsrcs.Length; ii++)
             {
-                Guid? relGroupId = ii % 2 == 0 ? Guid.NewGuid() : null;
-                mbHelper.ResultMappings.Add(new DbIsrcMusicBrainzMapping(rnd.Next(), validIsrcs[ii], validLastCheck, Guid.NewGuid(), Guid.NewGuid(), relGroupId));
+                var recs = new List<Guid>();
+                var rels = new List<Guid>();
+                var relGrps = new List<Guid>();
+                for (int iRec = 0; iRec < rnd.Next(1, 5); iRec++)
+                {
+                    recs.Add(Guid.NewGuid());
+                }
+                for (int iRel = 0; iRel < rnd.Next(1, 5); iRel++)
+                {
+                    rels.Add(Guid.NewGuid());
+                }
+                for (int iRel = 0; iRel < rnd.Next(0, 5); iRel++)
+                {
+                    relGrps.Add(Guid.NewGuid());
+                }
+
+                mbHelper.ResultMappings.Add(new DbIsrcMusicBrainzMapping(ii + 10, validIsrcs[ii], validLastCheck, recs, rels, relGrps));
             }
 
             return (validLastCheck, validIsrcs, nonValidIsrcs, uniqueIsrcCount, playlists, mbHelper);
@@ -110,7 +125,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
             }
 
             using var cmd = db.WrappedConnection.CreateCommand();
-            cmd.CommandText = "SELECT COUNT(*) FROM IsrcMusicBrainzMapping";
+            cmd.CommandText = "SELECT COUNT(*) FROM IsrcMusicBrainzChecks";
             var rowCount = cmd.ExecuteScalar();
             Assert.Equal(0, (long?)rowCount);
 
@@ -134,9 +149,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     Assert.Equal(isrc, item.Isrc);
-                    Assert.Null(item.MusicBrainzRecordingId);
-                    Assert.Null(item.MusicBrainzReleaseId);
-                    Assert.Null(item.MusicBrainzReleaseGroupId);
+                    Assert.Empty(item.MusicBrainzRecordingIds);
+                    Assert.Empty(item.MusicBrainzReleaseIds);
+                    Assert.Empty(item.MusicBrainzReleaseGroupIds);
                     Assert.True(item.LastCheck > testData.ValidLastCheck);
                 }
             }
@@ -148,9 +163,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     var result = testData.MbHelper.ResultMappings.Find(m => m.Isrc == item.Isrc
-                                                                         && m.MusicBrainzRecordingId == item.MusicBrainzRecordingId
-                                                                         && m.MusicBrainzReleaseId == item.MusicBrainzReleaseId
-                                                                         && m.MusicBrainzReleaseGroupId == item.MusicBrainzReleaseGroupId
+                                                                         && m.MusicBrainzRecordingIds.SequenceEqual(item.MusicBrainzRecordingIds)
+                                                                         && m.MusicBrainzReleaseIds.SequenceEqual(item.MusicBrainzReleaseIds)
+                                                                         && m.MusicBrainzReleaseGroupIds.SequenceEqual(item.MusicBrainzReleaseGroupIds)
                                                                          && m.LastCheck == item.LastCheck);
                     Assert.NotNull(result);
                 }
@@ -172,11 +187,11 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
             }
             foreach (var isrc in testData.NonValidIsrcs)
             {
-                Assert.NotNull(db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, isrc, testData.ValidLastCheck)));
+                Assert.NotNull(db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, isrc, testData.ValidLastCheck, [], [], [])));
             }
 
             using var cmd = db.WrappedConnection.CreateCommand();
-            cmd.CommandText = "SELECT COUNT(*) FROM IsrcMusicBrainzMapping";
+            cmd.CommandText = "SELECT COUNT(*) FROM IsrcMusicBrainzChecks";
             var rowCount = cmd.ExecuteScalar();
             Assert.Equal(testData.UniqueIsrcCount, (long?)rowCount);
 
@@ -195,9 +210,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     Assert.Equal(isrc, item.Isrc);
-                    Assert.Null(item.MusicBrainzRecordingId);
-                    Assert.Null(item.MusicBrainzReleaseId);
-                    Assert.Null(item.MusicBrainzReleaseGroupId);
+                    Assert.Empty(item.MusicBrainzRecordingIds);
+                    Assert.Empty(item.MusicBrainzReleaseIds);
+                    Assert.Empty(item.MusicBrainzReleaseGroupIds);
                     Assert.Equal(testData.ValidLastCheck, item.LastCheck);
                 }
             }
@@ -209,9 +224,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     var result = testData.MbHelper.ResultMappings.Find(m => m.Isrc == item.Isrc
-                                                                         && m.MusicBrainzRecordingId == item.MusicBrainzRecordingId
-                                                                         && m.MusicBrainzReleaseId == item.MusicBrainzReleaseId
-                                                                         && m.MusicBrainzReleaseGroupId == item.MusicBrainzReleaseGroupId
+                                                                         && m.MusicBrainzRecordingIds.SequenceEqual(item.MusicBrainzRecordingIds)
+                                                                         && m.MusicBrainzReleaseIds.SequenceEqual(item.MusicBrainzReleaseIds)
+                                                                         && m.MusicBrainzReleaseGroupIds.SequenceEqual(item.MusicBrainzReleaseGroupIds)
                                                                          && m.LastCheck == item.LastCheck);
                     Assert.NotNull(result);
                 }
@@ -237,11 +252,11 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
             {
                 var isrc = testData.NonValidIsrcs[ii];
                 var lastCheck = ii == expectedQueriedNonValidIsrcIndex ? testData.ValidLastCheck.AddDays(-30) : testData.ValidLastCheck;
-                Assert.NotNull(db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, isrc, lastCheck)));
+                Assert.NotNull(db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, isrc, lastCheck, [], [], [])));
             }
 
             using var cmd = db.WrappedConnection.CreateCommand();
-            cmd.CommandText = "SELECT COUNT(*) FROM IsrcMusicBrainzMapping";
+            cmd.CommandText = "SELECT COUNT(*) FROM IsrcMusicBrainzChecks";
             var rowCount = cmd.ExecuteScalar();
             Assert.Equal(testData.UniqueIsrcCount, (long?)rowCount);
 
@@ -262,9 +277,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     Assert.Equal(isrc, item.Isrc);
-                    Assert.Null(item.MusicBrainzRecordingId);
-                    Assert.Null(item.MusicBrainzReleaseId);
-                    Assert.Null(item.MusicBrainzReleaseGroupId);
+                    Assert.Empty(item.MusicBrainzRecordingIds);
+                    Assert.Empty(item.MusicBrainzReleaseIds);
+                    Assert.Empty(item.MusicBrainzReleaseGroupIds);
                     if (ii == expectedQueriedNonValidIsrcIndex)
                     {
                         Assert.InRange(item.LastCheck, testData.ValidLastCheck, DateTime.UtcNow);
@@ -283,9 +298,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     var result = testData.MbHelper.ResultMappings.Find(m => m.Isrc == item.Isrc
-                                                                         && m.MusicBrainzRecordingId == item.MusicBrainzRecordingId
-                                                                         && m.MusicBrainzReleaseId == item.MusicBrainzReleaseId
-                                                                         && m.MusicBrainzReleaseGroupId == item.MusicBrainzReleaseGroupId
+                                                                         && m.MusicBrainzRecordingIds.SequenceEqual(item.MusicBrainzRecordingIds)
+                                                                         && m.MusicBrainzReleaseIds.SequenceEqual(item.MusicBrainzReleaseIds)
+                                                                         && m.MusicBrainzReleaseGroupIds.SequenceEqual(item.MusicBrainzReleaseGroupIds)
                                                                          && m.LastCheck == item.LastCheck);
                     Assert.NotNull(result);
                 }
@@ -301,26 +316,20 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
 
             var testData = SetupTestData();
 
-            var expectedQueriedValidIsrcIndex = 1;
-
             for (int ii = 0; ii < testData.MbHelper.ResultMappings.Count; ii++)
             {
                 var mapping = testData.MbHelper.ResultMappings[ii];
-                if (ii == expectedQueriedValidIsrcIndex)
-                {
-                    mapping.LastCheck = testData.ValidLastCheck.AddDays(-30);
-                }
                 Assert.NotNull(db.UpsertIsrcMusicBrainzMapping(mapping));
             }
             for (int ii = 0; ii < testData.NonValidIsrcs.Length; ii++)
             {
                 var isrc = testData.NonValidIsrcs[ii];
                 var lastCheck = testData.ValidLastCheck;
-                Assert.NotNull(db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, isrc, lastCheck)));
+                Assert.NotNull(db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, isrc, lastCheck, [], [], [])));
             }
 
             using var cmd = db.WrappedConnection.CreateCommand();
-            cmd.CommandText = "SELECT COUNT(*) FROM IsrcMusicBrainzMapping";
+            cmd.CommandText = "SELECT COUNT(*) FROM IsrcMusicBrainzChecks";
             var rowCount = cmd.ExecuteScalar();
             Assert.Equal(testData.UniqueIsrcCount, (long?)rowCount);
 
@@ -339,9 +348,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     Assert.Equal(isrc, item.Isrc);
-                    Assert.Null(item.MusicBrainzRecordingId);
-                    Assert.Null(item.MusicBrainzReleaseId);
-                    Assert.Null(item.MusicBrainzReleaseGroupId);
+                    Assert.Empty(item.MusicBrainzRecordingIds);
+                    Assert.Empty(item.MusicBrainzReleaseIds);
+                    Assert.Empty(item.MusicBrainzReleaseGroupIds);
                     Assert.Equal(testData.ValidLastCheck, item.LastCheck);
                 }
             }
@@ -353,9 +362,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     var result = testData.MbHelper.ResultMappings.Find(m => m.Isrc == item.Isrc
-                                                                         && m.MusicBrainzRecordingId == item.MusicBrainzRecordingId
-                                                                         && m.MusicBrainzReleaseId == item.MusicBrainzReleaseId
-                                                                         && m.MusicBrainzReleaseGroupId == item.MusicBrainzReleaseGroupId
+                                                                         && m.MusicBrainzRecordingIds.SequenceEqual(item.MusicBrainzRecordingIds)
+                                                                         && m.MusicBrainzReleaseIds.SequenceEqual(item.MusicBrainzReleaseIds)
+                                                                         && m.MusicBrainzReleaseGroupIds.SequenceEqual(item.MusicBrainzReleaseGroupIds)
                                                                          && m.LastCheck == item.LastCheck);
                     Assert.NotNull(result);
                 }
@@ -392,11 +401,11 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 }
 
                 var isrc = testData.NonValidIsrcs[ii];
-                Assert.NotNull(db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, isrc, testData.ValidLastCheck)));
+                Assert.NotNull(db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, isrc, testData.ValidLastCheck, [], [], [])));
             }
 
             using var cmd = db.WrappedConnection.CreateCommand();
-            cmd.CommandText = "SELECT COUNT(*) FROM IsrcMusicBrainzMapping";
+            cmd.CommandText = "SELECT COUNT(*) FROM IsrcMusicBrainzChecks";
             var rowCount = cmd.ExecuteScalar();
             Assert.Equal(testData.UniqueIsrcCount - 2, (long?)rowCount);
 
@@ -418,9 +427,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     Assert.Equal(isrc, item.Isrc);
-                    Assert.Null(item.MusicBrainzRecordingId);
-                    Assert.Null(item.MusicBrainzReleaseId);
-                    Assert.Null(item.MusicBrainzReleaseGroupId);
+                    Assert.Empty(item.MusicBrainzRecordingIds);
+                    Assert.Empty(item.MusicBrainzReleaseIds);
+                    Assert.Empty(item.MusicBrainzReleaseGroupIds);
                     if (ii == expectedQueriedNonValidIsrcIndex)
                     {
                         Assert.InRange(item.LastCheck, testData.ValidLastCheck.AddSeconds(1), DateTime.UtcNow);
@@ -440,9 +449,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     var result = testData.MbHelper.ResultMappings.Find(m => m.Isrc == item.Isrc
-                                                                         && m.MusicBrainzRecordingId == item.MusicBrainzRecordingId
-                                                                         && m.MusicBrainzReleaseId == item.MusicBrainzReleaseId
-                                                                         && m.MusicBrainzReleaseGroupId == item.MusicBrainzReleaseGroupId
+                                                                         && m.MusicBrainzRecordingIds.SequenceEqual(item.MusicBrainzRecordingIds)
+                                                                         && m.MusicBrainzReleaseIds.SequenceEqual(item.MusicBrainzReleaseIds)
+                                                                         && m.MusicBrainzReleaseGroupIds.SequenceEqual(item.MusicBrainzReleaseGroupIds)
                                                                          && m.LastCheck == item.LastCheck);
                     Assert.NotNull(result);
                 }
@@ -472,13 +481,13 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
             }
             foreach (var isrc in testData.NonValidIsrcs)
             {
-                Assert.NotNull(db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, isrc, testData.ValidLastCheck)));
+                Assert.NotNull(db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, isrc, testData.ValidLastCheck, [], [], [])));
             }
 
-            Assert.NotNull(db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, testData.ValidIsrcs[expectedQueriedValidIsrcIndex], testData.ValidLastCheck.AddDays(-30))));
+            Assert.NotNull(db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, testData.ValidIsrcs[expectedQueriedValidIsrcIndex], testData.ValidLastCheck.AddDays(-30), [], [], [])));
 
             using var cmd = db.WrappedConnection.CreateCommand();
-            cmd.CommandText = "SELECT COUNT(*) FROM IsrcMusicBrainzMapping";
+            cmd.CommandText = "SELECT COUNT(*) FROM IsrcMusicBrainzChecks";
             var rowCount = cmd.ExecuteScalar();
             Assert.Equal(testData.UniqueIsrcCount, (long?)rowCount);
 
@@ -498,9 +507,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     Assert.Equal(isrc, item.Isrc);
-                    Assert.Null(item.MusicBrainzRecordingId);
-                    Assert.Null(item.MusicBrainzReleaseId);
-                    Assert.Null(item.MusicBrainzReleaseGroupId);
+                    Assert.Empty(item.MusicBrainzRecordingIds);
+                    Assert.Empty(item.MusicBrainzReleaseIds);
+                    Assert.Empty(item.MusicBrainzReleaseGroupIds);
                     Assert.Equal(testData.ValidLastCheck, item.LastCheck);
                 }
             }
@@ -513,9 +522,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
                 foreach (var item in found)
                 {
                     var result = testData.MbHelper.ResultMappings.Find(m => m.Isrc == item.Isrc
-                                                                         && m.MusicBrainzRecordingId == item.MusicBrainzRecordingId
-                                                                         && m.MusicBrainzReleaseId == item.MusicBrainzReleaseId
-                                                                         && m.MusicBrainzReleaseGroupId == item.MusicBrainzReleaseGroupId
+                                                                         && m.MusicBrainzRecordingIds.SequenceEqual(item.MusicBrainzRecordingIds)
+                                                                         && m.MusicBrainzReleaseIds.SequenceEqual(item.MusicBrainzReleaseIds)
+                                                                         && m.MusicBrainzReleaseGroupIds.SequenceEqual(item.MusicBrainzReleaseGroupIds)
                                                                          && m.LastCheck == item.LastCheck);
                     Assert.NotNull(result);
                 }

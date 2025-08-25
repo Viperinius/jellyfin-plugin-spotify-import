@@ -17,9 +17,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
         public void CanInsert()
         {
             var correctIsrc = "a4iotbaSD";
-            var correctMbRecId = Guid.NewGuid();
-            var correctMbRelId = Guid.NewGuid();
-            var correctMbRelGrpId = Guid.NewGuid();
+            var correctMbRecIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
+            var correctMbRelIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+            var correctMbRelGrpIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
             var correctLastCheck = DateTime.UtcNow;
 
             using var db = DbRepositoryWrapper.GetInstance();
@@ -28,14 +28,14 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
             db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(
                 id: -1,
                 isrc: correctIsrc,
-                mbRecordingId: correctMbRecId,
-                mbReleaseId: correctMbRelId,
-                mbReleaseGroupId: correctMbRelGrpId,
+                mbRecordingIds: correctMbRecIds,
+                mbReleaseIds: correctMbRelIds,
+                mbReleaseGroupIds: correctMbRelGrpIds,
                 lastCheck: correctLastCheck
             ));
 
             using var cmd = db.WrappedConnection.CreateCommand();
-            cmd.CommandText = "SELECT * FROM IsrcMusicBrainzMapping";
+            cmd.CommandText = "SELECT * FROM IsrcMusicBrainzChecks";
             var rowCount = 0;
             using (var reader = cmd.ExecuteReader())
             {
@@ -44,52 +44,81 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
                     rowCount++;
                     Assert.Equal(1, reader.GetInt32(0));
                     Assert.Equal(correctIsrc, reader.GetString(1));
-                    Assert.Equal(correctMbRecId, reader.GetGuid(2));
-                    Assert.Equal(correctMbRelId, reader.GetGuid(3));
-                    Assert.Equal(correctMbRelGrpId, reader.GetGuid(4));
-                    Assert.Equal(correctLastCheck, reader.GetDateTime(5));
+                    Assert.Equal(correctLastCheck, reader.GetDateTime(2));
                 }
             }
 
             Assert.Equal(1, rowCount);
+
+            rowCount = 0;
+            cmd.CommandText = "SELECT * FROM IsrcMusicBrainzRecordingMapping";
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    rowCount++;
+                    var index = reader.GetInt32(0);
+                    Assert.Equal(correctIsrc, reader.GetString(1));
+                    var guid = reader.GetGuid(2);
+                    Assert.Equal(correctMbRecIds.IndexOf(guid), index - 1);
+                }
+            }
+
+            Assert.Equal(correctMbRecIds.Count, rowCount);
+
+            rowCount = 0;
+            cmd.CommandText = "SELECT * FROM IsrcMusicBrainzReleaseMapping";
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    rowCount++;
+                    var index = reader.GetInt32(0);
+                    Assert.Equal(correctIsrc, reader.GetString(1));
+                    var guid = reader.GetGuid(2);
+                    Assert.Equal(correctMbRelIds.IndexOf(guid), index - 1);
+                }
+            }
+
+            Assert.Equal(correctMbRelIds.Count, rowCount);
+
+            rowCount = 0;
+            cmd.CommandText = "SELECT * FROM IsrcMusicBrainzReleaseGroupMapping";
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    rowCount++;
+                    var index = reader.GetInt32(0);
+                    Assert.Equal(correctIsrc, reader.GetString(1));
+                    var guid = reader.GetGuid(2);
+                    Assert.Equal(correctMbRelGrpIds.IndexOf(guid), index - 1);
+                }
+            }
+
+            Assert.Equal(correctMbRelGrpIds.Count, rowCount);
         }
 
         [Fact]
         public void CanRetrieve()
         {
             var correctIsrc = "a4iotbaSD";
-            var correctMbRecId = Guid.NewGuid();
-            var correctMbRelId = Guid.NewGuid();
-            var correctMbRelGrpId = Guid.NewGuid();
+            var correctMbRecIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
+            var correctMbRelIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+            var correctMbRelGrpIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
             var correctLastCheck = DateTime.UtcNow.AddMinutes(-1);
 
             using var db = DbRepositoryWrapper.GetInstance();
             db.InitDb();
 
-            using var cmd = db.WrappedConnection.CreateCommand();
-            cmd.CommandText = db.GetInsertIsrcMusicBrainzCmd();
-            cmd.Parameters.AddWithValue("$Isrc", "x");
-            cmd.Parameters.AddWithValue("$MusicBrainzRecordingId", Guid.NewGuid());
-            cmd.Parameters.AddWithValue("$MusicBrainzReleaseId", DBNull.Value);
-            cmd.Parameters.AddWithValue("$MusicBrainzReleaseGroupId", Guid.NewGuid());
-            cmd.Parameters.AddWithValue("$LastCheck", DateTime.UtcNow.AddHours(4));
-            Assert.Equal(1, cmd.ExecuteNonQuery());
+            var dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, "x", DateTime.UtcNow.AddHours(4), [Guid.NewGuid()], [], [Guid.NewGuid()]));
+            Assert.NotNull(dbId);
 
-            cmd.Parameters.Clear();
-            cmd.Parameters.AddWithValue("$Isrc", correctIsrc);
-            cmd.Parameters.AddWithValue("$MusicBrainzRecordingId", correctMbRecId);
-            cmd.Parameters.AddWithValue("$MusicBrainzReleaseId", correctMbRelId);
-            cmd.Parameters.AddWithValue("$MusicBrainzReleaseGroupId", correctMbRelGrpId);
-            cmd.Parameters.AddWithValue("$LastCheck", correctLastCheck);
-            Assert.Equal(1, cmd.ExecuteNonQuery());
+            dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, correctIsrc, correctLastCheck, correctMbRecIds, correctMbRelIds, correctMbRelGrpIds));
+            Assert.NotNull(dbId);
 
-            cmd.Parameters.Clear();
-            cmd.Parameters.AddWithValue("$Isrc", "y");
-            cmd.Parameters.AddWithValue("$MusicBrainzRecordingId", Guid.NewGuid());
-            cmd.Parameters.AddWithValue("$MusicBrainzReleaseId", Guid.NewGuid());
-            cmd.Parameters.AddWithValue("$MusicBrainzReleaseGroupId", DBNull.Value);
-            cmd.Parameters.AddWithValue("$LastCheck", DateTime.UtcNow.AddHours(3));
-            Assert.Equal(1, cmd.ExecuteNonQuery());
+            dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, "y", DateTime.UtcNow.AddHours(3), [Guid.NewGuid()], [Guid.NewGuid()], []));
+            Assert.NotNull(dbId);
 
             var mappings = db.GetIsrcMusicBrainzMapping();
             Assert.Equal(3, mappings.Count());
@@ -101,9 +130,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
             Assert.Single(mappings);
 
             Assert.Equal(correctIsrc, mappings.ElementAt(0).Isrc);
-            Assert.Equal(correctMbRecId, mappings.ElementAt(0).MusicBrainzRecordingId);
-            Assert.Equal(correctMbRelId, mappings.ElementAt(0).MusicBrainzReleaseId);
-            Assert.Equal(correctMbRelGrpId, mappings.ElementAt(0).MusicBrainzReleaseGroupId);
+            Assert.Equal(correctMbRecIds, mappings.ElementAt(0).MusicBrainzRecordingIds);
+            Assert.Equal(correctMbRelIds, mappings.ElementAt(0).MusicBrainzReleaseIds);
+            Assert.Equal(correctMbRelGrpIds, mappings.ElementAt(0).MusicBrainzReleaseGroupIds);
             Assert.Equal(correctLastCheck, mappings.ElementAt(0).LastCheck);
         }
 
@@ -111,38 +140,22 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
         public void CanDelete()
         {
             var correctIsrc = "a4iotbaSD";
-            var correctMbRecId = Guid.NewGuid();
-            var correctMbRelId = Guid.NewGuid();
-            var correctMbRelGrpId = Guid.NewGuid();
+            var correctMbRecIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
+            var correctMbRelIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+            var correctMbRelGrpIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
             var correctLastCheck = DateTime.UtcNow.AddMinutes(-1);
 
             using var db = DbRepositoryWrapper.GetInstance();
             db.InitDb();
 
-            using var cmd = db.WrappedConnection.CreateCommand();
-            cmd.CommandText = db.GetInsertIsrcMusicBrainzCmd();
-            cmd.Parameters.AddWithValue("$Isrc", "x");
-            cmd.Parameters.AddWithValue("$MusicBrainzRecordingId", Guid.NewGuid());
-            cmd.Parameters.AddWithValue("$MusicBrainzReleaseId", DBNull.Value);
-            cmd.Parameters.AddWithValue("$MusicBrainzReleaseGroupId", Guid.NewGuid());
-            cmd.Parameters.AddWithValue("$LastCheck", DateTime.UtcNow.AddHours(4));
-            Assert.Equal(1, cmd.ExecuteNonQuery());
+            var dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, "x", DateTime.UtcNow.AddHours(4), [Guid.NewGuid()], [], [Guid.NewGuid()]));
+            Assert.NotNull(dbId);
 
-            cmd.Parameters.Clear();
-            cmd.Parameters.AddWithValue("$Isrc", correctIsrc);
-            cmd.Parameters.AddWithValue("$MusicBrainzRecordingId", correctMbRecId);
-            cmd.Parameters.AddWithValue("$MusicBrainzReleaseId", correctMbRelId);
-            cmd.Parameters.AddWithValue("$MusicBrainzReleaseGroupId", correctMbRelGrpId);
-            cmd.Parameters.AddWithValue("$LastCheck", correctLastCheck);
-            Assert.Equal(1, cmd.ExecuteNonQuery());
+            dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, correctIsrc, correctLastCheck, correctMbRecIds, correctMbRelIds, correctMbRelGrpIds));
+            Assert.NotNull(dbId);
 
-            cmd.Parameters.Clear();
-            cmd.Parameters.AddWithValue("$Isrc", "y");
-            cmd.Parameters.AddWithValue("$MusicBrainzRecordingId", Guid.NewGuid());
-            cmd.Parameters.AddWithValue("$MusicBrainzReleaseId", Guid.NewGuid());
-            cmd.Parameters.AddWithValue("$MusicBrainzReleaseGroupId", DBNull.Value);
-            cmd.Parameters.AddWithValue("$LastCheck", DateTime.UtcNow.AddHours(3));
-            Assert.Equal(1, cmd.ExecuteNonQuery());
+            dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, "y", DateTime.UtcNow.AddHours(3), [Guid.NewGuid()], [Guid.NewGuid()], []));
+            Assert.NotNull(dbId);
 
             Assert.True(db.DeleteIsrcMusicBrainzMapping(new List<long>()));
             var mappings = db.GetIsrcMusicBrainzMapping();

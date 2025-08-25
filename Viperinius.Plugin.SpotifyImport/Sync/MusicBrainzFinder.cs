@@ -50,35 +50,27 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
             var mbReleaseGroups = new HashSet<string>();
             foreach (var mapping in foundIsrcMappings)
             {
-                if (mapping.MusicBrainzRecordingId != null)
-                {
-                    mbRecordings.Add(mapping.MusicBrainzRecordingId.ToString()!);
-                }
-
-                if (mapping.MusicBrainzReleaseId != null)
-                {
-                    mbReleases.Add(mapping.MusicBrainzReleaseId.ToString()!);
-                }
-
-                if (mapping.MusicBrainzReleaseGroupId != null)
-                {
-                    mbReleaseGroups.Add(mapping.MusicBrainzReleaseGroupId.ToString()!);
-                }
+                mbRecordings.UnionWith(mapping.MusicBrainzRecordingIds.Select(r => r.ToString()));
+                mbReleases.UnionWith(mapping.MusicBrainzReleaseIds.Select(r => r.ToString()));
+                mbReleaseGroups.UnionWith(mapping.MusicBrainzReleaseGroupIds.Select(r => r.ToString()));
             }
 
             if (mbRecordings.Count > 0)
             {
-                // there should normally only exist one recording per isrc, so just the first one
-                var directHits = _libraryManager.GetItemList(new MediaBrowser.Controller.Entities.InternalItemsQuery
+                // library manager does not seem to support querying multiple ProviderIds with same key, so every different MB id has to be done in a separate query...
+                foreach (var mbRecording in mbRecordings)
                 {
-                    HasAnyProviderId = new Dictionary<string, string> { { "MusicBrainzTrack", mbRecordings.ElementAt(0) } },
-                    IncludeItemTypes = new[] { BaseItemKind.Audio },
-                    Limit = 1,
-                });
+                    var directHits = _libraryManager.GetItemList(new MediaBrowser.Controller.Entities.InternalItemsQuery
+                    {
+                        HasAnyProviderId = new Dictionary<string, string> { { "MusicBrainzTrack", mbRecording } },
+                        IncludeItemTypes = new[] { BaseItemKind.Audio },
+                        Limit = 1,
+                    });
 
-                if (directHits.Count > 0 && directHits[0] is Audio directHit)
-                {
-                    return directHit;
+                    if (directHits.Count > 0 && directHits[0] is Audio directHit)
+                    {
+                        return directHit;
+                    }
                 }
             }
 

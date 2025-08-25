@@ -94,14 +94,22 @@ namespace Viperinius.Plugin.SpotifyImport.Utils.MusicBrainz
                 yield break;
             }
 
-            var recIsrcs = rec.Isrcs.Distinct();
-            // build one entry per isrc <-> release combination
+            var releases = new HashSet<Guid>();
+            var relGroups = new HashSet<Guid>();
             foreach (var rel in rec.Releases)
             {
-                foreach (var isrc in recIsrcs)
+                releases.Add(rel.Id);
+                if (rel.ReleaseGroup != null)
                 {
-                    yield return new DbIsrcMusicBrainzMapping(-1, isrc.ToUpperInvariant().Replace("-", string.Empty, StringComparison.InvariantCulture), checkedAt, rec.Id, rel.Id, rel.ReleaseGroup?.Id);
+                    relGroups.Add(rel.ReleaseGroup.Id);
                 }
+            }
+
+            var recIsrcs = rec.Isrcs.Distinct();
+            var recordings = new List<Guid> { rec.Id };
+            foreach (var isrc in recIsrcs)
+            {
+                yield return new DbIsrcMusicBrainzMapping(-1, isrc.ToUpperInvariant().Replace("-", string.Empty, StringComparison.InvariantCulture), checkedAt, recordings, releases, relGroups);
             }
         }
     }

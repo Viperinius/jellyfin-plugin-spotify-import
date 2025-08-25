@@ -42,10 +42,5 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
         {
             return InsertProviderTrackMatchCmd;
         }
-
-        public string GetInsertIsrcMusicBrainzCmd()
-        {
-            return InsertIsrcMusicBrainzCmd;
-        }
     }
 }

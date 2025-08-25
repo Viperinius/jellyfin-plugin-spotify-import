@@ -17,7 +17,10 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
             { "ProviderTracks", [("Id", "INTEGER"), ("ProviderId", "TEXT"), ("TrackId", "TEXT"), ("Name", "TEXT"), ("AlbumName", "TEXT"), ("AlbumArtistNames", "TEXT"), ("ArtistNames", "TEXT"), ("Number", "INTEGER"), ("IsrcId", "TEXT")] },
             { "ProviderPlaylistTracks", [("Id", "INTEGER"), ("PlaylistId", "INTEGER"), ("TrackId", "INTEGER"), ("Position", "INTEGER")] },
             { "ProviderTrackMatches", [("Id", "INTEGER"), ("TrackId", "INTEGER"), ("JellyfinMatchId", "TEXT"), ("MatchLevel", "INTEGER"), ("MatchCriteria", "INTEGER")] },
-            { "IsrcMusicBrainzMapping", [("Id", "INTEGER"), ("Isrc", "TEXT"), ("MusicBrainzRecordingId", "TEXT"), ("MusicBrainzReleaseId", "TEXT"), ("MusicBrainzReleaseGroupId", "TEXT"), ("LastCheck", "TEXT")] },
+            { "IsrcMusicBrainzChecks", [("Id", "INTEGER"), ("Isrc", "TEXT"), ("LastCheck", "TEXT")] },
+            { "IsrcMusicBrainzRecordingMapping", [("Id", "INTEGER"), ("Isrc", "TEXT"), ("MusicBrainzRecordingId", "TEXT")] },
+            { "IsrcMusicBrainzReleaseMapping", [("Id", "INTEGER"), ("Isrc", "TEXT"), ("MusicBrainzReleaseId", "TEXT")] },
+            { "IsrcMusicBrainzReleaseGroupMapping", [("Id", "INTEGER"), ("Isrc", "TEXT"), ("MusicBrainzReleaseGroupId", "TEXT")] },
         };
 
         [Fact]
