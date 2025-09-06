@@ -25,6 +25,8 @@ public class PluginConfiguration : BasePluginConfiguration
         SpotifyTotpSecretsUrl = "https://raw.githubusercontent.com/Thereallo1026/spotify-secrets/refs/heads/main/secrets/secretBytes.json";
         Playlists = Array.Empty<TargetPlaylistConfiguration>();
         Users = Array.Empty<TargetUserConfiguration>();
+        SpotifySavedTracksDisplayName = "Liked Songs";
+        SpotifySavedTracksImageUrl = "https://misc.scdn.co/liked-songs/liked-songs-300.jpg";
         ItemMatchCriteriaRaw = (int)(ItemMatchCriteria.TrackName | ItemMatchCriteria.AlbumName | ItemMatchCriteria.AlbumArtists | ItemMatchCriteria.Artists);
         ItemMatchLevel = ItemMatchLevel.Default;
         MaxFuzzyCharDifference = 2;
@@ -70,6 +72,16 @@ public class PluginConfiguration : BasePluginConfiguration
     /// Gets or sets the target users.
     /// </summary>
     public TargetUserConfiguration[] Users { get; set; }
+
+    /// <summary>
+    /// Gets or sets the display name to use when importing saved tracks / liked songs from Spotify.
+    /// </summary>
+    public string SpotifySavedTracksDisplayName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the playlist cover image to use when importing saved tracks / liked songs from Spotify.
+    /// </summary>
+    public string SpotifySavedTracksImageUrl { get; set; }
 
     /// <summary>
     /// Gets the track comparison criteria.

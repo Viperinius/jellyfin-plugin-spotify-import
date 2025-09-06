@@ -36,6 +36,8 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
 
         public override bool IsSetUp { get; protected set; }
 
+        public static string SavedTracksFakePlaylistId => "MyLikedSongs";
+
         public override void SetUpProvider()
         {
             if (string.IsNullOrWhiteSpace(Plugin.Instance?.Configuration.SpotifyClientId) ||
@@ -134,6 +136,11 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 return null;
             }
 
+            if (playlistId == SavedTracksFakePlaylistId)
+            {
+                return await GetSavedTracks(cancellationToken).ConfigureAwait(false);
+            }
+
             FullPlaylist? playlist = null;
 
             try
@@ -198,6 +205,21 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             if (data is FullPlaylist playlist)
             {
                 return playlist.SnapshotId ?? string.Empty;
+            }
+
+            if (data is List<ProviderTrackInfo> tracks)
+            {
+                // see https://stackoverflow.com/a/8094931
+                unchecked
+                {
+                    int hash = 19;
+                    foreach (var track in tracks)
+                    {
+                        hash = (hash * 31) + track.GetHashCode();
+                    }
+
+                    return hash.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                }
             }
 
             return string.Empty;
@@ -294,6 +316,68 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 case ItemType.Episode:
                 default:
                     break;
+            }
+
+            return null;
+        }
+
+        private async Task<ProviderPlaylistInfo?> GetSavedTracks(CancellationToken? cancellationToken = null)
+        {
+            if (!IsSetUp || _spotifyClient == null)
+            {
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(Plugin.Instance?.Configuration.SpotifySavedTracksDisplayName))
+            {
+                _logger.LogError("Invalid display name for saved tracks playlist configured. Please change it in the plugin settings.");
+                return null;
+            }
+
+            Paging<SavedTrack>? savedTracks = null;
+
+            try
+            {
+                savedTracks = await _spotifyClient.Library.GetTracks(cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
+
+                var tracks = new List<ProviderTrackInfo>();
+                await foreach (var track in _spotifyClient.Paginate(savedTracks).ConfigureAwait(false))
+                {
+                    if (cancellationToken?.IsCancellationRequested ?? false)
+                    {
+                        return null;
+                    }
+
+                    var trackInfo = track != null ? GetTrackInfo(track.Track) : null;
+                    if (trackInfo != null)
+                    {
+                        tracks.Add(trackInfo);
+                    }
+                    else if ((Plugin.Instance?.Configuration.EnableVerboseLogging ?? false) && track != null)
+                    {
+                        _logger.LogWarning("Encountered invalid track in Spotify Saved Tracks added at: {AddedAt}", track.AddedAt);
+                    }
+                }
+
+                return new ProviderPlaylistInfo
+                {
+                    Id = SavedTracksFakePlaylistId,
+                    Name = Plugin.Instance!.Configuration.SpotifySavedTracksDisplayName,
+                    ImageUrl = string.IsNullOrWhiteSpace(Plugin.Instance!.Configuration.SpotifySavedTracksImageUrl) ? null : new Uri(Plugin.Instance!.Configuration.SpotifySavedTracksImageUrl),
+                    Description = string.Empty,
+                    OwnerId = string.Empty,
+                    Tracks = tracks,
+                    ProviderName = ProviderName,
+                    State = CreatePlaylistState(tracks),
+                };
+            }
+            catch (APIException e)
+            {
+                _logger.LogError(e, "Failed to get saved tracks of user");
+            }
+            catch (Newtonsoft.Json.JsonException e)
+            {
+                LogApiParseException(e, $"saved tracks", savedTracks);
             }
 
             return null;

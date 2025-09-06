@@ -86,7 +86,11 @@ namespace Viperinius.Plugin.SpotifyImport
                         }
                     }
 
-                    playlist = await GetPlaylist(playlistId, true, cancellationToken).ConfigureAwait(false);
+                    if (playlist.Tracks.Count == 0)
+                    {
+                        playlist = await GetPlaylist(playlistId, true, cancellationToken).ConfigureAwait(false);
+                    }
+
                     if (playlist != null)
                     {
                         if (_dbRepository.UpsertProviderPlaylist(Name, playlist) == null)

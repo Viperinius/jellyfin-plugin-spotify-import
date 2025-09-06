@@ -111,7 +111,12 @@ namespace Viperinius.Plugin.SpotifyImport.Api
             {
                 CodeChallenge = challenge,
                 CodeChallengeMethod = "S256",
-                Scope = new List<string> { Scopes.PlaylistReadCollaborative, Scopes.PlaylistReadPrivate },
+                Scope = new List<string>
+                {
+                    Scopes.PlaylistReadCollaborative,
+                    Scopes.PlaylistReadPrivate,
+                    Scopes.UserLibraryRead,
+                },
                 State = state
             };
 

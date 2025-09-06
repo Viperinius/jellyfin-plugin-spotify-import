@@ -127,6 +127,12 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
 
         protected override async Task<ProviderPlaylistInfo?> GetPlaylist(string playlistId, bool includeTracks, CancellationToken? cancellationToken = null)
         {
+            if (playlistId == SpotifyPlaylistProvider.SavedTracksFakePlaylistId)
+            {
+                // ignore special handling of spotify saved tracks, should be done via SpotifyPlaylistProvider
+                return null;
+            }
+
             var pageLimit = 50;
             var offset = 0;
             var totalTrackCount = pageLimit;
