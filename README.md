@@ -40,7 +40,7 @@ https://codeberg.org/Viperinius/jellyfin-plugins/raw/branch/master/manifest.json
 
 ### Prerequisites
 
-To connect to Spotify, you need to be authenticated. In order to do this, the plugin needs to know a `Client ID` and will ask you for authorisation (needed for reading private or collaborative playlists).
+To connect to Spotify, you need to be authenticated. In order to do this, the plugin needs to know a `Client ID` and will ask you for authorisation (needed for reading private or collaborative playlists and your users' liked songs).
 
 This procedure needs a little bit of setup from your end (basically the same as described in the official [docs](https://developer.spotify.com/documentation/web-api/concepts/apps)):
 1. Head over to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) and sign in
@@ -58,6 +58,7 @@ This procedure needs a little bit of setup from your end (basically the same as 
 After installing the plugin, visit its configuration page and add your Spotify Client ID (save afterwards) and click on `Authorize`. You will be redirected to Spotify to grant access. The plugin requests access to these scopes:
 - Read private playlists
 - Read collaborative playlists
+- Read user library (to get "liked songs" list)
 
 When the authorisation is done, you can continue with the plugin configuration page.
 
@@ -100,6 +101,16 @@ Afterwards, following runs of the import task will include all playlists of this
 > [!IMPORTANT]
 > Since 27th November 2024 any playlists owned / created by Spotify (e.g. `Release Radar`) are no longer accessible using the normal authentication method (client ID + authorisation). The plugin uses a workaround to still be able to import those playlists, but with a caveat:
 > If you want to import such playlists through the `User Configuration`, a Spotify web session cookie needs to be set in the plugin settings, see [below](#setting-spotify-cookie).
+
+#### Liked Songs
+
+You can also import your "liked songs" section as a playlist, but only for the user that was used to create the Spotify authentication token for the plugin. To do this, simply add a new playlist with the following ID as described in [#add-playlist]:
+```
+MyLikedSongs
+```
+
+> [!NOTE]
+> If you've used this plugin prior to version 1.14.0.0, you need to re-authorise in the plugin settings. Otherwise you will see an error in your logs if you try to import liked songs. This happens because the authentication token created by previous versions did not request the right to read the Spotify user library yet.
 
 #### Setting Spotify Cookie
 
