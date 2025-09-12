@@ -47,22 +47,36 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
             var foundIsrcMappings = _dbRepository.GetIsrcMusicBrainzMapping(isrc: providerTrackInfo.IsrcId, hasAnyMbIdsSet: true);
             var mbRecordings = new HashSet<string>();
             var mbReleases = new HashSet<string>();
+            var mbTracks = new HashSet<string>();
             var mbReleaseGroups = new HashSet<string>();
             foreach (var mapping in foundIsrcMappings)
             {
                 mbRecordings.UnionWith(mapping.MusicBrainzRecordingIds.Select(r => r.ToString()));
                 mbReleases.UnionWith(mapping.MusicBrainzReleaseIds.Select(r => r.ToString()));
+                mbTracks.UnionWith(mapping.MusicBrainzTrackIds.Select(t => t.ToString()));
                 mbReleaseGroups.UnionWith(mapping.MusicBrainzReleaseGroupIds.Select(r => r.ToString()));
             }
 
-            if (mbRecordings.Count > 0)
+            if (mbRecordings.Count > 0 || mbTracks.Count > 0)
             {
                 // library manager does not seem to support querying multiple ProviderIds with same key, so every different MB id has to be done in a separate query...
-                foreach (var mbRecording in mbRecordings)
+                // to speed this up in some way, try to fill query with one of each "direct hit" ProviderId types if available
+                for (int ii = 0; ii < Math.Max(mbRecordings.Count, mbTracks.Count); ii++)
                 {
+                    var idDict = new Dictionary<string, string>();
+                    if (ii < mbRecordings.Count)
+                    {
+                        idDict.Add("MusicBrainzRecording", mbRecordings.ElementAt(ii));
+                    }
+
+                    if (ii < mbTracks.Count)
+                    {
+                        idDict.Add("MusicBrainzTrack", mbTracks.ElementAt(ii));
+                    }
+
                     var directHits = _libraryManager.GetItemList(new MediaBrowser.Controller.Entities.InternalItemsQuery
                     {
-                        HasAnyProviderId = new Dictionary<string, string> { { "MusicBrainzTrack", mbRecording } },
+                        HasAnyProviderId = idDict,
                         IncludeItemTypes = new[] { BaseItemKind.Audio },
                         Limit = 1,
                     });

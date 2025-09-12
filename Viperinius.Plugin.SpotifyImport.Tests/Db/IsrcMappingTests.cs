@@ -19,6 +19,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
             var correctIsrc = "a4iotbaSD";
             var correctMbRecIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
             var correctMbRelIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+            var correctMbTrackIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
             var correctMbRelGrpIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
             var correctLastCheck = DateTime.UtcNow;
 
@@ -30,6 +31,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
                 isrc: correctIsrc,
                 mbRecordingIds: correctMbRecIds,
                 mbReleaseIds: correctMbRelIds,
+                mbTrackIds: correctMbTrackIds,
                 mbReleaseGroupIds: correctMbRelGrpIds,
                 lastCheck: correctLastCheck
             ));
@@ -77,6 +79,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
                     Assert.Equal(correctIsrc, reader.GetString(1));
                     var guid = reader.GetGuid(2);
                     Assert.Equal(correctMbRelIds.IndexOf(guid), index - 1);
+                    guid = reader.GetGuid(3);
+                    Assert.Equal(correctMbTrackIds.IndexOf(guid), index - 1);
                 }
             }
 
@@ -105,19 +109,20 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
             var correctIsrc = "a4iotbaSD";
             var correctMbRecIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
             var correctMbRelIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+            var correctMbTrackIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
             var correctMbRelGrpIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
             var correctLastCheck = DateTime.UtcNow.AddMinutes(-1);
 
             using var db = DbRepositoryWrapper.GetInstance();
             db.InitDb();
 
-            var dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, "x", DateTime.UtcNow.AddHours(4), [Guid.NewGuid()], [], [Guid.NewGuid()]));
+            var dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, "x", DateTime.UtcNow.AddHours(4), [Guid.NewGuid()], [], [], [Guid.NewGuid()]));
             Assert.NotNull(dbId);
 
-            dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, correctIsrc, correctLastCheck, correctMbRecIds, correctMbRelIds, correctMbRelGrpIds));
+            dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, correctIsrc, correctLastCheck, correctMbRecIds, correctMbRelIds, correctMbTrackIds, correctMbRelGrpIds));
             Assert.NotNull(dbId);
 
-            dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, "y", DateTime.UtcNow.AddHours(3), [Guid.NewGuid()], [Guid.NewGuid()], []));
+            dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, "y", DateTime.UtcNow.AddHours(3), [Guid.NewGuid()], [Guid.NewGuid()], [Guid.NewGuid()], []));
             Assert.NotNull(dbId);
 
             var mappings = db.GetIsrcMusicBrainzMapping();
@@ -132,6 +137,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
             Assert.Equal(correctIsrc, mappings.ElementAt(0).Isrc);
             Assert.Equal(correctMbRecIds, mappings.ElementAt(0).MusicBrainzRecordingIds);
             Assert.Equal(correctMbRelIds, mappings.ElementAt(0).MusicBrainzReleaseIds);
+            Assert.Equal(correctMbTrackIds, mappings.ElementAt(0).MusicBrainzTrackIds);
             Assert.Equal(correctMbRelGrpIds, mappings.ElementAt(0).MusicBrainzReleaseGroupIds);
             Assert.Equal(correctLastCheck, mappings.ElementAt(0).LastCheck);
         }
@@ -142,19 +148,20 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
             var correctIsrc = "a4iotbaSD";
             var correctMbRecIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
             var correctMbRelIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+            var correctMbTrackIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
             var correctMbRelGrpIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
             var correctLastCheck = DateTime.UtcNow.AddMinutes(-1);
 
             using var db = DbRepositoryWrapper.GetInstance();
             db.InitDb();
 
-            var dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, "x", DateTime.UtcNow.AddHours(4), [Guid.NewGuid()], [], [Guid.NewGuid()]));
+            var dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, "x", DateTime.UtcNow.AddHours(4), [Guid.NewGuid()], [], [], [Guid.NewGuid()]));
             Assert.NotNull(dbId);
 
-            dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, correctIsrc, correctLastCheck, correctMbRecIds, correctMbRelIds, correctMbRelGrpIds));
+            dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, correctIsrc, correctLastCheck, correctMbRecIds, correctMbRelIds, correctMbTrackIds, correctMbRelGrpIds));
             Assert.NotNull(dbId);
 
-            dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, "y", DateTime.UtcNow.AddHours(3), [Guid.NewGuid()], [Guid.NewGuid()], []));
+            dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, "y", DateTime.UtcNow.AddHours(3), [Guid.NewGuid()], [Guid.NewGuid()], [Guid.NewGuid()], []));
             Assert.NotNull(dbId);
 
             Assert.True(db.DeleteIsrcMusicBrainzMapping(new List<long>()));

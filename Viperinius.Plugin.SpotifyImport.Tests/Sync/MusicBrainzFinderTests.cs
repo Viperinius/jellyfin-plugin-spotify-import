@@ -97,7 +97,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Sync
             using var db = DbRepositoryWrapper.GetInstance();
             db.InitDb();
 
-            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, "D)(RASUDv378fv", DateTime.UtcNow, [Guid.NewGuid()], [Guid.NewGuid()], [Guid.NewGuid()]));
+            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, "D)(RASUDv378fv", DateTime.UtcNow, [Guid.NewGuid()], [Guid.NewGuid()], [Guid.NewGuid()], [Guid.NewGuid()]));
 
             var finder = new MusicBrainzFinder(libManagerMock, db);
             Assert.True(finder.AnyLibraryUsesMusicBrainz);
@@ -130,7 +130,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Sync
             using var db = DbRepositoryWrapper.GetInstance();
             db.InitDb();
 
-            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, correctProviderTrackInfo.IsrcId, DateTime.UtcNow, [], [], []));
+            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, correctProviderTrackInfo.IsrcId, DateTime.UtcNow, [], [], [], []));
 
             var finder = new MusicBrainzFinder(libManagerMock, db);
             Assert.True(finder.AnyLibraryUsesMusicBrainz);
@@ -164,9 +164,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Sync
             using var db = DbRepositoryWrapper.GetInstance();
             db.InitDb();
 
-            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, "D)(RASUDv378fv", DateTime.UtcNow, [Guid.NewGuid()], [Guid.NewGuid()], [Guid.NewGuid()]));
-            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, correctProviderTrackInfo.IsrcId, DateTime.UtcNow, [Guid.NewGuid()], [correctMbReleaseId], [Guid.NewGuid()]));
-            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, correctProviderTrackInfo.IsrcId, DateTime.UtcNow, [], [], []));
+            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, "D)(RASUDv378fv", DateTime.UtcNow, [Guid.NewGuid()], [Guid.NewGuid()], [Guid.NewGuid()], [Guid.NewGuid()]));
+            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, correctProviderTrackInfo.IsrcId, DateTime.UtcNow, [Guid.NewGuid()], [correctMbReleaseId], [Guid.NewGuid()], [Guid.NewGuid()]));
+            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, correctProviderTrackInfo.IsrcId, DateTime.UtcNow, [], [], [], []));
 
             var finder = new MusicBrainzFinder(libManagerMock, db);
             Assert.True(finder.AnyLibraryUsesMusicBrainz);
@@ -189,7 +189,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Sync
         }
 
         [Fact]
-        public void FindTrackOkDirectHit()
+        public void FindTrackOkDirectHitRecording()
         {
             TrackHelper.SetValidPluginInstance();
             Plugin.Instance!.Configuration.EnabledTrackMatchFindersRaw = (int)EnabledTrackMatchFinders.MusicBrainz;
@@ -214,9 +214,61 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Sync
             using var db = DbRepositoryWrapper.GetInstance();
             db.InitDb();
 
-            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, "D)(RASUDv378fv", DateTime.UtcNow, [Guid.NewGuid()], [Guid.NewGuid()], [Guid.NewGuid()]));
-            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, correctProviderTrackInfo.IsrcId, DateTime.UtcNow, [correctMbRecordingId], [Guid.NewGuid()], [Guid.NewGuid()]));
-            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, correctProviderTrackInfo.IsrcId, DateTime.UtcNow, [], [], []));
+            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, "D)(RASUDv378fv", DateTime.UtcNow, [Guid.NewGuid()], [Guid.NewGuid()], [Guid.NewGuid()], [Guid.NewGuid()]));
+            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, correctProviderTrackInfo.IsrcId, DateTime.UtcNow, [correctMbRecordingId], [Guid.NewGuid()], [Guid.NewGuid()], [Guid.NewGuid()]));
+            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, correctProviderTrackInfo.IsrcId, DateTime.UtcNow, [], [], [], []));
+
+            var finder = new MusicBrainzFinder(libManagerMock, db);
+            Assert.True(finder.AnyLibraryUsesMusicBrainz);
+
+            libManagerMock
+                .GetItemList(Arg.Any<MediaBrowser.Controller.Entities.InternalItemsQuery>())
+                .Returns(info =>
+                {
+                    var hasAnyProvIds = info.ArgAt<MediaBrowser.Controller.Entities.InternalItemsQuery>(0).HasAnyProviderId;
+                    if (hasAnyProvIds?.ContainsKey("MusicBrainzRecording") ?? false)
+                    {
+                        return [new MediaBrowser.Controller.Entities.Audio.Audio { ProviderIds = hasAnyProvIds }];
+                    }
+
+                    return [];
+                });
+
+            var result = finder.FindTrack(correctProviderId, correctProviderTrackInfo);
+            Assert.NotNull(result);
+            Assert.True(result.ProviderIds.ContainsKey("MusicBrainzRecording"));
+            Assert.Equal(correctMbRecordingId.ToString(), result.ProviderIds["MusicBrainzRecording"]);
+        }
+
+        [Fact]
+        public void FindTrackOkDirectHitTrack()
+        {
+            TrackHelper.SetValidPluginInstance();
+            Plugin.Instance!.Configuration.EnabledTrackMatchFindersRaw = (int)EnabledTrackMatchFinders.MusicBrainz;
+
+            var correctProviderId = "asdiue8va";
+            var correctProviderTrackInfo = new ProviderTrackInfo
+            {
+                Name = "48agWO$ga",
+                AlbumName = "3948gasdaef30q9",
+                ArtistNames = new List<string> { "d38aSDAS" },
+                AlbumArtistNames = new List<string> { "oeif49" },
+                TrackNumber = 1,
+                IsrcId = "aeioda98r",
+            };
+            var correctMbTrackId = Guid.NewGuid();
+
+            var libManagerMock = Substitute.For<MediaBrowser.Controller.Library.ILibraryManager>();
+            libManagerMock
+                .GetItemList(Arg.Any<MediaBrowser.Controller.Entities.InternalItemsQuery>())
+                .Returns(_ => [new MediaBrowser.Controller.Entities.Audio.Audio()]);
+
+            using var db = DbRepositoryWrapper.GetInstance();
+            db.InitDb();
+
+            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, "D)(RASUDv378fv", DateTime.UtcNow, [Guid.NewGuid()], [Guid.NewGuid()], [Guid.NewGuid()], [Guid.NewGuid()]));
+            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, correctProviderTrackInfo.IsrcId, DateTime.UtcNow, [Guid.NewGuid()], [Guid.NewGuid()], [correctMbTrackId], [Guid.NewGuid()]));
+            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, correctProviderTrackInfo.IsrcId, DateTime.UtcNow, [], [], [], []));
 
             var finder = new MusicBrainzFinder(libManagerMock, db);
             Assert.True(finder.AnyLibraryUsesMusicBrainz);
@@ -237,7 +289,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Sync
             var result = finder.FindTrack(correctProviderId, correctProviderTrackInfo);
             Assert.NotNull(result);
             Assert.True(result.ProviderIds.ContainsKey("MusicBrainzTrack"));
-            Assert.Equal(correctMbRecordingId.ToString(), result.ProviderIds["MusicBrainzTrack"]);
+            Assert.Equal(correctMbTrackId.ToString(), result.ProviderIds["MusicBrainzTrack"]);
         }
 
         [Fact]
@@ -266,9 +318,9 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Sync
             using var db = DbRepositoryWrapper.GetInstance();
             db.InitDb();
 
-            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, "D)(RASUDv378fv", DateTime.UtcNow, [Guid.NewGuid()], [Guid.NewGuid()], [Guid.NewGuid()]));
-            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, correctProviderTrackInfo.IsrcId, DateTime.UtcNow, [Guid.NewGuid()], [correctMbReleaseId], [Guid.NewGuid()]));
-            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, correctProviderTrackInfo.IsrcId, DateTime.UtcNow, [], [], []));
+            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, "D)(RASUDv378fv", DateTime.UtcNow, [Guid.NewGuid()], [Guid.NewGuid()], [Guid.NewGuid()], [Guid.NewGuid()]));
+            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, correctProviderTrackInfo.IsrcId, DateTime.UtcNow, [Guid.NewGuid()], [correctMbReleaseId], [Guid.NewGuid()], [Guid.NewGuid()]));
+            db.UpsertIsrcMusicBrainzMapping(new SpotifyImport.Utils.DbIsrcMusicBrainzMapping(-1, correctProviderTrackInfo.IsrcId, DateTime.UtcNow, [], [], [], []));
 
             var finder = new MusicBrainzFinder(libManagerMock, db);
             Assert.True(finder.AnyLibraryUsesMusicBrainz);

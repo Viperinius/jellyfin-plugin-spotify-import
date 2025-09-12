@@ -96,6 +96,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils.MusicBrainz
             }
 
             var releases = new HashSet<Guid>();
+            var tracks = new HashSet<Guid>();
             var relGroups = new HashSet<Guid>();
             foreach (var rel in rec.Releases)
             {
@@ -104,13 +105,19 @@ namespace Viperinius.Plugin.SpotifyImport.Utils.MusicBrainz
                 {
                     relGroups.Add(rel.ReleaseGroup.Id);
                 }
+
+                // there seems to always be only one track id contained here in practice, so just use the first one
+                if (rel.Media?.Count > 0 && rel.Media[0].Tracks?.Count > 0)
+                {
+                    tracks.Add(rel.Media[0].Tracks![0].Id);
+                }
             }
 
             var recIsrcs = rec.Isrcs.Distinct();
             var recordings = new List<Guid> { rec.Id };
             foreach (var isrc in recIsrcs)
             {
-                yield return new DbIsrcMusicBrainzMapping(-1, isrc.ToUpperInvariant().Replace("-", string.Empty, StringComparison.InvariantCulture), checkedAt, recordings, releases, relGroups);
+                yield return new DbIsrcMusicBrainzMapping(-1, isrc.ToUpperInvariant().Replace("-", string.Empty, StringComparison.InvariantCulture), checkedAt, recordings, releases, tracks, relGroups);
             }
         }
     }

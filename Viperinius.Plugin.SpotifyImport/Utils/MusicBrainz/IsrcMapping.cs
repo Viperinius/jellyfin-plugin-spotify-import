@@ -65,7 +65,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils.MusicBrainz
                 _dbRepository.DeleteIsrcMusicBrainzMapping(existingUnfinishedEntries.Where(e => e.Isrc == notFoundIsrc).Select(m => m.Id).ToList());
 
                 // insert placeholder
-                if (_dbRepository.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, notFoundIsrc, checkedAt, new List<Guid>(), new List<Guid>(), new List<Guid>())) == null)
+                if (_dbRepository.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, notFoundIsrc, checkedAt, new List<Guid>(), new List<Guid>(), new List<Guid>(), new List<Guid>())) == null)
                 {
                     _logger.LogWarning("Failed to save placeholder ISRC<->MusicBrainz mapping to DB for ISRC {Isrc}", notFoundIsrc);
                 }

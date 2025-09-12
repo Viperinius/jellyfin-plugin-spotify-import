@@ -8,12 +8,13 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
 {
     internal class DbIsrcMusicBrainzMapping
     {
-        public DbIsrcMusicBrainzMapping(long id, string isrc, DateTime lastCheck, IEnumerable<Guid> mbRecordingIds, IEnumerable<Guid> mbReleaseIds, IEnumerable<Guid> mbReleaseGroupIds)
+        public DbIsrcMusicBrainzMapping(long id, string isrc, DateTime lastCheck, IEnumerable<Guid> mbRecordingIds, IEnumerable<Guid> mbReleaseIds, IEnumerable<Guid> mbTrackIds, IEnumerable<Guid> mbReleaseGroupIds)
         {
             Id = id;
             Isrc = isrc;
             MusicBrainzRecordingIds = mbRecordingIds.ToList();
             MusicBrainzReleaseIds = mbReleaseIds.ToList();
+            MusicBrainzTrackIds = mbTrackIds.ToList();
             MusicBrainzReleaseGroupIds = mbReleaseGroupIds.ToList();
             LastCheck = lastCheck;
         }
@@ -25,6 +26,8 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
         public List<Guid> MusicBrainzRecordingIds { get; set; }
 
         public List<Guid> MusicBrainzReleaseIds { get; set; }
+
+        public List<Guid> MusicBrainzTrackIds { get; set; }
 
         public List<Guid> MusicBrainzReleaseGroupIds { get; set; }
 

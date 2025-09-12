@@ -92,6 +92,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
                 Id INTEGER PRIMARY KEY,
                 Isrc TEXT NOT NULL,
                 MusicBrainzReleaseId TEXT NOT NULL,
+                MusicBrainzTrackId TEXT NOT NULL,
                 FOREIGN KEY (Isrc) REFERENCES {TableIsrcMusicBrainzChecksName}(Isrc) ON DELETE CASCADE
             )",
             $@"CREATE TABLE IF NOT EXISTS {TableIsrcMusicBrainzRelGroupName} (
@@ -423,6 +424,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
                 // lookup associated MB ids
                 var recordings = new List<Guid>();
                 var releases = new List<Guid>();
+                var tracks = new List<Guid>();
                 var releaseGroups = new List<Guid>();
 
                 innerCmd.Parameters.Clear();
@@ -448,7 +450,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
                 }
 
                 innerCmd.Parameters.Clear();
-                innerCmd.CommandText = $"SELECT MusicBrainzReleaseId FROM {TableIsrcMusicBrainzReleaseName}";
+                innerCmd.CommandText = $"SELECT MusicBrainzReleaseId, MusicBrainzTrackId FROM {TableIsrcMusicBrainzReleaseName}";
                 innerWhere = CreateBasicWhere(innerCmd, readIsrc);
                 if (hasAnyMbIdsSet != null)
                 {
@@ -465,6 +467,12 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
                         if (Guid.TryParse(mbReleaseIdRaw, out var tmpGuid))
                         {
                             releases.Add(tmpGuid);
+                        }
+
+                        var mbTrackIdRaw = innerReader.GetString(1);
+                        if (Guid.TryParse(mbTrackIdRaw, out tmpGuid))
+                        {
+                            tracks.Add(tmpGuid);
                         }
                     }
                 }
@@ -491,12 +499,12 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
                     }
                 }
 
-                if (hasAnyMbIdsSet != null && hasAnyMbIdsSet.Value && recordings.Count == 0 && releases.Count == 0 && releaseGroups.Count == 0)
+                if (hasAnyMbIdsSet != null && hasAnyMbIdsSet.Value && recordings.Count == 0 && releases.Count == 0 && tracks.Count == 0 && releaseGroups.Count == 0)
                 {
                     yield break;
                 }
 
-                yield return new DbIsrcMusicBrainzMapping(id, readIsrc, lastCheck, recordings, releases, releaseGroups);
+                yield return new DbIsrcMusicBrainzMapping(id, readIsrc, lastCheck, recordings, releases, tracks, releaseGroups);
             }
         }
 
@@ -516,13 +524,16 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
                 upsertCmd.Parameters.AddWithValue($"$MusicBrainzRecordingId{ii}", recording);
             }
 
-            for (int ii = 0; ii < mapping.MusicBrainzReleaseIds.Count; ii++)
+            // this assumes number of releases should always be = number of track ids, otherwise the "excess" values will be ignored
+            for (int ii = 0; ii < Math.Min(mapping.MusicBrainzReleaseIds.Count, mapping.MusicBrainzTrackIds.Count); ii++)
             {
                 var release = mapping.MusicBrainzReleaseIds[ii];
+                var track = mapping.MusicBrainzTrackIds[ii];
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities --> only variable is ii
-                upsertCmd.CommandText += $"; INSERT INTO {TableIsrcMusicBrainzReleaseName} (Isrc, MusicBrainzReleaseId) VALUES ($Isrc, $MusicBrainzReleaseId{ii})";
+                upsertCmd.CommandText += $"; INSERT INTO {TableIsrcMusicBrainzReleaseName} (Isrc, MusicBrainzReleaseId, MusicBrainzTrackId) VALUES ($Isrc, $MusicBrainzReleaseId{ii}, $MusicBrainzTrackId{ii})";
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
                 upsertCmd.Parameters.AddWithValue($"$MusicBrainzReleaseId{ii}", release);
+                upsertCmd.Parameters.AddWithValue($"$MusicBrainzTrackId{ii}", track);
             }
 
             for (int ii = 0; ii < mapping.MusicBrainzReleaseGroupIds.Count; ii++)

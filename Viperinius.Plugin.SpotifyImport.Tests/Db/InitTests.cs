@@ -19,7 +19,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
             { "ProviderTrackMatches", [("Id", "INTEGER"), ("TrackId", "INTEGER"), ("JellyfinMatchId", "TEXT"), ("MatchLevel", "INTEGER"), ("MatchCriteria", "INTEGER")] },
             { "IsrcMusicBrainzChecks", [("Id", "INTEGER"), ("Isrc", "TEXT"), ("LastCheck", "TEXT")] },
             { "IsrcMusicBrainzRecordingMapping", [("Id", "INTEGER"), ("Isrc", "TEXT"), ("MusicBrainzRecordingId", "TEXT")] },
-            { "IsrcMusicBrainzReleaseMapping", [("Id", "INTEGER"), ("Isrc", "TEXT"), ("MusicBrainzReleaseId", "TEXT")] },
+            { "IsrcMusicBrainzReleaseMapping", [("Id", "INTEGER"), ("Isrc", "TEXT"), ("MusicBrainzReleaseId", "TEXT"), ("MusicBrainzTrackId", "TEXT")] },
             { "IsrcMusicBrainzReleaseGroupMapping", [("Id", "INTEGER"), ("Isrc", "TEXT"), ("MusicBrainzReleaseGroupId", "TEXT")] },
         };
 
