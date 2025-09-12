@@ -31,7 +31,6 @@ namespace Viperinius.Plugin.SpotifyImport
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
-        [JsonIgnore]
         public string Id { get; set; }
 
         /// <summary>

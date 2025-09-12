@@ -152,7 +152,8 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
             var foundPlaylists = spotify.Playlists.Concat(spotifyAlt.Playlists).ToList();
 
             // update direct mappings between ISRC and MusicBrainz, if used
-            if (Utils.MusicBrainz.MusicBrainzHelper.IsServerUsingMusicBrainz(_libraryManager))
+            if (Utils.MusicBrainz.MusicBrainzHelper.IsServerUsingMusicBrainz(_libraryManager) &&
+                Plugin.Instance.Configuration.EnabledTrackMatchFinders.HasFlag(Sync.EnabledTrackMatchFinders.MusicBrainz))
             {
                 using var isrcMapper = new Utils.MusicBrainz.IsrcMapping(_logger, db, new Utils.MusicBrainz.MusicBrainzHelper());
                 await isrcMapper.UpdateIsrcMusicBrainzMappings(foundPlaylists, cancellationToken).ConfigureAwait(false);

@@ -220,11 +220,12 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
             if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
             {
                 _logger.LogInformation(
-                    "Now processing provider track {Name} [{Album}][{AlbumArtist}][{Artist}]",
+                    "Now processing provider track {Name} [{Album}][{AlbumArtist}][{Artist}] (Id: {Id})",
                     providerTrackInfo.Name,
                     providerTrackInfo.AlbumName,
                     string.Join("#", providerTrackInfo.AlbumArtistNames),
-                    string.Join("#", providerTrackInfo.ArtistNames));
+                    string.Join("#", providerTrackInfo.ArtistNames),
+                    providerTrackInfo.Id);
             }
 
             // 1. check cache
