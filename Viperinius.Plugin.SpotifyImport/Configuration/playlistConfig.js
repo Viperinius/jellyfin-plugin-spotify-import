@@ -246,9 +246,10 @@ export default function (view) {
             }
 
             document.querySelector('#SpotifyAuthRedirectUri').innerText = redirectUrl.href;
-            if (config.SpotifyAuthToken && 'CreatedAt' in config.SpotifyAuthToken) {
+            if (config.SpotifyAuthToken && 'CreatedAt' in config.SpotifyAuthToken && 'Scope' in config.SpotifyAuthToken) {
                 document.querySelector('#authSpotifyAlreadyDesc').classList.remove('hide');
                 document.querySelector('#authSpotifyCreatedAt').innerText = config.SpotifyAuthToken['CreatedAt'].split('T')[0];
+                document.querySelector('#authSpotifyScopes').innerText = config.SpotifyAuthToken['Scope'];
             }
 
             document.querySelector('#EnableVerboseLogging').checked = config.EnableVerboseLogging;
