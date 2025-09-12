@@ -68,7 +68,7 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
 
                     if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                     {
-                        _logger.LogInformation("> Found matching album {Name} {Id}", album.Name, album.Id);
+                        _logger.LogInformation(">> Found matching album {Name} {Id}", album.Name, album.Id);
                     }
 
                     if (!CheckAlbumArtist(album, providerTrackInfo))
@@ -79,7 +79,7 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
 
                     if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                     {
-                        _logger.LogInformation("> Album artists ok");
+                        _logger.LogInformation(">> Album artists ok");
                     }
 
                     var tracks = GetTrack(album, providerTrackInfo);
@@ -207,7 +207,7 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
             {
                 if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                 {
-                    _logger.LogInformation("> Reached end of album list (has {Count} entries)", albums.Count());
+                    _logger.LogInformation(">> Reached end of album list (has {Count} entries)", albums.Count());
                 }
 
                 nextAlbumIndex = -1;
@@ -227,7 +227,7 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
                     if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                     {
                         _logger.LogInformation(
-                            "> Album did not match: {JName} [Jellyfin, {Id}], {PName} [Provider]",
+                            ">> Album did not match: {JName} [Jellyfin, {Id}], {PName} [Provider]",
                             album.Name,
                             album.Id,
                             providerTrackInfo.AlbumName);
@@ -247,7 +247,7 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
                 if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                 {
                     _logger.LogInformation(
-                        ">> Checking server track {Name} [{Album}][{AlbumArtist}][{Artist}]",
+                        ">>> Checking server track {Name} [{Album}][{AlbumArtist}][{Artist}]",
                         item.Name,
                         album.Name,
                         string.Join("#", item.AlbumArtists),
@@ -269,7 +269,7 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
                         level = (ItemMatchLevel)checkResult.MatchedLevel;
                         if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                         {
-                            _logger.LogInformation("> Found matching potential track {Name} {Id}", item.Name, item.Id);
+                            _logger.LogInformation(">>> Found matching potential track {Name} {Id}", item.Name, item.Id);
                         }
                     }
                 }

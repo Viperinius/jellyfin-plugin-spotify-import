@@ -38,6 +38,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils.MusicBrainz
                     { "MusicBrainzReleaseGroup", string.Empty },
                     { "MusicBrainzAlbum", string.Empty },
                     { "MusicBrainzTrack", string.Empty },
+                    { "MusicBrainzRecording", string.Empty },
                 },
                 IncludeItemTypes = new[] { BaseItemKind.MusicArtist, BaseItemKind.MusicAlbum, BaseItemKind.Audio },
                 Limit = 1,

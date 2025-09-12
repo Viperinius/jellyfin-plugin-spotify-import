@@ -491,6 +491,11 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
                     }
                 }
 
+                if (hasAnyMbIdsSet != null && hasAnyMbIdsSet.Value && recordings.Count == 0 && releases.Count == 0 && releaseGroups.Count == 0)
+                {
+                    yield break;
+                }
+
                 yield return new DbIsrcMusicBrainzMapping(id, readIsrc, lastCheck, recordings, releases, releaseGroups);
             }
         }
