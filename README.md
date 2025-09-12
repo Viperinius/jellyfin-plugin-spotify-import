@@ -131,6 +131,8 @@ If you want to change this or want to let it run immediately, head to the schedu
 
 ### Track match tweaking
 
+#### Raw name matching
+
 By default, the plugin will accept a Jellyfin track as equal to a Spotify track if these conditions are met:
 - Same track name
 - Same album name
@@ -152,6 +154,15 @@ Example with max. differences set to 2:
 | abcd | abcd | &check; |
 | Aabde | abcde | &check; |
 | Aabd | abcde | &cross; |
+
+#### MusicBrainz matching
+
+If you use MusicBrainz as metadata provider on the server, you can enable an additional method of finding matches. In the configuration section `Additional matching methods` enable the option for `MusicBrainz IDs and the track ISRC`.
+With this enabled, this method will be checked before falling back to the default "raw name matching". This matcher tries to find the correct Jellyfin track using the respective MusicBrainz IDs for it.
+Such a match will be accepted regardless of any differences in track title etc.
+> Note: For this to work, the track obviously has to be part of the MusicBrainz database and also has to have its ISRC (a global identifier for a recording) set. The ISRC is used to find the correct MusicBrainz item for a Spotify track.
+
+After enabling this method (and especially if you try to import multiple thousands of tracks), the next import might take a bit longer because the plugin will build an internal cache for ISRC <-> MusicBrainz ID relationships. If a track is not found based on its ISRC, the plugin will try again after a few weeks to check if it got added to the MusicBrainz database.
 
 ### Track match forcing
 
