@@ -35,11 +35,11 @@ namespace Viperinius.Plugin.SpotifyImport.Utils.MusicBrainz
             var retryCheckDate = checkedAt.AddDays(-_mbRetryDays);
 
             // query db for items that have mb ids set or lastcheck was NOT over x days ago
-            var existingDoneEntries = _dbRepository.GetIsrcMusicBrainzMapping(hasAnyMbIdsSet: true, minLastCheck: retryCheckDate, logicalAnd: false).ToList();
+            var existingDoneEntries = _dbRepository.GetIsrcMusicBrainzMapping(hasAnyMbIdsSet: true, minLastCheck: retryCheckDate, logicalAnd: false, returnMbIdLists: false).ToList();
             isrcs.ExceptWith(existingDoneEntries.Select(m => m.Isrc));
 
             // query db for items without mb ids and lastcheck over x days ago
-            var existingUnfinishedEntries = _dbRepository.GetIsrcMusicBrainzMapping(hasAnyMbIdsSet: false, maxLastCheck: retryCheckDate).ToList();
+            var existingUnfinishedEntries = _dbRepository.GetIsrcMusicBrainzMapping(hasAnyMbIdsSet: false, maxLastCheck: retryCheckDate, returnMbIdLists: false).ToList();
             var newDoneIsrcs = new HashSet<string>();
 
             await foreach (var release in _musicBrainzHelper.QueryByIsrc(isrcs, cancellationToken ?? CancellationToken.None).ConfigureAwait(false))

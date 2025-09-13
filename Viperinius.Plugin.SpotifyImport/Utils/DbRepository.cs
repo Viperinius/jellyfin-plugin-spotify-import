@@ -375,7 +375,8 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             bool? hasAnyMbIdsSet = null,
             DateTime? minLastCheck = null,
             DateTime? maxLastCheck = null,
-            bool? logicalAnd = null)
+            bool? logicalAnd = null,
+            bool returnMbIdLists = true)
         {
             var logicalOp = (logicalAnd == null || (bool)logicalAnd) ? " AND " : " OR ";
             using var selectCmd = Connection.CreateCommand();
@@ -392,7 +393,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             }
 
             // lookup isrc
-            selectCmd.CommandText = $"SELECT Id, Isrc, LastCheck FROM {TableIsrcMusicBrainzChecksName}";
+            selectCmd.CommandText = $"SELECT Id, Isrc, LastCheck FROM {TableIsrcMusicBrainzChecksName} c";
             var where = CreateBasicWhere(selectCmd, isrc);
             if (minLastCheck != null)
             {
@@ -404,6 +405,17 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             {
                 where.Add("LastCheck <= $MaxLastCheck");
                 selectCmd.Parameters.AddWithValue("$MaxLastCheck", maxLastCheck.Value.ToString("s"));
+            }
+
+            if (hasAnyMbIdsSet != null)
+            {
+                var nestedWhere = new List<string>
+                {
+                    $"{(!hasAnyMbIdsSet.Value ? "NOT " : string.Empty)}EXISTS(SELECT 1 FROM {TableIsrcMusicBrainzRecordingName} WHERE Isrc = c.Isrc)",
+                    $"{(!hasAnyMbIdsSet.Value ? "NOT " : string.Empty)}EXISTS(SELECT 1 FROM {TableIsrcMusicBrainzReleaseName} WHERE Isrc = c.Isrc)",
+                    $"{(!hasAnyMbIdsSet.Value ? "NOT " : string.Empty)}EXISTS(SELECT 1 FROM {TableIsrcMusicBrainzRelGroupName} WHERE Isrc = c.Isrc)",
+                };
+                where.Add("(" + string.Join(hasAnyMbIdsSet.Value ? " OR " : " AND ", nestedWhere) + ")");
             }
 
             if (where.Count > 0)
@@ -427,81 +439,67 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
                 var tracks = new List<Guid>();
                 var releaseGroups = new List<Guid>();
 
-                innerCmd.Parameters.Clear();
-                innerCmd.CommandText = $"SELECT MusicBrainzRecordingId FROM {TableIsrcMusicBrainzRecordingName}";
-                var innerWhere = CreateBasicWhere(innerCmd, readIsrc);
-                if (hasAnyMbIdsSet != null)
+                if (returnMbIdLists)
                 {
-                    innerWhere.Add($"MusicBrainzRecordingId IS {(hasAnyMbIdsSet.Value ? "NOT" : string.Empty)} NULL");
-                }
+                    innerCmd.Parameters.Clear();
+                    innerCmd.CommandText = $"SELECT MusicBrainzRecordingId FROM {TableIsrcMusicBrainzRecordingName}";
+                    var innerWhere = CreateBasicWhere(innerCmd, readIsrc);
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities --> innerWhere, logicalOp only contain pre-defined strings
-                innerCmd.CommandText += $" WHERE {string.Join(logicalOp, innerWhere)}";
+                    innerCmd.CommandText += $" WHERE {string.Join(logicalOp, innerWhere)}";
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
-                {
-                    using var innerReader = innerCmd.ExecuteReader();
-                    while (innerReader.Read())
                     {
-                        var mbRecordingIdRaw = innerReader.GetString(0);
-                        if (Guid.TryParse(mbRecordingIdRaw, out var tmpGuid))
+                        using var innerReader = innerCmd.ExecuteReader();
+                        while (innerReader.Read())
                         {
-                            recordings.Add(tmpGuid);
+                            var mbRecordingIdRaw = innerReader.GetString(0);
+                            if (Guid.TryParse(mbRecordingIdRaw, out var tmpGuid))
+                            {
+                                recordings.Add(tmpGuid);
+                            }
                         }
                     }
-                }
 
-                innerCmd.Parameters.Clear();
-                innerCmd.CommandText = $"SELECT MusicBrainzReleaseId, MusicBrainzTrackId FROM {TableIsrcMusicBrainzReleaseName}";
-                innerWhere = CreateBasicWhere(innerCmd, readIsrc);
-                if (hasAnyMbIdsSet != null)
-                {
-                    innerWhere.Add($"MusicBrainzReleaseId IS {(hasAnyMbIdsSet.Value ? "NOT" : string.Empty)} NULL");
-                }
+                    innerCmd.Parameters.Clear();
+                    innerCmd.CommandText = $"SELECT MusicBrainzReleaseId, MusicBrainzTrackId FROM {TableIsrcMusicBrainzReleaseName}";
+                    innerWhere = CreateBasicWhere(innerCmd, readIsrc);
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities --> innerWhere, logicalOp only contain pre-defined strings
-                innerCmd.CommandText += $" WHERE {string.Join(logicalOp, innerWhere)}";
+                    innerCmd.CommandText += $" WHERE {string.Join(logicalOp, innerWhere)}";
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
-                {
-                    using var innerReader = innerCmd.ExecuteReader();
-                    while (innerReader.Read())
                     {
-                        var mbReleaseIdRaw = innerReader.GetString(0);
-                        if (Guid.TryParse(mbReleaseIdRaw, out var tmpGuid))
+                        using var innerReader = innerCmd.ExecuteReader();
+                        while (innerReader.Read())
                         {
-                            releases.Add(tmpGuid);
-                        }
+                            var mbReleaseIdRaw = innerReader.GetString(0);
+                            if (Guid.TryParse(mbReleaseIdRaw, out var tmpGuid))
+                            {
+                                releases.Add(tmpGuid);
+                            }
 
-                        var mbTrackIdRaw = innerReader.GetString(1);
-                        if (Guid.TryParse(mbTrackIdRaw, out tmpGuid))
-                        {
-                            tracks.Add(tmpGuid);
+                            var mbTrackIdRaw = innerReader.GetString(1);
+                            if (Guid.TryParse(mbTrackIdRaw, out tmpGuid))
+                            {
+                                tracks.Add(tmpGuid);
+                            }
                         }
                     }
-                }
 
-                innerCmd.Parameters.Clear();
-                innerCmd.CommandText = $"SELECT MusicBrainzReleaseGroupId FROM {TableIsrcMusicBrainzRelGroupName}";
-                innerWhere = CreateBasicWhere(innerCmd, readIsrc);
-                if (hasAnyMbIdsSet != null)
-                {
-                    innerWhere.Add($"MusicBrainzReleaseGroupId IS {(hasAnyMbIdsSet.Value ? "NOT" : string.Empty)} NULL");
-                }
+                    innerCmd.Parameters.Clear();
+                    innerCmd.CommandText = $"SELECT MusicBrainzReleaseGroupId FROM {TableIsrcMusicBrainzRelGroupName}";
+                    innerWhere = CreateBasicWhere(innerCmd, readIsrc);
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities --> innerWhere, logicalOp only contain pre-defined strings
-                innerCmd.CommandText += $" WHERE {string.Join(logicalOp, innerWhere)}";
+                    innerCmd.CommandText += $" WHERE {string.Join(logicalOp, innerWhere)}";
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
-                {
-                    using var innerReader = innerCmd.ExecuteReader();
-                    while (innerReader.Read())
                     {
-                        var mbReleaseGroupIdRaw = innerReader.GetString(0);
-                        if (Guid.TryParse(mbReleaseGroupIdRaw, out var tmpGuid))
+                        using var innerReader = innerCmd.ExecuteReader();
+                        while (innerReader.Read())
                         {
-                            releaseGroups.Add(tmpGuid);
+                            var mbReleaseGroupIdRaw = innerReader.GetString(0);
+                            if (Guid.TryParse(mbReleaseGroupIdRaw, out var tmpGuid))
+                            {
+                                releaseGroups.Add(tmpGuid);
+                            }
                         }
                     }
-                }
-
-                if (hasAnyMbIdsSet != null && hasAnyMbIdsSet.Value && recordings.Count == 0 && releases.Count == 0 && tracks.Count == 0 && releaseGroups.Count == 0)
-                {
-                    yield break;
                 }
 
                 yield return new DbIsrcMusicBrainzMapping(id, readIsrc, lastCheck, recordings, releases, tracks, releaseGroups);
