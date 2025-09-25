@@ -104,7 +104,7 @@ Afterwards, following runs of the import task will include all playlists of this
 
 #### Liked Songs
 
-You can also import your "liked songs" section as a playlist, but only for the user that was used to create the Spotify authentication token for the plugin. To do this, simply add a new playlist with the following ID as described in [#add-playlist]:
+You can also import your "liked songs" section as a playlist, but only for the user that was used to create the Spotify authentication token for the plugin. To do this, simply add a new playlist with the following ID as described in [Add Playlist](#add-playlist):
 ```
 MyLikedSongs
 ```
@@ -141,7 +141,7 @@ By default, the plugin will accept a Jellyfin track as equal to a Spotify track 
 
 If you experience issues with tracks not matching even if they exist, you can "relax" these settings:
 
-1. `Match Type` determines how strict the individual comparison is (e.g. if case differences are ignored)
+1. `Match Type` determines how strict the individual comparison is (e.g. if case differences or diacritics are ignored)
 2. `Enable * comparison` fully enables or disables the comparison of the respective condition
 
 `Match Type` allows selecting `Fuzzy Check` which adds another less strict matching option for track and album names (but not artists).

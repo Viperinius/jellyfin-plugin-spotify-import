@@ -473,6 +473,11 @@ namespace Viperinius.Plugin.SpotifyImport.Tests
                 yield return new object[] { true, "Har kisi ko", "Boss", "Arijit Singh", "Arijit Singh", "Har Kisi Ko (From \"Boss\")", "Love Dose Arijit Singh", new List<string> { "Arijit Singh" }, new List<string> { "Arijit Singh", "Neeti Mohan" }, ItemMatchLevel.IgnoreParensPunctuationAndCaseUseAlbumFromTrack, ItemMatchCriteria.TrackName | ItemMatchCriteria.AlbumName };
                 yield return new object[] { true, "My Track", "XYZ", "Arijit Singh", "Arijit Singh", "My Track (From the Netflix movie \"XYZ\")", "Love Dose Arijit Singh", new List<string> { "Arijit Singh" }, new List<string> { "Arijit Singh", "Neeti Mohan" }, ItemMatchLevel.IgnoreParensPunctuationAndCaseUseAlbumFromTrack, ItemMatchCriteria.TrackName | ItemMatchCriteria.AlbumName };
                 yield return new object[] { false, "My Track", "XYZ", "Arijit Singh", "Arijit Singh", "My Track (From the Netflix movie \"XYZ\")", "Love Dose Arijit Singh", new List<string> { "Arijit Singh" }, new List<string> { "Arijit Singh", "Neeti Mohan" }, ItemMatchLevel.IgnoreParensPunctuationAndCase, allCriteria };
+                // from issue #72
+                yield return new object[] { false, "Our House", "The Rise and Fall", "Madness", "Madness", "Our House", "The Rise & Fall", new List<string> { "Madness" }, new List<string> { "Madness" }, ItemMatchLevel.IgnoreCase, allCriteria };
+                yield return new object[] { true, "Our House", "The Rise and Fall", "Madness", "Madness", "Our House", "The Rise & Fall", new List<string> { "Madness" }, new List<string> { "Madness" }, ItemMatchLevel.IgnorePunctuationAndCase, allCriteria };
+                yield return new object[] { false, "Addicted", "0151", "The Night Cafe", "The Night Cafe", "Addicted", "0151", new List<string> { "The Night Café" }, new List<string> { "The Night Café" }, ItemMatchLevel.IgnoreCase, allCriteria };
+                yield return new object[] { true, "Addicted", "0151", "The Night Cafe", "The Night Cafe", "Addicted", "0151", new List<string> { "The Night Café" }, new List<string> { "The Night Café" }, ItemMatchLevel.IgnorePunctuationAndCase, allCriteria };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

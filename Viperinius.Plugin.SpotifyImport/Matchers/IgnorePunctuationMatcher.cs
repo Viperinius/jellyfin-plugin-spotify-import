@@ -4,26 +4,37 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 
 namespace Viperinius.Plugin.SpotifyImport.Matchers
 {
-    internal class IgnorePunctuationMatcher : IItemMatcher<string>
+    internal partial class IgnorePunctuationMatcher : IItemMatcher<string>
     {
-        private static readonly Regex _regex = new Regex(@"\p{P}");
-        private static readonly Regex _whitespaceRegex = new Regex(@"\s+");
-
         public bool IsStrict => false;
 
         public bool Matches(string target, string item)
         {
-            var i = _regex.Replace(item, string.Empty);
-            var t = _regex.Replace(target, string.Empty);
+            // remove parts considered equivalent
+            var i = AmpersandAndEquivalenceRegex().Replace(item, " ");
+            var t = AmpersandAndEquivalenceRegex().Replace(target, " ");
 
-            // replace multiple whitespace chars with one
-            i = _whitespaceRegex.Replace(i, " ");
-            t = _whitespaceRegex.Replace(t, " ");
+            i = TheRegex().Replace(i, string.Empty);
+            t = TheRegex().Replace(t, string.Empty);
+
+            // replace multiple whitespace chars with one and try to normalise any diacritics
+            i = WhitespaceRegex().Replace(i, " ").RemoveDiacritics();
+            t = WhitespaceRegex().Replace(t, " ").RemoveDiacritics();
 
             return new CaseInsensitiveMatcher().Matches(t, i);
         }
+
+        [GeneratedRegex(@"\p{P}")]
+        private static partial Regex TheRegex();
+
+        [GeneratedRegex(@"\s+")]
+        private static partial Regex WhitespaceRegex();
+
+        [GeneratedRegex(@"\s+(&|and)\s+", RegexOptions.IgnoreCase)]
+        private static partial Regex AmpersandAndEquivalenceRegex();
     }
 }

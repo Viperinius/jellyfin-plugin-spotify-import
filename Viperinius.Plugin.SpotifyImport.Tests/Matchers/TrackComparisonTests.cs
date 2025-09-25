@@ -74,6 +74,12 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "Track", "Track (From xyz1 \"abc\")", false };
                 yield return new object[] { "Track", "Track [From \"abc\"]", false };
                 yield return new object[] { "Track", "Track - From \"abc\"", false };
+                yield return new object[] { "Abcéè Dçô Xyz2", "Abcee Dco Xyz2", false };
+                yield return new object[] { "ầbcee Đưo Xạ2", "abcee Duo Xa2", false };
+                yield return new object[] { "Aæc Xøyñ2", "Aaec Xoyn2", false };
+                yield return new object[] { "Abcä DöÖ Xüß2", "Abca DoO Xuß2", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate ver", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate&ver", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -141,6 +147,12 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "Track", "Track (From xyz1 \"abc\")", false };
                 yield return new object[] { "Track", "Track [From \"abc\"]", false };
                 yield return new object[] { "Track", "Track - From \"abc\"", false };
+                yield return new object[] { "Abcéè Dçô Xyz2", "Abcee Dco Xyz2", false };
+                yield return new object[] { "ầbcee Đưo Xạ2", "abcee Duo Xa2", false };
+                yield return new object[] { "Aæc Xøyñ2", "Aaec Xoyn2", false };
+                yield return new object[] { "Abcä DöÖ Xüß2", "Abca DoO Xuß2", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate ver", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate&ver", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -186,6 +198,12 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "Tra\"ck [y]", "Track [y]", true };
                 yield return new object[] { "Track (hello)", "Track - hello", true };
                 yield return new object[] { "Track (hello) (foo)", "Track - hello (foo)", true };
+                yield return new object[] { "Abcéè Dçô Xyz2", "Abcee Dco Xyz2", true };
+                yield return new object[] { "ầbcee Đưo Xạ2", "abcee Duo Xa2", true };
+                yield return new object[] { "Aæc Xøyñ2", "Aaec Xoyn2", true };
+                yield return new object[] { "Abcä DöÖ Xüß2", "Abca DoO Xuß2", true };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate&ver", true };
+                yield return new object[] { "Banda And Whate&ver", "Banda & Whate&ver", true };
             }
 
             public override IEnumerator<object[]> GetEnumerator()
@@ -218,6 +236,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "Track", "Track (From xyz1 \"abc\")", false };
                 yield return new object[] { "Track", "Track [From \"abc\"]", false };
                 yield return new object[] { "Track", "Track - From \"abc\"", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate ver", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -292,6 +311,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "foo (tra) (ck)", "Track", false };
                 yield return new object[] { "Track (hello)", "Track - hello (foo)", false };
                 yield return new object[] { "Track", "Track - From \"abc\"", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate ver", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -360,6 +380,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "Trackb (x)", "Track", false };
                 yield return new object[] { "foo (tra) (ck)", "Track", false };
                 yield return new object[] { "Track (hello)", "Track - hello (foo)", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate ver", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -435,6 +456,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "Trackb (x)", "Track", false };
                 yield return new object[] { "foo (tra) (ck)", "Track", false };
                 yield return new object[] { "Track (hello)", "Track - hello (foo)", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate ver", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -528,6 +550,12 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "foo (album)", "Album", false };
                 yield return new object[] { "foo (al) (bum)", "Album", false };
                 yield return new object[] { "(Album) foo", "Album", false };
+                yield return new object[] { "Abcéè Dçô Xyz2", "Abcee Dco Xyz2", false };
+                yield return new object[] { "ầbcee Đưo Xạ2", "abcee Duo Xa2", false };
+                yield return new object[] { "Aæc Xøyñ2", "Aaec Xoyn2", false };
+                yield return new object[] { "Abcä DöÖ Xüß2", "Abca DoO Xuß2", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate ver", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate&ver", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -593,6 +621,12 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "foo (-album)", "Album", false };
                 yield return new object[] { "foo (al) (bum)", "Album", false };
                 yield return new object[] { "(Album) foo", "Album", false };
+                yield return new object[] { "Abcéè Dçô Xyz2", "Abcee Dco Xyz2", false };
+                yield return new object[] { "ầbcee Đưo Xạ2", "abcee Duo Xa2", false };
+                yield return new object[] { "Aæc Xøyñ2", "Aaec Xoyn2", false };
+                yield return new object[] { "Abcä DöÖ Xüß2", "Abca DoO Xuß2", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate ver", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate&ver", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -638,6 +672,11 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "Alb\"um [y]", "Album [y]", true };
                 yield return new object[] { "Album (hello)", "Album - hello", true };
                 yield return new object[] { "Album (hello) (foo)", "Album - hello (foo)", true };
+                yield return new object[] { "Abcéè Dçô Xyz2", "Abcee Dco Xyz2", true };
+                yield return new object[] { "ầbcee Đưo Xạ2", "abcee Duo Xa2", true };
+                yield return new object[] { "Aæc Xøyñ2", "Aaec Xoyn2", true };
+                yield return new object[] { "Abcä DöÖ Xüß2", "Abca DoO Xuß2", true };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate&ver", true };
             }
 
             public override IEnumerator<object[]> GetEnumerator()
@@ -666,6 +705,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "Al0bum", "Album", false };
                 yield return new object[] { "Album (x)", "Album", false };
                 yield return new object[] { "foo (alb) (um)", "Album", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate ver", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -736,6 +776,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "Albumb (x)", "Album", false };
                 yield return new object[] { "foo (alb) (um)", "Album", false };
                 yield return new object[] { "Album (hello)", "Album - hello (foo)", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate ver", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -826,6 +867,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "foo (alb) (um)", "Album", false };
                 yield return new object[] { "Album (hello)", "Album - hello (foo)", false };
                 yield return new object[] { "My Great Album", "#usefromtrack#", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate ver", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -896,6 +938,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "Albumb (x)", "Album", false };
                 yield return new object[] { "foo (alb) (um)", "Album", false };
                 yield return new object[] { "Album (hello)", "Album - hello (foo)", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate ver", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -1006,6 +1049,12 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "foo (just) (artist)", "Just Artist", false };
                 yield return new object[] { "(Just Artist) foo", "Just Artist", false };
                 yield return new object[] { "a (Just Artist) z", "Just Artist", false };
+                yield return new object[] { "Abcéè Dçô Xyz2", "Abcee Dco Xyz2", false };
+                yield return new object[] { "ầbcee Đưo Xạ2", "abcee Duo Xa2", false };
+                yield return new object[] { "Aæc Xøyñ2", "Aaec Xoyn2", false };
+                yield return new object[] { "Abcä DöÖ Xüß2", "Abca DoO Xuß2", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate ver", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate&ver", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -1086,6 +1135,12 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "foo (-album)", "Just Artist", false };
                 yield return new object[] { "foo (al) (bum)", "Just Artist", false };
                 yield return new object[] { "(Just Artist) foo", "Just Artist", false };
+                yield return new object[] { "Abcéè Dçô Xyz2", "Abcee Dco Xyz2", false };
+                yield return new object[] { "ầbcee Đưo Xạ2", "abcee Duo Xa2", false };
+                yield return new object[] { "Aæc Xøyñ2", "Aaec Xoyn2", false };
+                yield return new object[] { "Abcä DöÖ Xüß2", "Abca DoO Xuß2", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate ver", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate&ver", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -1146,6 +1201,11 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "just ar\"tist [y]", "Just Artist [y]", true };
                 yield return new object[] { "Just Artist (hello)", "Just Artist - hello", true };
                 yield return new object[] { "Just Artist (hello) (foo)", "Just Artist - hello (foo)", true };
+                yield return new object[] { "Abcéè Dçô Xyz2", "Abcee Dco Xyz2", true };
+                yield return new object[] { "ầbcee Đưo Xạ2", "abcee Duo Xa2", true };
+                yield return new object[] { "Aæc Xøyñ2", "Aaec Xoyn2", true };
+                yield return new object[] { "Abcä DöÖ Xüß2", "Abca DoO Xuß2", true };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate&ver", true };
             }
 
             public override IEnumerator<object[]> GetEnumerator()
@@ -1174,6 +1234,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "Just A0rtist", "Just Artist", false };
                 yield return new object[] { "Just Artist (x)", "Just Artist", false };
                 yield return new object[] { "foo (just) (artist)", "Just Artist", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate ver", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -1299,6 +1360,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
                 yield return new object[] { "Just Artistb (x)", "Just Artist", false };
                 yield return new object[] { "foo (alb) (um)", "Just Artist", false };
                 yield return new object[] { "Just Artist (hello)", "Just Artist - hello (foo)", false };
+                yield return new object[] { "Banda and Whate&ver", "Banda & Whate ver", false };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

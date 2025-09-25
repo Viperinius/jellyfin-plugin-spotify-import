@@ -7,22 +7,20 @@ using System.Threading.Tasks;
 
 namespace Viperinius.Plugin.SpotifyImport.Matchers
 {
-    internal class AlbumFromTrackMatcher : IItemMatcher<string>
+    internal partial class AlbumFromTrackMatcher : IItemMatcher<string>
     {
-        private static readonly Regex _regex = new Regex(@"\s*(?:[\([\[]From\s(?:[^""]+\s)?""([^\)\]""]*)""[\)\]]|-\sFrom\s(?:[^""]+\s)?""([^\)\]""]*)"")"); // find patterns like 'xyz (From "abc")', 'xyz [From "abc"]' and 'xyz - From "abc"'
-
         public bool IsStrict => false;
 
         public bool Matches(string target, string item)
         {
-            var i = _regex.Replace(item, string.Empty);
+            var i = TheRegex().Replace(item, string.Empty);
             return new IgnoreParensMatcher().Matches(target, i);
         }
 
         public static bool TryGetAlbumNameFromTrack(string item, out string album)
         {
             album = string.Empty;
-            var match = _regex.Match(item);
+            var match = TheRegex().Match(item);
             if (!match.Success)
             {
                 return false;
@@ -44,5 +42,8 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
 
             return false;
         }
+
+        [GeneratedRegex(@"\s*(?:[\([\[]From\s(?:[^""]+\s)?""([^\)\]""]*)""[\)\]]|-\sFrom\s(?:[^""]+\s)?""([^\)\]""]*)"")")] // find patterns like 'xyz (From "abc")', 'xyz [From "abc"]' and 'xyz - From "abc"'
+        private static partial Regex TheRegex();
     }
 }

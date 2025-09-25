@@ -7,17 +7,18 @@ using System.Threading.Tasks;
 
 namespace Viperinius.Plugin.SpotifyImport.Matchers
 {
-    internal class IgnoreParensMatcher : IItemMatcher<string>
+    internal partial class IgnoreParensMatcher : IItemMatcher<string>
     {
-        private static readonly Regex _regex = new Regex(@"\s*(?:\([^\)]*\)|\[[^\]]*\])\s*"); // find all occurences of (foo) or [foo]
-
         public bool IsStrict => false;
 
         public bool Matches(string target, string item)
         {
-            var i = _regex.Replace(item, string.Empty);
-            var t = _regex.Replace(target, string.Empty);
+            var i = TheRegex().Replace(item, string.Empty);
+            var t = TheRegex().Replace(target, string.Empty);
             return new IgnorePunctuationMatcher().Matches(t, i);
         }
+
+        [GeneratedRegex(@"\s*(?:\([^\)]*\)|\[[^\]]*\])\s*")] // find all occurences of (foo) or [foo]
+        private static partial Regex TheRegex();
     }
 }
