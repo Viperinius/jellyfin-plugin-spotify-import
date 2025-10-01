@@ -134,7 +134,7 @@ namespace Viperinius.Plugin.SpotifyImport
 
         public bool Save()
         {
-            var schemaVersion = Schema.GetProperties()?["Version"].GetConst()?.GetValue<string>();
+            var schemaVersion = Schema.GetProperties()?["Version"].GetDefault()?.GetValue<string>();
 
             var json = new JsonObject
             {
@@ -150,7 +150,7 @@ namespace Viperinius.Plugin.SpotifyImport
 
         public static (bool IsOk, string Version) ValidateJsonSchema(JsonNode jsonData)
         {
-            var schemaVersion = Schema.GetProperties()?["Version"].GetConst()?.GetValue<string>();
+            var schemaVersion = Schema.GetProperties()?["Version"].GetDefault()?.GetValue<string>();
             if (string.IsNullOrWhiteSpace(schemaVersion))
             {
                 return (false, string.Empty);

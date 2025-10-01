@@ -8,7 +8,7 @@
         "Version": {
             "description": "Used schema version",
             "type": "string",
-            "const": "1.0.0"
+            "default": "1.1.0"
         },
         "Items": {
             "description": "List of mapping entries",
@@ -40,6 +40,10 @@
                         "description": "Represents info about a track from a provider",
                         "type": "object",
                         "properties": {
+                            "Id": {
+                                "description": "Track ID",
+                                "type": "string"
+                            },
                             "Name": {
                                 "description": "Track name",
                                 "type": "string"

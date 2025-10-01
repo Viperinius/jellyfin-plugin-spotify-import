@@ -22,7 +22,15 @@
                         <li>"<b>Copy Stream URI</b>" result (ex.: http://&lt;JELLYFIN IP&gt;/Items/bfd9b42542e752bfdd63617e7966ba6a/Download?api_key=...)</li>
                         <li>URL from web UI (ex.: http://&lt;JELLYFIN IP&gt;/web/?#/details?id=bfd9b42542e752bfdd63617e7966ba6a&serverId=...)</li>
                     </ul>
-                    Then confirm the ID, it should get parsed and display the track name of that item.
+                    Then confirm the ID; it should get parsed and display the track name of that item.
+                </p>
+                <p>
+                    You can use the different "new entry" buttons for choosing different input formats of the Spotify track information:
+                    <ul>
+                        <li>"Raw": Specify the Spotify track using its Spotify ID or the name, album name and artists</li>
+                        <li>"JSON": Specify the Spotify track using the JSON entry of a missing tracks file</li>
+                    </ul>
+                    As long as a Spotify ID is given, the other Spotify fields are ignored.
                 </p>
                 <br />
             </div>
@@ -31,6 +39,7 @@
                 <table id="mapTable" class="stripedTable ui-responsive table-stroke detailTable" data-role="table">
                     <thead>
                         <th class="detailTableHeaderCell" data-priority="persist">Jellyfin Track</th>
+                        <th class="detailTableHeaderCell" data-priority="persist">Spotify Track ID</th>
                         <th class="detailTableHeaderCell" data-priority="persist">Spotify Track Name</th>
                         <th class="detailTableHeaderCell" data-priority="persist">Spotify Album Name</th>
                         <th class="detailTableHeaderCell" data-priority="persist">Spotify Album Artists</th>
@@ -40,9 +49,13 @@
                     <tbody>
                     </tbody>
                 </table>
-                <button is="emby-button" type="button" id="addRowBtn" class="raised block" style="display: flex;">
+                <button is="emby-button" type="button" id="addRowBtnRaw" class="raised block" style="display: flex;">
                     <span class="material-icons playlist_add" style="margin-right: 1em;"></span>
-                    <span>Add new entry</span>
+                    <span>Add new entry (Raw)</span>
+                </button>
+                <button is="emby-button" type="button" id="addRowBtnJson" class="raised block" style="display: flex;">
+                    <span class="material-icons playlist_add" style="margin-right: 1em;"></span>
+                    <span>Add new entry (JSON)</span>
                 </button>
             </div>
 

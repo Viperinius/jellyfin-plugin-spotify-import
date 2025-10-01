@@ -66,11 +66,17 @@ namespace Viperinius.Plugin.SpotifyImport
             /// </summary>
             public ProviderTrack()
             {
+                Id = string.Empty;
                 Name = string.Empty;
                 AlbumName = string.Empty;
                 AlbumArtistNames = new List<string>();
                 ArtistNames = new List<string>();
             }
+
+            /// <summary>
+            /// Gets or sets the track id.
+            /// </summary>
+            public string Id { get; set; }
 
             /// <summary>
             /// Gets or sets the track name.
@@ -100,10 +106,11 @@ namespace Viperinius.Plugin.SpotifyImport
                     return false;
                 }
 
-                return Name == other.Name &&
+                return (!string.IsNullOrEmpty(Id) && Id == other.Id) ||
+                       (Name == other.Name &&
                        AlbumName == other.AlbumName &&
                        Enumerable.SequenceEqual(AlbumArtistNames, other.AlbumArtistNames) &&
-                       Enumerable.SequenceEqual(ArtistNames, other.ArtistNames);
+                       Enumerable.SequenceEqual(ArtistNames, other.ArtistNames));
             }
 
             /// <inheritdoc/>
@@ -122,7 +129,8 @@ namespace Viperinius.Plugin.SpotifyImport
                 if (obj.GetType() == typeof(ProviderTrack))
                 {
                     var other = obj as ProviderTrack;
-                    return Name == other!.Name &&
+                    return Id == other!.Id &&
+                           Name == other.Name &&
                            AlbumName == other.AlbumName &&
                            AlbumArtistNames == other.AlbumArtistNames &&
                            ArtistNames == other.ArtistNames;
@@ -134,7 +142,7 @@ namespace Viperinius.Plugin.SpotifyImport
             /// <inheritdoc/>
             public override int GetHashCode()
             {
-                return HashCode.Combine(Name, AlbumName, AlbumArtistNames, ArtistNames);
+                return HashCode.Combine(Id, Name, AlbumName, AlbumArtistNames, ArtistNames);
             }
         }
     }

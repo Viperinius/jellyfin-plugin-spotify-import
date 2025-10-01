@@ -162,7 +162,7 @@ function createProviderListCell(list) {
     return td;
 }
 
-async function createRow(trackId, providerTrackName, providerAlbumName, providerAlbumArtists, providerArtists) {
+async function createRow(trackId, providerTrackId, providerTrackName, providerAlbumName, providerAlbumArtists, providerArtists) {
     const tr = document.createElement('tr');
     tr.classList.add('detailTableBodyRow', 'detailTableBodyRow-shaded');
 
@@ -172,6 +172,7 @@ async function createRow(trackId, providerTrackName, providerAlbumName, provider
     else {
         tr.appendChild(createJfTrackCell());
     }
+    tr.appendChild(createProviderTextCell(providerTrackId));
     tr.appendChild(createProviderTextCell(providerTrackName));
     tr.appendChild(createProviderTextCell(providerAlbumName));
     tr.appendChild(createProviderListCell(providerAlbumArtists));
@@ -192,6 +193,7 @@ async function loadTableRows(page, map) {
         const children = await Promise.all(map.map(async entry => {
             return await createRow(
                 entry.Jellyfin.Track,
+                entry.Provider.Id,
                 entry.Provider.Name,
                 entry.Provider.AlbumName,
                 entry.Provider.AlbumArtistNames,
@@ -208,10 +210,17 @@ function getTableData(page) {
     if (tableRows) {
         return [...tableRows].flatMap(r => {
             const tds = r.querySelectorAll('td');
-            if (tds.length === 6) {
+            if (tds.length === 7) {
                 const trackId = tds[0].querySelector('.viewCell > a').getAttribute(attrTrackId).trim();
                 if (!trackId || trackId === dummyText) {
                     return [];
+                }
+
+                // match a given spotify id with or without a prepended url or uri part, ignore url params
+                let providerTrackId = tds[1].innerText.trim();
+                const match = /^(https?:\/\/open\.spotify\.com\/track\/|spotify:track:)?([a-zA-Z0-9]+)(\?si=.*)?$/gm.exec(providerTrackId);
+                if (match !== null && match.length > 2) {
+                    providerTrackId = match[2];
                 }
 
                 return {
@@ -219,10 +228,11 @@ function getTableData(page) {
                         Track: trackId,
                     },
                     Provider: {
-                        Name: tds[1].innerText.trim(),
-                        AlbumName: tds[2].innerText.trim(),
-                        AlbumArtistNames: tds[3].innerText.trim().split(',').flatMap(s => s.trim().length == 0 ? [] : s.trim()),
-                        ArtistNames: tds[4].innerText.trim().split(',').flatMap(s => s.trim().length == 0 ? [] : s.trim()),
+                        Id: providerTrackId,
+                        Name: tds[2].innerText.trim(),
+                        AlbumName: tds[3].innerText.trim(),
+                        AlbumArtistNames: tds[4].innerText.trim().split(',').flatMap(s => s.trim().length == 0 ? [] : s.trim()),
+                        ArtistNames: tds[5].innerText.trim().split(',').flatMap(s => s.trim().length == 0 ? [] : s.trim()),
                     },
                 };
             }
@@ -255,13 +265,85 @@ export default function (view) {
         });
     });
 
-    const addRowBtn = view.querySelector('#addRowBtn');
-    if (addRowBtn) {
-        addRowBtn.addEventListener('click', async function () {
+    const addRowBtnRaw = view.querySelector('#addRowBtnRaw');
+    if (addRowBtnRaw) {
+        addRowBtnRaw.addEventListener('click', async function () {
             const tableBody = view.querySelector('#mapTable > tbody');
             if (tableBody) {
                 tableBody.appendChild(await createRow());
             }
+        });
+    }
+
+    const addRowBtnJson = view.querySelector('#addRowBtnJson');
+    if (addRowBtnJson) {
+        addRowBtnJson.addEventListener('click', async function () {
+            const dialog = Dashboard.dialogHelper.createDialog({
+                scrollY: true,
+                size: 'large',
+                modal: false,
+                removeOnClose: true
+            });
+    
+            let html = `<div class="formDialogHeader">
+                <button type="button" is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1" title="Back">
+                    <span class="material-icons arrow_back" aria-hidden="true"></span>
+                </button>
+                <h3 class="formDialogHeaderTitle">Entry from JSON</h3>
+            </div>
+            <form class="jsonEntryForm" style="margin:4em">
+                <div class="inputContainer">
+                    <label class="textareaLabel" for="jsonEntry">Paste JSON entry from missing tracks file here:</label>
+                    <textarea is="emby-textarea" id="jsonEntry" label="Paste JSON entry from missing tracks file here:" class="textarea-mono emby-textarea" rows="15" style="overflow-y: scroll; width: 100%; resize: none;"></textarea>
+                    <div class="fieldDescription" id="jsonEntryDesc"></div>
+                </div>
+                <button is="emby-button" type="submit" class="raised button-submit block"><span>Submit</span></button>
+            </form>`;
+    
+            dialog.innerHTML = html;
+            dialog.querySelector('.btnCancel').addEventListener('click', () => {
+                Dashboard.dialogHelper.close(dialog);
+            });
+            const desc = dialog.querySelector('#jsonEntryDesc');
+            dialog.querySelector('.jsonEntryForm').addEventListener('submit', async e => {
+                e.preventDefault();
+
+                const entry = dialog.querySelector('#jsonEntry');
+                const entryData = entry.value;
+                try {
+                    const jsonEntry = JSON.parse(entryData);
+                    let jsonArray;
+                    if (Array.isArray(jsonEntry)) {
+                        jsonArray = jsonEntry;
+                    }
+                    else {
+                        jsonArray = [jsonEntry];
+                    }
+
+                    const tableBody = view.querySelector('#mapTable > tbody');
+                    jsonArray.forEach(async json => {
+                        const trackId = json['Id'];
+                        const trackName = json['Name'];
+                        const trackAlbum = json['AlbumName'];
+                        const trackAlbumArtists = json['AlbumArtistNames'];
+                        const trackArtists = json['ArtistNames'];
+
+                        if (tableBody) {
+                            tableBody.appendChild(await createRow(null, trackId, trackName, trackAlbum, trackAlbumArtists, trackArtists));
+                        }
+                    });
+
+                    Dashboard.dialogHelper.close(dialog);
+                } catch (error) {
+                    console.error(error);
+                    desc.innerText = 'Error: Failed to parse JSON';
+                    entry.style.borderColor = '#7b0404';
+                }
+
+                return false;
+            });
+    
+            Dashboard.dialogHelper.open(dialog);
         });
     }
 
