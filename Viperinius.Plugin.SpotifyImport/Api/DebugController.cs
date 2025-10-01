@@ -30,6 +30,11 @@ namespace Viperinius.Plugin.SpotifyImport.Api
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
 
+        private readonly JsonSerializerOptions _options = new JsonSerializerOptions
+        {
+            WriteIndented = true
+        };
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DebugController"/> class.
         /// </summary>
@@ -60,40 +65,55 @@ namespace Viperinius.Plugin.SpotifyImport.Api
         /// <summary>
         /// Dump all references of a music track to file.
         /// </summary>
-        /// <param name="name">Track name.</param>
+        /// <param name="nameOrId">Track name or id.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The file.</returns>
         [HttpPost($"{nameof(Viperinius)}.{nameof(Viperinius.Plugin)}.{nameof(SpotifyImport)}/Debug/DumpTrackRefs")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult> DumpRefsToFile([FromQuery, Required] string name, CancellationToken cancellationToken)
+        public async Task<ActionResult> DumpRefsToFile([FromQuery, Required] string nameOrId, CancellationToken cancellationToken)
         {
-            var queryResult = _libraryManager.GetItemsResult(new InternalItemsQuery
+            IReadOnlyList<BaseItem> queriedItems = new List<BaseItem>();
+            if (Guid.TryParse(nameOrId, out var id))
             {
-                Name = name,
-                MediaTypes = new[] { MediaType.Audio },
-                Recursive = true
-            });
+                var item = _libraryManager.GetItemById(id);
+                if (item != null)
+                {
+                    queriedItems =
+                    [
+                        item
+                    ];
+                }
+            }
+            else
+            {
+                var queryResult = _libraryManager.GetItemsResult(new InternalItemsQuery
+                {
+                    Name = nameOrId,
+                    MediaTypes = new[] { MediaType.Audio },
+                    Recursive = true
+                });
+                queriedItems = queryResult.Items;
+            }
 
             var alreadyIncludedIds = new List<Guid>();
+            var dumpFilePath = MissingTrackStore.GetFilePath($"DEBUG_REF_{nameOrId}");
 
-            var itemIndex = 0;
-            foreach (var item in queryResult.Items)
+            var trackRefs = new List<TrackRef>();
+            foreach (var item in queriedItems)
             {
                 if (alreadyIncludedIds.Contains(item.Id))
                 {
                     continue;
                 }
 
-                var dumpFilePath = MissingTrackStore.GetFilePath($"DEBUG_REF_{item.Id}");
-
                 if (item is not Audio audio)
                 {
                     continue;
                 }
 
-                var trackRef = new ItemRef
+                var trackRef = new TrackRef
                 {
                     Id = audio.Id.ToString(),
                     Name = audio.Name,
@@ -101,10 +121,6 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                     ParentId = audio.ParentId.ToString(),
                     IsTopParent = audio.IsTopParent,
                     DisplayParentId = audio.DisplayParentId.ToString(),
-                };
-                var trackRefs = new Dictionary<string, ItemRef>
-                {
-                    { $"Track[{itemIndex}]", trackRef },
                 };
 
                 // add album entity if set
@@ -119,13 +135,14 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                         IsTopParent = audio.AlbumEntity.IsTopParent,
                         DisplayParentId = audio.AlbumEntity.DisplayParentId.ToString(),
                     };
-                    trackRefs.Add($"TrackAlbumEntity[{itemIndex}]", albumEntityRef);
+                    trackRef.Parents.Add("Album", albumEntityRef);
                 }
 
                 // get track parents
                 int ii = 1;
                 var nextParent = item;
-                var nextRef = new ItemRef();
+                var currentRef = trackRef;
+                var nextRef = new TrackRef();
                 while (nextParent != null && !nextRef.IsTopParent && ii <= 10)
                 {
                     nextParent = _libraryManager.GetItemById(nextParent.ParentId);
@@ -134,7 +151,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                         continue;
                     }
 
-                    nextRef = new ItemRef
+                    nextRef = new TrackRef
                     {
                         Id = nextParent.Id.ToString(),
                         Name = nextParent.Name,
@@ -143,13 +160,13 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                         IsTopParent = nextParent.IsTopParent,
                         DisplayParentId = nextParent.DisplayParentId.ToString(),
                     };
-                    trackRefs.Add($"TrackParent{ii}[{itemIndex}]", nextRef);
+                    currentRef.Parents.Add($"TrackParent{ii}", nextRef);
+                    currentRef = nextRef;
                     ii++;
                 }
 
                 // reverse search now
                 var artistNames = audio.Artists;
-                var artistRefs = new Dictionary<string, ArtistRef>();
                 var artistIndex = 0;
                 foreach (var artistName in artistNames)
                 {
@@ -197,7 +214,6 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                                 MediaType = c.MediaType.ToString(),
                             }).ToList(),
                         };
-                        artistRefs.Add($"Artist{jj}[{itemIndex}][{artistIndex}]/{resultCount1}/{resultCount2}", artistRef);
 
                         // album by album artists
                         var albums = _libraryManager.GetItemList(new InternalItemsQuery
@@ -205,10 +221,9 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                             AlbumArtistIds = new[] { artist.Id },
                             IncludeItemTypes = new[] { BaseItemKind.MusicAlbum }
                         });
-                        for (int kk = 0; kk < albums.Count; kk++)
+                        foreach (var album in albums)
                         {
-                            var album = albums[kk];
-                            trackRefs.Add($"AlbumByAlbumArtist{jj}-{kk}[{itemIndex}][{artistIndex}]/{artistName}", new ItemRef
+                            artistRef.AlbumByAlbumArtist.Add(new ItemRef
                             {
                                 Id = album.Id.ToString(),
                                 Name = album.Name,
@@ -219,29 +234,30 @@ namespace Viperinius.Plugin.SpotifyImport.Api
                             });
                         }
 
+                        trackRef.Artists.Add($"Artist{jj}/{resultCount1}/{resultCount2}[{artistIndex}]", artistRef);
+
                         jj++;
                     }
 
                     artistIndex++;
                 }
 
-                var options = new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                };
-                using var writer = System.IO.File.Create(dumpFilePath);
-                using var textWriter = new StreamWriter(writer)
-                {
-                    AutoFlush = true
-                };
-                await textWriter.WriteLineAsync("[").ConfigureAwait(false);
-                await JsonSerializer.SerializeAsync(writer, trackRefs, options, cancellationToken).ConfigureAwait(false);
-                await textWriter.WriteLineAsync(",").ConfigureAwait(false);
-                await JsonSerializer.SerializeAsync(writer, artistRefs, options, cancellationToken).ConfigureAwait(false);
-                await textWriter.WriteLineAsync("]").ConfigureAwait(false);
+                trackRefs.Add(trackRef);
                 alreadyIncludedIds.Add(item.Id);
-                itemIndex++;
             }
+
+            using var writer = System.IO.File.Create(dumpFilePath);
+            using var textWriter = new StreamWriter(writer)
+            {
+                AutoFlush = true
+            };
+
+            var root = new Dictionary<string, List<TrackRef>>
+                {
+                    { "TrackRefs", trackRefs },
+                };
+
+            await JsonSerializer.SerializeAsync(writer, root, _options, cancellationToken).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -261,11 +277,20 @@ namespace Viperinius.Plugin.SpotifyImport.Api
             public string DisplayParentId { get; set; } = "notset";
         }
 
+        private class TrackRef : ItemRef
+        {
+            public Dictionary<string, ItemRef> Parents { get; set; } = new Dictionary<string, ItemRef>();
+
+            public Dictionary<string, ArtistRef> Artists { get; set; } = new Dictionary<string, ArtistRef>();
+        }
+
         private class ArtistRef : ItemRef
         {
             public List<ItemRef> Children { get; set; } = new List<ItemRef>();
 
             public List<ItemRef> RecursiveChildren { get; set; } = new List<ItemRef>();
+
+            public List<ItemRef> AlbumByAlbumArtist { get; set; } = new List<ItemRef>();
         }
     }
 }

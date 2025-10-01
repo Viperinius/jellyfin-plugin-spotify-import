@@ -431,7 +431,7 @@ export default function (view) {
     dbgDumpRefsBtn.addEventListener('click', function () {
         const name = document.querySelector('#dbgDumpRefsTrackName').value;
         const apiUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/Debug/DumpTrackRefs', {
-            name: name
+            nameOrId: name
         });
 
         dbgDumpRefsBtn.disabled = true;
