@@ -98,7 +98,7 @@ namespace Viperinius.Plugin.SpotifyImport.Api
             }
 
             var alreadyIncludedIds = new List<Guid>();
-            var dumpFilePath = MissingTrackStore.GetFilePath($"DEBUG_REF_{nameOrId}");
+            var dumpFilePath = MissingTrackStore.GetFilePath("DEBUG_REF");
 
             var trackRefs = new List<TrackRef>();
             foreach (var item in queriedItems)
