@@ -125,13 +125,13 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Db
             dbId = db.UpsertIsrcMusicBrainzMapping(new DbIsrcMusicBrainzMapping(-1, "y", DateTime.UtcNow.AddHours(3), [Guid.NewGuid()], [Guid.NewGuid()], [Guid.NewGuid()], []));
             Assert.NotNull(dbId);
 
-            var mappings = db.GetIsrcMusicBrainzMapping();
+            var mappings = db.GetIsrcMusicBrainzMapping().ToList();
             Assert.Equal(3, mappings.Count());
 
-            mappings = db.GetIsrcMusicBrainzMapping(isrc: "i94rgaser");
+            mappings = db.GetIsrcMusicBrainzMapping(isrc: "i94rgaser").ToList();
             Assert.Empty(mappings);
 
-            mappings = db.GetIsrcMusicBrainzMapping(isrc: correctIsrc);
+            mappings = db.GetIsrcMusicBrainzMapping(isrc: correctIsrc).ToList();
             Assert.Single(mappings);
 
             Assert.Equal(correctIsrc, mappings.ElementAt(0).Isrc);

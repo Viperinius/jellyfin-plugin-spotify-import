@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -61,7 +59,7 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
             {
                 // library manager does not seem to support querying multiple ProviderIds with same key, so every different MB id has to be done in a separate query...
                 // to speed this up in some way, try to fill query with one of each "direct hit" ProviderId types if available
-                for (int ii = 0; ii < Math.Max(mbRecordings.Count, mbTracks.Count); ii++)
+                for (var ii = 0; ii < Math.Max(mbRecordings.Count, mbTracks.Count); ii++)
                 {
                     var idDict = new Dictionary<string, string>();
                     if (ii < mbRecordings.Count)
@@ -91,7 +89,7 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
             // library manager does not seem to support querying multiple ProviderIds with same key, so every different MB id has to be done in a separate query...
             // to speed this up in some way, try to fill query with one of each ProviderId types if available
             var matchCandidates = new List<(int, ItemMatchLevel, Audio)>();
-            for (int ii = 0; ii < Math.Max(mbReleases.Count, mbReleaseGroups.Count); ii++)
+            for (var ii = 0; ii < Math.Max(mbReleases.Count, mbReleaseGroups.Count); ii++)
             {
                 var idDict = new Dictionary<string, string>();
                 if (ii < mbReleases.Count)
