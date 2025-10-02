@@ -217,7 +217,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
             var response = _httpRequest.Head(_providerUrl).Result;
             if (response != null)
             {
-                long? serverTime = response.Headers.Date?.ToUnixTimeSeconds();
+                var serverTime = response.Headers.Date?.ToUnixTimeSeconds();
                 if (serverTime == null)
                 {
                     return null;

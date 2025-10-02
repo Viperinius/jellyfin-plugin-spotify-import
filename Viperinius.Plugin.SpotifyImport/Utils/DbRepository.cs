@@ -378,7 +378,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
         {
             var logicalOp = (logicalAnd == null || (bool)logicalAnd) ? " AND " : " OR ";
             using var selectCmd = Connection.CreateCommand();
-            List<string> CreateBasicWhere(SqliteCommand cmd, string? isrcFilter = null)
+            static List<string> CreateBasicWhere(SqliteCommand cmd, string? isrcFilter = null)
             {
                 var cmdWhere = new List<string>();
                 if (!string.IsNullOrEmpty(isrcFilter))
@@ -511,7 +511,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             upsertCmd.Parameters.AddWithValue("$Isrc", mapping.Isrc);
             upsertCmd.Parameters.AddWithValue("$LastCheck", mapping.LastCheck);
 
-            for (int ii = 0; ii < mapping.MusicBrainzRecordingIds.Count; ii++)
+            for (var ii = 0; ii < mapping.MusicBrainzRecordingIds.Count; ii++)
             {
                 var recording = mapping.MusicBrainzRecordingIds[ii];
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities --> only variable is ii
@@ -521,7 +521,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             }
 
             // this assumes number of releases should always be = number of track ids, otherwise the "excess" values will be ignored
-            for (int ii = 0; ii < Math.Min(mapping.MusicBrainzReleaseIds.Count, mapping.MusicBrainzTrackIds.Count); ii++)
+            for (var ii = 0; ii < Math.Min(mapping.MusicBrainzReleaseIds.Count, mapping.MusicBrainzTrackIds.Count); ii++)
             {
                 var release = mapping.MusicBrainzReleaseIds[ii];
                 var track = mapping.MusicBrainzTrackIds[ii];
@@ -532,7 +532,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
                 upsertCmd.Parameters.AddWithValue($"$MusicBrainzTrackId{ii}", track);
             }
 
-            for (int ii = 0; ii < mapping.MusicBrainzReleaseGroupIds.Count; ii++)
+            for (var ii = 0; ii < mapping.MusicBrainzReleaseGroupIds.Count; ii++)
             {
                 var relGroup = mapping.MusicBrainzReleaseGroupIds[ii];
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities --> only variable is ii
@@ -556,7 +556,7 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities --> idParams only contains pre-defined strings
             deleteCmd.CommandText = $"DELETE FROM {TableIsrcMusicBrainzChecksName} WHERE Id IN ({idParams})";
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
-            for (int ii = 0; ii < dbIds.Count; ii++)
+            for (var ii = 0; ii < dbIds.Count; ii++)
             {
                 deleteCmd.Parameters.AddWithValue($"$Id{ii}", dbIds[ii]);
             }

@@ -338,7 +338,7 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
         private bool CheckPlaylistForTrack(Playlist playlist, User user, string providerId, ProviderTrackInfo providerTrackInfo)
         {
             var match = _cacheFinder.FindTrack(providerId, providerTrackInfo);
-            foreach (var item in playlist.GetChildren(user, false))
+            foreach (var item in playlist.GetChildren(user, false, null))
             {
                 if (item is not Audio audioItem)
                 {

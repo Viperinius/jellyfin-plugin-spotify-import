@@ -211,7 +211,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 // see https://stackoverflow.com/a/8094931
                 unchecked
                 {
-                    int hash = 19;
+                    var hash = 19;
                     foreach (var track in tracks)
                     {
                         hash = (hash * 31) + track.GetHashCode();
@@ -258,7 +258,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                         continue;
                     }
 
-                    for (int ii = skipCount ?? 0; ii < targetTracks.Count; ii++)
+                    for (var ii = skipCount ?? 0; ii < targetTracks.Count; ii++)
                     {
                         if (targetTracks[ii].Id == providerTrack.Id)
                         {
