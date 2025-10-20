@@ -22,7 +22,7 @@ public class PluginConfiguration : BasePluginConfiguration
         Version = string.Empty;
         SpotifyClientId = string.Empty;
         SpotifyCookie = string.Empty;
-        SpotifyTotpSecretsUrl = "https://raw.githubusercontent.com/Thereallo1026/spotify-secrets/refs/heads/main/secrets/secretBytes.json";
+        SpotifyTotpSecretsUrl = "https://raw.githubusercontent.com/xyloflake/spot-secrets-go/refs/heads/main/secrets/secretBytes.json";
         Playlists = Array.Empty<TargetPlaylistConfiguration>();
         Users = Array.Empty<TargetUserConfiguration>();
         SpotifySavedTracksDisplayName = "Liked Songs";
