@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Entities;
+using Jellyfin.Database.Implementations.Enums;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
@@ -338,7 +338,7 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
         private bool CheckPlaylistForTrack(Playlist playlist, User user, string providerId, ProviderTrackInfo providerTrackInfo)
         {
             var match = _cacheFinder.FindTrack(providerId, providerTrackInfo);
-            foreach (var item in playlist.GetChildren(user, false))
+            foreach (var item in playlist.GetChildren(user, false, null))
             {
                 if (item is not Audio audioItem)
                 {
@@ -400,7 +400,7 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
         private async Task<Playlist?> GetOrCreatePlaylistByName(string name, User user, bool shouldBePrivate, bool deleteExistingPlaylist)
         {
             var playlists = _playlistManager.GetPlaylists(user.Id);
-            var playlist = playlists.Where(p => p.Name == name).FirstOrDefault();
+            var playlist = playlists.FirstOrDefault(p => p.Name == name);
 
             if (playlist != null && deleteExistingPlaylist)
             {

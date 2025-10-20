@@ -25,7 +25,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
         {
             QueryByIsrcLastArgs = isrcs.ToList();
 
-            foreach (var isrc in isrcs)
+            foreach (var isrc in QueryByIsrcLastArgs)
             {
                 var result = ResultMappings.FirstOrDefault(m => m!.Isrc == isrc, null);
                 if (result != null)
@@ -131,7 +131,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
 
             using var cmd = db.WrappedConnection.CreateCommand();
             cmd.CommandText = "SELECT COUNT(*) FROM IsrcMusicBrainzChecks";
-            var rowCount = cmd.ExecuteScalar();
+            var rowCount = await cmd.ExecuteScalarAsync();
             Assert.Equal(0, (long?)rowCount);
 
             var isrcMapping = new IsrcMapping(loggerMock, db, testData.MbHelper);
@@ -143,7 +143,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
             expectedArgs.Sort();
             Assert.True(testData.MbHelper.QueryByIsrcLastArgs.SequenceEqual(expectedArgs));
 
-            rowCount = cmd.ExecuteScalar();
+            rowCount = await cmd.ExecuteScalarAsync();
             Assert.Equal(testData.UniqueIsrcCount, (long?)rowCount);
 
             // "invalid" isrcs should only be saved as placeholders using current timestamp
@@ -199,7 +199,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
 
             using var cmd = db.WrappedConnection.CreateCommand();
             cmd.CommandText = "SELECT COUNT(*) FROM IsrcMusicBrainzChecks";
-            var rowCount = cmd.ExecuteScalar();
+            var rowCount = await cmd.ExecuteScalarAsync();
             Assert.Equal(testData.UniqueIsrcCount, (long?)rowCount);
 
             var isrcMapping = new IsrcMapping(loggerMock, db, testData.MbHelper);
@@ -207,7 +207,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
 
             Assert.Empty(testData.MbHelper.QueryByIsrcLastArgs);
 
-            rowCount = cmd.ExecuteScalar();
+            rowCount = await cmd.ExecuteScalarAsync();
             Assert.Equal(testData.UniqueIsrcCount, (long?)rowCount);
 
             foreach (var isrc in testData.NonValidIsrcs)
@@ -266,13 +266,13 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
 
             using var cmd = db.WrappedConnection.CreateCommand();
             cmd.CommandText = "SELECT COUNT(*) FROM IsrcMusicBrainzChecks";
-            var rowCount = cmd.ExecuteScalar();
+            var rowCount = await cmd.ExecuteScalarAsync();
             Assert.Equal(testData.UniqueIsrcCount, (long?)rowCount);
 
             var isrcMapping = new IsrcMapping(loggerMock, db, testData.MbHelper);
             await isrcMapping.UpdateIsrcMusicBrainzMappings(testData.Playlists);
 
-            rowCount = cmd.ExecuteScalar();
+            rowCount = await cmd.ExecuteScalarAsync();
             Assert.Equal(testData.UniqueIsrcCount, (long?)rowCount);
 
             Assert.Single(testData.MbHelper.QueryByIsrcLastArgs);
@@ -341,13 +341,13 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
 
             using var cmd = db.WrappedConnection.CreateCommand();
             cmd.CommandText = "SELECT COUNT(*) FROM IsrcMusicBrainzChecks";
-            var rowCount = cmd.ExecuteScalar();
+            var rowCount = await cmd.ExecuteScalarAsync();
             Assert.Equal(testData.UniqueIsrcCount, (long?)rowCount);
 
             var isrcMapping = new IsrcMapping(loggerMock, db, testData.MbHelper);
             await isrcMapping.UpdateIsrcMusicBrainzMappings(testData.Playlists);
 
-            rowCount = cmd.ExecuteScalar();
+            rowCount = await cmd.ExecuteScalarAsync();
             Assert.Equal(testData.UniqueIsrcCount, (long?)rowCount);
 
             Assert.Empty(testData.MbHelper.QueryByIsrcLastArgs);
@@ -419,13 +419,13 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
 
             using var cmd = db.WrappedConnection.CreateCommand();
             cmd.CommandText = "SELECT COUNT(*) FROM IsrcMusicBrainzChecks";
-            var rowCount = cmd.ExecuteScalar();
+            var rowCount = await cmd.ExecuteScalarAsync();
             Assert.Equal(testData.UniqueIsrcCount - 2, (long?)rowCount);
 
             var isrcMapping = new IsrcMapping(loggerMock, db, testData.MbHelper);
             await isrcMapping.UpdateIsrcMusicBrainzMappings(testData.Playlists);
 
-            rowCount = cmd.ExecuteScalar();
+            rowCount = await cmd.ExecuteScalarAsync();
             Assert.Equal(testData.UniqueIsrcCount, (long?)rowCount);
 
             Assert.Equal(2, testData.MbHelper.QueryByIsrcLastArgs.Count);
@@ -503,13 +503,13 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Utils
 
             using var cmd = db.WrappedConnection.CreateCommand();
             cmd.CommandText = "SELECT COUNT(*) FROM IsrcMusicBrainzChecks";
-            var rowCount = cmd.ExecuteScalar();
+            var rowCount = await cmd.ExecuteScalarAsync();
             Assert.Equal(testData.UniqueIsrcCount, (long?)rowCount);
 
             var isrcMapping = new IsrcMapping(loggerMock, db, testData.MbHelper);
             await isrcMapping.UpdateIsrcMusicBrainzMappings(testData.Playlists);
 
-            rowCount = cmd.ExecuteScalar();
+            rowCount = await cmd.ExecuteScalarAsync();
             Assert.Equal(testData.UniqueIsrcCount, (long?)rowCount);
 
             Assert.Single(testData.MbHelper.QueryByIsrcLastArgs);

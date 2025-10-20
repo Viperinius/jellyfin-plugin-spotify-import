@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -132,7 +131,7 @@ namespace Viperinius.Plugin.SpotifyImport
             {
                 if (cancellationToken?.IsCancellationRequested ?? false)
                 {
-                    _logger.LogWarning("Updating playlist tracks in db cancelled before saving playlist {Name} ({Id})",  playlist.Name, playlist.Id);
+                    _logger.LogWarning("Updating playlist tracks in db cancelled before saving playlist {Name} ({Id})", playlist.Name, playlist.Id);
                     return false;
                 }
 
@@ -156,7 +155,7 @@ namespace Viperinius.Plugin.SpotifyImport
 
                 _dbRepository.DeleteProviderPlaylistTracks((int)playlistDbId);
 
-                for (int ii = 0; ii < playlist.Tracks.Count; ii++)
+                for (var ii = 0; ii < playlist.Tracks.Count; ii++)
                 {
                     var track = playlist.Tracks[ii];
                     if (string.IsNullOrEmpty(track.Id))
