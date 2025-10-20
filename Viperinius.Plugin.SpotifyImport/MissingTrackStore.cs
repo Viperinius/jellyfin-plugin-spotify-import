@@ -34,8 +34,8 @@ namespace Viperinius.Plugin.SpotifyImport
                 dateFormat = dateFormatSetting;
             }
 
-            var fullPath = Path.Combine(CurrentTmpDir!, FilenameTemplate.Replace("{%PLAYLIST%}", trimmedPlaylistName, StringComparison.InvariantCulture)
-                                                                        .Replace("{%TS%}", DateTime.UtcNow.ToString(dateFormat, CultureInfo.InvariantCulture), StringComparison.InvariantCulture));
+            var fullPath = Path.Join(CurrentTmpDir!, FilenameTemplate.Replace("{%PLAYLIST%}", trimmedPlaylistName, StringComparison.InvariantCulture)
+                                                                     .Replace("{%TS%}", DateTime.UtcNow.ToString(dateFormat, CultureInfo.InvariantCulture), StringComparison.InvariantCulture));
             return fullPath;
         }
 
@@ -59,10 +59,10 @@ namespace Viperinius.Plugin.SpotifyImport
                 return;
             }
 
-            var tmpDir = Path.Combine(Path.GetTempPath(), DirName);
+            var tmpDir = Path.Join(Path.GetTempPath(), DirName);
             if (Plugin.Instance?.Configuration.KeepMissingTrackLists ?? false)
             {
-                tmpDir = Path.Combine(Plugin.Instance!.DataFolderPath, "missing_tracks");
+                tmpDir = Path.Join(Plugin.Instance!.DataFolderPath, "missing_tracks");
             }
 
             Directory.CreateDirectory(tmpDir);

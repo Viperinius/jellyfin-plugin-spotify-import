@@ -66,7 +66,7 @@ namespace Viperinius.Plugin.SpotifyImport
         /// <summary>
         /// Gets the path to the db file.
         /// </summary>
-        public string DbPath => Path.Combine(PluginDataPath, "plugin.db");
+        public string DbPath => Path.Join(PluginDataPath, "plugin.db");
 
         /// <summary>
         /// Gets the current plugin instance.
