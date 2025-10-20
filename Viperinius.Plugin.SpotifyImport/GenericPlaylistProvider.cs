@@ -75,7 +75,7 @@ namespace Viperinius.Plugin.SpotifyImport
                     if (!string.IsNullOrEmpty(previousState) && playlist.State == previousState)
                     {
                         var tracks = GetCachedPlaylistTracksFromDb(playlist.Id);
-                        if (tracks != null)
+                        if (tracks != null && tracks.Count > 0)
                         {
                             playlist.Tracks = tracks;
                             Playlists.Add(playlist);
