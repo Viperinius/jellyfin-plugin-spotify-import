@@ -92,7 +92,8 @@ namespace Viperinius.Plugin.SpotifyImport
             var migrations = new List<BaseMigration>
             {
                 new UserPlaylistsMigration(path, xmlSeraliser, _logger),
-                new PlaylistIdMigration(path, xmlSeraliser, _logger)
+                new PlaylistIdMigration(path, xmlSeraliser, _logger),
+                new SpotifySecretsUrlMigration(path, xmlSeraliser, _logger),
             }.OrderBy(m => m.LatestWorkingRelease);
 
             foreach (var migration in migrations)
