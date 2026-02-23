@@ -20,6 +20,7 @@ namespace Viperinius.Plugin.SpotifyImport.Configuration
         {
             Version = string.Empty;
             SpotifyClientId = string.Empty;
+            SpotifyUserId = string.Empty;
             SpotifyCookie = string.Empty;
             SpotifyTotpSecretsUrl = "https://raw.githubusercontent.com/xyloflake/spot-secrets-go/refs/heads/main/secrets/secretBytes.json";
             Playlists = Array.Empty<TargetPlaylistConfiguration>();
@@ -51,6 +52,11 @@ namespace Viperinius.Plugin.SpotifyImport.Configuration
         /// Gets or sets the Spotify client ID.
         /// </summary>
         public string SpotifyClientId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Spotify user ID matching the SpotifyCookie.
+        /// </summary>
+        public string SpotifyUserId { get; set; }
 
         /// <summary>
         /// Gets or sets the Spotify session cookies.

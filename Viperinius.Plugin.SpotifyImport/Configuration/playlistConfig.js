@@ -256,6 +256,7 @@ export default function (view) {
             document.querySelector('#ShowCompletenessInformation').checked = config.ShowCompletenessInformation;
             document.querySelector('#SpotifyClientId').value = config.SpotifyClientId;
             document.querySelector('#SpotifyCookie').value = config.SpotifyCookie;
+            document.querySelector('#SpotifyUserId').value = config.SpotifyUserId;
 
             document.querySelector('#GenerateMissingTrackLists').checked = config.GenerateMissingTrackLists;
             document.querySelector('#MissingTrackListsDateFormat').value = config.MissingTrackListsDateFormat;
@@ -331,6 +332,7 @@ export default function (view) {
             config.ShowCompletenessInformation = document.querySelector('#ShowCompletenessInformation').checked;
             config.SpotifyClientId = document.querySelector('#SpotifyClientId').value;
             config.SpotifyCookie = document.querySelector('#SpotifyCookie').value;
+            config.SpotifyUserId = document.querySelector('#SpotifyUserId').value;
 
             config.Playlists = [];
             const playlists = getPlaylistTableData(view) || [];

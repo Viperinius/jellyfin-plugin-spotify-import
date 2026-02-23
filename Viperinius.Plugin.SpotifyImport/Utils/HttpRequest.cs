@@ -50,12 +50,17 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
             return await Request(url, HttpMethod.Get, headers: headers, cookies: cookies).ConfigureAwait(false);
         }
 
+        public async Task<HttpResponseMessage?> Post(Uri url, Func<HttpContent>? getContent = null, HttpRequestHeaders? headers = null, string? cookies = null)
+        {
+            return await Request(url, HttpMethod.Post, getContent: getContent, headers: headers, cookies: cookies).ConfigureAwait(false);
+        }
+
         public async Task<HttpResponseMessage?> Head(Uri url, HttpRequestHeaders? headers = null, string? cookies = null)
         {
             return await Request(url, HttpMethod.Head, headers: headers, cookies: cookies).ConfigureAwait(false);
         }
 
-        private async Task<HttpResponseMessage?> Request(Uri url, HttpMethod method, HttpContent? content = null, HttpRequestHeaders? headers = null, string? cookies = null)
+        private async Task<HttpResponseMessage?> Request(Uri url, HttpMethod method, Func<HttpContent>? getContent = null, HttpRequestHeaders? headers = null, string? cookies = null)
         {
             for (int ii = 0; ii < MaxRetries; ii++)
             {
@@ -81,14 +86,20 @@ namespace Viperinius.Plugin.SpotifyImport.Utils
                         req.Headers.Add("Cookie", cookies);
                     }
 
-                    if (content != null)
+                    if (getContent != null)
                     {
-                        req.Content = content;
+                        req.Content = getContent();
                     }
 
                     if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                     {
-                        _logger.LogInformation("HTTP {Method} for {Url}", method, url);
+                        var body = string.Empty;
+                        if (getContent != null)
+                        {
+                            body = await getContent().ReadAsStringAsync().ConfigureAwait(false);
+                        }
+
+                        _logger.LogInformation("HTTP {Method} for {Url} {Body}", method, url, body);
                     }
 
                     var res = await _httpClient.SendAsync(req, HttpCompletionOption.ResponseContentRead, cancellationToken.Token).ConfigureAwait(false);

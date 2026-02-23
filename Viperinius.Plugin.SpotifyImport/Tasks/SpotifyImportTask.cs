@@ -98,7 +98,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
 
             var spotify = new SpotifyPlaylistProvider(db, _loggerFactory.CreateLogger<SpotifyPlaylistProvider>(), _loggerFactory.CreateLogger<SpotifyLogger>());
             spotify.SetUpProvider();
-            var spotifyAlt = new SpotifyAltPlaylistProvider(db, _loggerFactory.CreateLogger<SpotifyAltPlaylistProvider>(), _loggerFactory.CreateLogger<Utils.HttpRequest>(), spotify);
+            var spotifyAlt = new SpotifyAltPlaylistProvider(db, _loggerFactory.CreateLogger<SpotifyAltPlaylistProvider>(), _loggerFactory.CreateLogger<Utils.HttpRequest>());
             spotifyAlt.SetUpProvider();
 
             // check if any users are given whose playlists need to be included
@@ -107,10 +107,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
             {
                 foreach (var user in followedUsers)
                 {
-                    // get playlists created / shared with user
-                    var userPlaylists = await spotify.GetUserPlaylistIds(user, cancellationToken).ConfigureAwait(false) ?? new List<string>();
-                    // get playlists owned by spotify
-                    userPlaylists.AddRange(await spotifyAlt.GetUserPlaylistIds(user, cancellationToken).ConfigureAwait(false) ?? new List<string>());
+                    var userPlaylists = await spotifyAlt.GetUserPlaylistIds(user, cancellationToken).ConfigureAwait(false) ?? new List<string>();
 
                     userPlaylists.ForEach(id =>
                     {
