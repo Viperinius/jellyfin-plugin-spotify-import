@@ -2,7 +2,7 @@
 name: "Spotify Import"
 guid: "F03D0ADB-289F-4986-BD6F-2468025249B3"
 imageUrl: "https://github.com/Viperinius/jellyfin-plugin-spotify-import/raw/master/viperinius-plugin-spotifyimport.png"
-version: "1.16.0.0"
+version: "1.17.0.0"
 targetAbi: "10.11.0.0"
 framework: "net9.0"
 overview: "This plugin imports playlists from Spotify."
@@ -28,6 +28,12 @@ artifacts:
 #- "MetaBrainz.MusicBrainz.dll"  #
 changelog: |2-
   # Changelog
+
+  ## [1.17.0.0] - 2026-02-24
+
+  ### Changed
+
+  - Rework API interactions to work with the latest Spotify API changes (see #79)
 
   ## [1.16.0.0] - 2025-10-21
 
