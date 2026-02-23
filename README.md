@@ -40,7 +40,30 @@ https://codeberg.org/Viperinius/jellyfin-plugins/raw/branch/master/manifest.json
 
 ### Prerequisites
 
-To connect to Spotify, you need to be authenticated. In order to do this, the plugin needs to know a `Client ID` and will ask you for authorisation (needed for reading private or collaborative playlists and your users' liked songs).
+Depending on what you want to import, you may or may not need to be authenticated to connect to Spotify. You need to authenticate using one of the two options described below in these cases:
+- If you want to import **(single) private playlists**: Use either the [cookie method](#authentication-option-cookie) or the [direct API](#authentication-option-direct-api)
+- If you want to import **a playlist created by Spotify** (like the `Release Radar`): You need to authenticate using a [cookie](#authentication-option-cookie)
+- If you want the full import of **all playlists of a user** to also find the **private playlists**: You need to authenticate using a [cookie](#authentication-option-cookie)
+- If you want to import your **liked / saved songs**: Use either the [cookie method](#authentication-option-cookie) or the [direct API](#authentication-option-direct-api)
+
+Public playlists and reading all public playlists of a user can be done without any extra information needed.
+
+#### Authentication option: Cookie
+
+To configure a Spotify session cookie as authentication method, follow these steps:
+
+1. Open the [Spotify web client](https://open.spotify.com/) and sign in
+2. Open the developer tools of your browser by pressing F12
+3. Depending on your browser, go to the section listing current cookies:
+    - Firefox: Tab `Storage`, then expand the `Cookies` section on the left and click on the entry for `https://open.spotify.com`
+    - Chrome / Edge: Tab `Application`, then expand the `Cookies` section on the left and click on the entry for `https://open.spotify.com`
+4. You should see a cookie with the name `sp_dc` (if not, make sure you are logged in), copy its `Value` entry
+5. Paste it in the field `Spotify Session Cookie` of the plugin configuration page
+6. Paste your Spotify user ID in the field `Spotify User ID of Cookie`. This ID can be found for example by going to your profile page and copying part of the URL: `https://open.spotify.com/user/<ID>`
+
+#### Authentication option: Direct API
+
+The plugin needs to know a `Client ID` and will ask you for authorisation (needed for reading private or collaborative playlists and your users' liked songs).
 
 This procedure needs a little bit of setup from your end (basically the same as described in the official [docs](https://developer.spotify.com/documentation/web-api/concepts/apps)):
 1. Head over to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) and sign in
@@ -53,14 +76,14 @@ This procedure needs a little bit of setup from your end (basically the same as 
    **Note:** If you want to use the localhost loopback address, you need to specify it as `http://127.0.0.1:8096` instead of `http://localhost:8096`, see [here](https://developer.spotify.com/documentation/web-api/concepts/redirect_uri)
 6. Save the settings
 
-### Get started
-
-After installing the plugin, visit its configuration page and add your Spotify Client ID (save afterwards) and click on `Authorize`. You will be redirected to Spotify to grant access. The plugin requests access to these scopes:
+Back in Jellyfin, go to the configuration page of the plugin and add your Spotify Client ID (save afterwards) and click on `Authorize`. You will be redirected to Spotify to grant access. The plugin requests access to these scopes:
 - Read private playlists
 - Read collaborative playlists
 - Read user library (to get "liked songs" list)
 
-When the authorisation is done, you can continue with the plugin configuration page.
+### Get started
+
+After installing the plugin, visit its configuration page. Perform the authentication steps (as described above) if needed. When the authorisation is done, you can continue with adding a playlist:
 
 #### Add Playlist
 
@@ -98,31 +121,15 @@ Afterwards, following runs of the import task will include all playlists of this
 > It is currently not possible to rename the playlists. Nor is it possible to selectively import only some of the playlists of a user without specifying each targeted playlist as described in [Add Playlist](#add-playlist).
 > The `Always From Scratch` option available for individual playlists is also not used here currently.
 
-> [!IMPORTANT]
-> Since 27th November 2024 any playlists owned / created by Spotify (e.g. `Release Radar`) are no longer accessible using the normal authentication method (client ID + authorisation). The plugin uses a workaround to still be able to import those playlists, but with a caveat:
-> If you want to import such playlists through the `User Configuration`, a Spotify web session cookie needs to be set in the plugin settings, see [below](#setting-spotify-cookie).
-
 #### Liked Songs
 
-You can also import your "liked songs" section as a playlist, but only for the user that was used to create the Spotify authentication token for the plugin. To do this, simply add a new playlist with the following ID as described in [Add Playlist](#add-playlist):
+You can also import your "liked songs" section as a playlist, but only for the user that was used to create the Spotify authentication token / the cookie for the plugin. To do this, simply add a new playlist with the following ID as described in [Add Playlist](#add-playlist):
 ```
 MyLikedSongs
 ```
 
 > [!NOTE]
 > If you've used this plugin prior to version 1.14.0.0, you need to re-authorise in the plugin settings. Otherwise you will see an error in your logs if you try to import liked songs. This happens because the authentication token created by previous versions did not request the right to read the Spotify user library yet.
-
-#### Setting Spotify Cookie
-
-To configure a Spotify session cookie as authentication fallback, follow these steps:
-
-1. Open the [Spotify web client](https://open.spotify.com/) and sign in
-2. Open the developer tools of your browser by pressing F12
-3. Depending on your browser, go to the section listing current cookies:
-    - Firefox: Tab `Storage`, then expand the `Cookies` section on the left and click on the entry for `https://open.spotify.com`
-    - Chrome / Edge: Tab `Application`, then expand the `Cookies` section on the left and click on the entry for `https://open.spotify.com`
-4. You should see a cookie with the name `sp_dc` (if not, make sure you are logged in), copy its `Value` entry
-5. Paste it in the field `Spotify Session Cookie` of the plugin configuration page
 
 #### Save Changes
 
@@ -163,6 +170,9 @@ Such a match will be accepted regardless of any differences in track title etc.
 > Note: For this to work, the track obviously has to be part of the MusicBrainz database and also has to have its ISRC (a global identifier for a recording) set. The ISRC is used to find the correct MusicBrainz item for a Spotify track.
 
 After enabling this method (and especially if you try to import multiple thousands of tracks), the next import might take a bit longer because the plugin will build an internal cache for ISRC <-> MusicBrainz ID relationships. If a track is not found based on its ISRC, the plugin will try again after a few weeks to check if it got added to the MusicBrainz database.
+
+> [!IMPORTANT]
+> For any playlists / tracks imported after February 2026, this method is not possible for the foreseeable future because Spotify does not return the ISRC for tracks anymore.
 
 ### Track match forcing
 
