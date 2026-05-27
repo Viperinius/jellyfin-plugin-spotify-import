@@ -46,7 +46,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
         /// <inheritdoc/>
         public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var libraries = _libraryManager.RootFolder.GetChildren(_userManager.Users.First(), true).Where(l => l is CollectionFolder cf && cf.CollectionType == Jellyfin.Data.Enums.CollectionType.music);
+            var libraries = _libraryManager.RootFolder.GetChildren(_userManager.GetUsers().First(), true).Where(l => l is CollectionFolder cf && cf.CollectionType == Jellyfin.Data.Enums.CollectionType.music);
 
             foreach (var library in libraries)
             {

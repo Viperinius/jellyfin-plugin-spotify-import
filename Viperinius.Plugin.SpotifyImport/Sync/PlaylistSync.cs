@@ -466,7 +466,7 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
                 return _userManager.GetUserByName(username);
             }
 
-            return _userManager.Users.FirstOrDefault(u => u?.HasPermission(PermissionKind.IsAdministrator) ?? false, null);
+            return _userManager.GetUsers().FirstOrDefault(u => u?.HasPermission(PermissionKind.IsAdministrator) ?? false, null);
         }
 
         protected bool SaveMatchInCache(string providerId, ProviderTrackInfo providerTrackInfo, Guid jellyfinTrackId)
