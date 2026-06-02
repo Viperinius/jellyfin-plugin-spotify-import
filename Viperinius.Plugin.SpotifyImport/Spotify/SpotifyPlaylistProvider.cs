@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -96,7 +97,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
 #pragma warning disable CS0618 // Type or member is obsolete
                 if (includeTracks && (playlist.Tracks != null || playlist.Items != null))
                 {
-                    var apiTracks = playlist.Tracks != null ? playlist.Tracks : playlist.Items;
+                    var apiTracks = playlist.Tracks ?? playlist.Items;
 #pragma warning restore CS0618 // Type or member is obsolete
                     await foreach (var track in _spotifyClient.Paginate(apiTracks!).ConfigureAwait(false))
                     {
@@ -105,7 +106,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                             return null;
                         }
 
-                        var trackInfo = track != null ? GetTrackInfo(track.Track) : null;
+                        var trackInfo = track != null ? GetTrackInfo(track.Track ?? track.Item) : null;
                         if (trackInfo != null)
                         {
                             tracks.Add(trackInfo);
@@ -113,6 +114,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                         else if ((Plugin.Instance?.Configuration.EnableVerboseLogging ?? false) && track != null)
                         {
                             _logger.LogWarning("Encountered invalid track in Spotify playlist ({PlaylistId}) added at: {AddedAt}", playlistId, track.AddedAt);
+                            _logger.LogInformation("-> raw track: {Json}", JsonSerializer.Serialize(track));
                         }
                     }
                 }
@@ -250,6 +252,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                     else if ((Plugin.Instance?.Configuration.EnableVerboseLogging ?? false) && track != null)
                     {
                         _logger.LogWarning("Encountered invalid track in Spotify Saved Tracks added at: {AddedAt}", track.AddedAt);
+                        _logger.LogInformation("-> raw track: {Json}", JsonSerializer.Serialize(track));
                     }
                 }
 

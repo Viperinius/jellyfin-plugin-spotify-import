@@ -404,6 +404,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                     else if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                     {
                         _logger.LogWarning("Encountered invalid track in Spotify Saved Tracks added at: {AddedAt}", addedAt);
+                        _logger.LogInformation("-> raw track: {Json}", jsonTrack);
                     }
                 }
 

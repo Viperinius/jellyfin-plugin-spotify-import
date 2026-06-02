@@ -103,7 +103,7 @@ namespace Viperinius.Plugin.SpotifyImport
                         {
                             if (string.IsNullOrEmpty(track.Id))
                             {
-                                _logger.LogError("Track has empty / invalid id: {Name}", track.Name);
+                                _logger.LogError("Track has empty / invalid id: {Name} {AlbumName}", track.Name, track.AlbumName);
                                 continue;
                             }
 
@@ -161,7 +161,7 @@ namespace Viperinius.Plugin.SpotifyImport
                     if (string.IsNullOrEmpty(track.Id))
                     {
                         result = false;
-                        _logger.LogError("Track has empty / invalid id: {Name}", track.Name);
+                        _logger.LogError("Track has empty / invalid id: {Name} {AlbumName}", track.Name, track.AlbumName);
                         continue;
                     }
 
