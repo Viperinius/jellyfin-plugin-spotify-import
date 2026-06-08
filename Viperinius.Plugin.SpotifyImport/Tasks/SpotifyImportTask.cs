@@ -83,7 +83,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tasks
                 }
             }
 
-            if (followedUsers.Length == 0 && playlistIds.Count == 0)
+            if (followedUsers.Length == 0 && playlistIds.Count == 0 && playlistIdsAlt.Count == 0)
             {
                 return;
             }

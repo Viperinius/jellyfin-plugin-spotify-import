@@ -44,7 +44,7 @@ namespace Viperinius.Plugin.SpotifyImport.Spotify
                 Plugin.Instance?.Configuration.SpotifyAuthToken == null ||
                 string.IsNullOrEmpty(Plugin.Instance?.Configuration.SpotifyAuthToken.AccessToken))
             {
-                _logger.LogError("Missing Spotify auth token or client ID!");
+                _logger.LogWarning("Missing Spotify auth token or client ID!");
                 return;
             }
 
