@@ -403,6 +403,9 @@ dotnet_diagnostic.CA1859.severity = suggestion
 # CA1861: Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array
 dotnet_diagnostic.CA1861.severity = suggestion
 
+# disable warning CA1873: Avoid potentially expensive logging
+dotnet_diagnostic.CA1873.severity = suggestion
+
 # disable warning CA2000: Dispose objects before losing scope
 dotnet_diagnostic.CA2000.severity = suggestion
 
