@@ -251,7 +251,7 @@ export default function (view) {
         Dashboard.showLoadingMsg();
 
         const mapUrl = ApiClient.getUrl('Viperinius.Plugin.SpotifyImport/ManualTrackMap');
-        ApiClient.getJSON(mapUrl, { 'api_key': ApiClient.accessToken() }).then(async result => {
+        ApiClient.getJSON(mapUrl, { 'ApiKey': ApiClient.accessToken() }).then(async result => {
             await loadTableRows(view, result);
             Dashboard.hideLoadingMsg();
         }).catch(response => {
