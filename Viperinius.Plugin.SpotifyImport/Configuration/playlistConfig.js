@@ -232,7 +232,7 @@ export default function (view) {
         Dashboard.showLoadingMsg();
 
         apiQueryOpts.UserId = Dashboard.getCurrentUserId();
-        apiQueryOpts.api_key = ApiClient.accessToken();
+        apiQueryOpts.ApiKey = ApiClient.accessToken();
 
         ApiClient.getPluginConfiguration(SpotifyImportConfig.pluginUniqueId).then(function (config) {
             if (config.EnableVerboseLogging) {
@@ -268,7 +268,7 @@ export default function (view) {
                     const fileName = path.split('\\').pop().split('/').pop();
                     const apiUrl = ApiClient.getUrl(SpotifyImportConfig.pluginApiBaseUrl + '/MissingTracksFile', {
                         name: fileName,
-                        'api_key': apiQueryOpts.api_key
+                        'ApiKey': apiQueryOpts.ApiKey
                     });
                     let pathHtml = '';
                     pathHtml += '<a is="emby-linkbutton" href="' + apiUrl + '" target="_blank" class="listItem listItem-border" style="color:inherit;">';
