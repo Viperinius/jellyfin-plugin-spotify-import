@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using Microsoft.Extensions.Logging;
@@ -22,11 +23,14 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
         {
             _logger = logger;
             _libraryManager = libraryManager;
+            JfArtistQueryCache = [];
         }
 
         public ItemMatchCriteria LastFailedCriteria { get; private set; }
 
         public bool IsEnabled => true;
+
+        protected Dictionary<string, IReadOnlyCollection<MediaBrowser.Controller.Entities.BaseItem>> JfArtistQueryCache { get; set; }
 
         public Audio? FindTrack(string providerId, ProviderTrackInfo providerTrackInfo)
         {
@@ -123,18 +127,43 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
                 return null;
             }
 
-            // only search for the first few characters to increase the chances of finding artists with slightly differing names between provider and jellyfin
-            var queryResult = _libraryManager.GetArtists(new MediaBrowser.Controller.Entities.InternalItemsQuery
+            // jellyfin search ignores special characters, so we may need to fallback to matching a name directly
+            var searchTerm = artistName.GetCleanValue();
+            var searchNameDirectly = false;
+            if (string.IsNullOrWhiteSpace(searchTerm))
             {
-                SearchTerm = artistName[0..Math.Min(artistName.Length, MaxSearchChars)],
-            });
+                searchTerm = artistName;
+                searchNameDirectly = true;
+            }
+            else
+            {
+                // only search for the first few characters to increase the chances of finding artists with slightly differing names between provider and jellyfin
+                searchTerm = searchTerm[0..Math.Min(searchTerm.Length, MaxSearchChars)];
+            }
 
-            if (queryResult.Items.Count == nextJfArtistIndex || queryResult.Items.Count == 0)
+            if (!JfArtistQueryCache.TryGetValue(searchTerm, out var queryResultItems))
+            {
+                var query = new MediaBrowser.Controller.Entities.InternalItemsQuery();
+                if (searchNameDirectly)
+                {
+                    query.NameStartsWith = searchTerm;
+                }
+                else
+                {
+                    query.SearchTerm = searchTerm;
+                }
+
+                var queryResult = _libraryManager.GetArtists(query);
+                queryResultItems = [.. queryResult.Items.Select(i => i.Item)];
+                JfArtistQueryCache.Add(searchTerm, queryResultItems);
+            }
+
+            if (queryResultItems.Count == nextJfArtistIndex || queryResultItems.Count == 0)
             {
                 if (Plugin.Instance?.Configuration.EnableVerboseLogging ?? false)
                 {
                     _logger.LogInformation("> Reached end of jellyfin artist list");
-                    if (queryResult.Items.Count == 0)
+                    if (queryResultItems.Count == 0)
                     {
                         _logger.LogInformation("> Did not find any artists for the name {Name}", artistName);
                     }
@@ -145,7 +174,7 @@ namespace Viperinius.Plugin.SpotifyImport.Sync
                 return null;
             }
 
-            var (item, _) = queryResult.Items.ElementAt(nextJfArtistIndex);
+            var item = queryResultItems.ElementAt(nextJfArtistIndex);
             nextJfArtistIndex++;
 
             if (item is not MusicArtist artist)
