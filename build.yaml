@@ -2,8 +2,8 @@
 name: "Spotify Import"
 guid: "F03D0ADB-289F-4986-BD6F-2468025249B3"
 imageUrl: "https://github.com/Viperinius/jellyfin-plugin-spotify-import/raw/master/viperinius-plugin-spotifyimport.png"
-version: "1.18.0.0"
-targetAbi: "12.0.0.0"
+version: "1.18.1.0"
+targetAbi: "12.4.0.0"
 framework: "net10.0"
 overview: "This plugin imports playlists from Spotify."
 description: >
@@ -28,6 +28,13 @@ artifacts:
 #- "MetaBrainz.MusicBrainz.dll"  #
 changelog: |2-
   # Changelog
+
+  ## [1.18.1.0] - 2026-11-14
+
+  ### Fixed
+
+  - Fix artist search if name starts with or consists entirely of special characters (see #92)
+  - Fix album artist comparison (was not actually checking Jellyfin album artists, but the artists field) (see #94)
 
   ## [1.18.0.0] - 2026-09-08
 
