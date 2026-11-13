@@ -501,7 +501,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Theory]
         [ClassData(typeof(AlbumDefaultDataMatch))]
         [ClassData(typeof(AlbumDefaultDataNoMatch))]
-        public void Album_Default(string jfName, string provName, bool shouldMatch)
+        public void Album_Default_Audio(string jfName, string provName, bool shouldMatch)
         {
             var prov = TrackHelper.CreateProviderItem("Track", provName, new List<string> { "Artist On Album" }, new List<string> { "Just Artist" });
             var jf = TrackHelper.CreateJfItem("Track", jfName, "Artist On Album", "Just Artist");
@@ -516,6 +516,27 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
             {
                 Assert.False(result.ComparisonResult, TrackHelper.GetErrorString(jf));
                 Assert.True(result.MatchedLevel == null, TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
+        [ClassData(typeof(AlbumDefaultDataMatch))]
+        [ClassData(typeof(AlbumDefaultDataNoMatch))]
+        public void Album_Default_MusicAlbum(string jfName, string provName, bool shouldMatch)
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", provName, new List<string> { "Artist On Album" }, new List<string> { "Just Artist" });
+            var jf = AlbumHelper.CreateJfItem(jfName, "Artist On Album", null);
+
+            var result = TrackComparison.AlbumNameEqual(jf, prov, ItemMatchLevel.Default);
+            if (shouldMatch)
+            {
+                Assert.True(result.ComparisonResult, AlbumHelper.GetErrorString(jf));
+                Assert.True(result.MatchedLevel <= ItemMatchLevel.Default, AlbumHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(result.ComparisonResult, AlbumHelper.GetErrorString(jf));
+                Assert.True(result.MatchedLevel == null, AlbumHelper.GetErrorString(jf));
             }
         }
 
@@ -564,7 +585,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Theory]
         [ClassData(typeof(AlbumCaseInsensitiveDataMatch))]
         [ClassData(typeof(AlbumCaseInsensitiveDataNoMatch))]
-        public void Album_CaseInsensitive(string jfName, string provName, bool shouldMatch)
+        public void Album_CaseInsensitive_Audio(string jfName, string provName, bool shouldMatch)
         {
             var prov = TrackHelper.CreateProviderItem("Track", provName, new List<string> { "Artist On Album" }, new List<string> { "Just Artist" });
             var jf = TrackHelper.CreateJfItem("Track", jfName, "Artist On Album", "Just Artist");
@@ -579,6 +600,27 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
             {
                 Assert.False(result.ComparisonResult, TrackHelper.GetErrorString(jf));
                 Assert.True(result.MatchedLevel == null, TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
+        [ClassData(typeof(AlbumCaseInsensitiveDataMatch))]
+        [ClassData(typeof(AlbumCaseInsensitiveDataNoMatch))]
+        public void Album_CaseInsensitive_MusicAlbum(string jfName, string provName, bool shouldMatch)
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", provName, new List<string> { "Artist On Album" }, new List<string> { "Just Artist" });
+            var jf = AlbumHelper.CreateJfItem(jfName, "Artist On Album", null);
+
+            var result = TrackComparison.AlbumNameEqual(jf, prov, ItemMatchLevel.IgnoreCase);
+            if (shouldMatch)
+            {
+                Assert.True(result.ComparisonResult, AlbumHelper.GetErrorString(jf));
+                Assert.True(result.MatchedLevel <= ItemMatchLevel.IgnoreCase, AlbumHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(result.ComparisonResult, AlbumHelper.GetErrorString(jf));
+                Assert.True(result.MatchedLevel == null, AlbumHelper.GetErrorString(jf));
             }
         }
 
@@ -635,7 +677,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Theory]
         [ClassData(typeof(AlbumNoPunctuationDataMatch))]
         [ClassData(typeof(AlbumNoPunctuationDataNoMatch))]
-        public void Album_NoPunctuation(string jfName, string provName, bool shouldMatch)
+        public void Album_NoPunctuation_Audio(string jfName, string provName, bool shouldMatch)
         {
             var prov = TrackHelper.CreateProviderItem("Track", provName, new List<string> { "Artist On Album" }, new List<string> { "Just Artist" });
             var jf = TrackHelper.CreateJfItem("Track", jfName, "Artist On Album", "Just Artist");
@@ -650,6 +692,27 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
             {
                 Assert.False(result.ComparisonResult, TrackHelper.GetErrorString(jf));
                 Assert.True(result.MatchedLevel == null, TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
+        [ClassData(typeof(AlbumNoPunctuationDataMatch))]
+        [ClassData(typeof(AlbumNoPunctuationDataNoMatch))]
+        public void Album_NoPunctuation_MusicAlbum(string jfName, string provName, bool shouldMatch)
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", provName, new List<string> { "Artist On Album" }, new List<string> { "Just Artist" });
+            var jf = AlbumHelper.CreateJfItem(jfName, "Artist On Album", null);
+
+            var result = TrackComparison.AlbumNameEqual(jf, prov, ItemMatchLevel.IgnorePunctuationAndCase);
+            if (shouldMatch)
+            {
+                Assert.True(result.ComparisonResult, AlbumHelper.GetErrorString(jf));
+                Assert.True(result.MatchedLevel <= ItemMatchLevel.IgnorePunctuationAndCase, AlbumHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(result.ComparisonResult, AlbumHelper.GetErrorString(jf));
+                Assert.True(result.MatchedLevel == null, AlbumHelper.GetErrorString(jf));
             }
         }
 
@@ -714,7 +777,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Theory]
         [ClassData(typeof(AlbumNoParensDataMatch))]
         [ClassData(typeof(AlbumNoParensDataNoMatch))]
-        public void Album_NoParens(string jfName, string provName, bool shouldMatch)
+        public void Album_NoParens_Audio(string jfName, string provName, bool shouldMatch)
         {
             var prov = TrackHelper.CreateProviderItem("Track", provName, new List<string> { "Artist On Album" }, new List<string> { "Just Artist" });
             var jf = TrackHelper.CreateJfItem("Track", jfName, "Artist On Album", "Just Artist");
@@ -729,6 +792,27 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
             {
                 Assert.False(result.ComparisonResult, TrackHelper.GetErrorString(jf));
                 Assert.True(result.MatchedLevel == null, TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
+        [ClassData(typeof(AlbumNoParensDataMatch))]
+        [ClassData(typeof(AlbumNoParensDataNoMatch))]
+        public void Album_NoParens_MusicAlbum(string jfName, string provName, bool shouldMatch)
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", provName, new List<string> { "Artist On Album" }, new List<string> { "Just Artist" });
+            var jf = AlbumHelper.CreateJfItem(jfName, "Artist On Album", null);
+
+            var result = TrackComparison.AlbumNameEqual(jf, prov, ItemMatchLevel.IgnoreParensPunctuationAndCase);
+            if (shouldMatch)
+            {
+                Assert.True(result.ComparisonResult, AlbumHelper.GetErrorString(jf));
+                Assert.True(result.MatchedLevel <= ItemMatchLevel.IgnoreParensPunctuationAndCase, AlbumHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(result.ComparisonResult, AlbumHelper.GetErrorString(jf));
+                Assert.True(result.MatchedLevel == null, AlbumHelper.GetErrorString(jf));
             }
         }
 
@@ -876,7 +960,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Theory]
         [ClassData(typeof(AlbumFuzzyDataMatch))]
         [ClassData(typeof(AlbumFuzzyDataNoMatch))]
-        public void Album_Fuzzy(string jfName, string provName, bool shouldMatch)
+        public void Album_Fuzzy_Audio(string jfName, string provName, bool shouldMatch)
         {
             TrackHelper.SetValidPluginInstance();
             var prov = TrackHelper.CreateProviderItem("Track", provName, new List<string> { "Artist On Album" }, new List<string> { "Just Artist" });
@@ -892,6 +976,28 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
             {
                 Assert.False(result.ComparisonResult, TrackHelper.GetErrorString(jf));
                 Assert.True(result.MatchedLevel == null, TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
+        [ClassData(typeof(AlbumFuzzyDataMatch))]
+        [ClassData(typeof(AlbumFuzzyDataNoMatch))]
+        public void Album_Fuzzy_MusicAlbum(string jfName, string provName, bool shouldMatch)
+        {
+            TrackHelper.SetValidPluginInstance();
+            var prov = TrackHelper.CreateProviderItem("Track", provName, new List<string> { "Artist On Album" }, new List<string> { "Just Artist" });
+            var jf = AlbumHelper.CreateJfItem(jfName, "Artist On Album", null);
+
+            var result = TrackComparison.AlbumNameEqual(jf, prov, ItemMatchLevel.Fuzzy);
+            if (shouldMatch)
+            {
+                Assert.True(result.ComparisonResult, AlbumHelper.GetErrorString(jf));
+                Assert.True(result.MatchedLevel <= ItemMatchLevel.Fuzzy, AlbumHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(result.ComparisonResult, AlbumHelper.GetErrorString(jf));
+                Assert.True(result.MatchedLevel == null, AlbumHelper.GetErrorString(jf));
             }
         }
 
@@ -983,7 +1089,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Theory]
         [ClassData(typeof(AnyArtistDefaultDataMatch))]
         [ClassData(typeof(AnyArtistDefaultDataNoMatch))]
-        public void AlbumArtist_Default(string jfName, string provName, bool shouldMatch)
+        public void AlbumArtist_Default_Audio(string jfName, string provName, bool shouldMatch)
         {
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "aaaaaaa", provName, "bbbbbbb" }, new List<string> { "Non-existent", "Artist 2" });
             var jf = TrackHelper.CreateJfItem("Track", "Album", jfName, "Non-existent");
@@ -1001,7 +1107,25 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Theory]
         [ClassData(typeof(AnyArtistDefaultDataMatch))]
         [ClassData(typeof(AnyArtistDefaultDataNoMatch))]
-        public void Artist_Default(string jfName, string provName, bool shouldMatch)
+        public void AlbumArtist_Default_MusicAlbum(string jfName, string provName, bool shouldMatch)
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "aaaaaaa", provName, "bbbbbbb" }, new List<string> { "Non-existent", "Artist 2" });
+            var jf = AlbumHelper.CreateJfItem("Album", jfName, null);
+
+            if (shouldMatch)
+            {
+                Assert.True(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.Default), AlbumHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.Default), AlbumHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
+        [ClassData(typeof(AnyArtistDefaultDataMatch))]
+        [ClassData(typeof(AnyArtistDefaultDataNoMatch))]
+        public void Artist_Default_Audio(string jfName, string provName, bool shouldMatch)
         {
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Non-existent", "Artist 2" }, new List<string> { "aaaaaaa", provName, "bbbbbbb" });
             var jf = TrackHelper.CreateJfItem("Track", "Album", "Non-existent", jfName);
@@ -1013,6 +1137,24 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
             else
             {
                 Assert.False(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.Default), TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
+        [ClassData(typeof(AnyArtistDefaultDataMatch))]
+        [ClassData(typeof(AnyArtistDefaultDataNoMatch))]
+        public void Artist_Default_MusicArtist(string jfName, string provName, bool shouldMatch)
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Non-existent", "Artist 2" }, new List<string> { "aaaaaaa", provName, "bbbbbbb" });
+            var jf = ArtistHelper.CreateJfItem(jfName, null);
+
+            if (shouldMatch)
+            {
+                Assert.True(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.Default), ArtistHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.Default), ArtistHelper.GetErrorString(jf));
             }
         }
 
@@ -1063,7 +1205,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Theory]
         [ClassData(typeof(AnyArtistCaseInsensitiveDataMatch))]
         [ClassData(typeof(AnyArtistCaseInsensitiveDataNoMatch))]
-        public void Artist_CaseInsensitive(string jfName, string provName, bool shouldMatch)
+        public void Artist_CaseInsensitive_Audio(string jfName, string provName, bool shouldMatch)
         {
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Non-existent", "Artist 2" }, new List<string> { "aaaaaaa", provName, "bbbbbbb" });
             var jf = TrackHelper.CreateJfItem("Track", "Album", "Non-existent", jfName);
@@ -1081,7 +1223,25 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Theory]
         [ClassData(typeof(AnyArtistCaseInsensitiveDataMatch))]
         [ClassData(typeof(AnyArtistCaseInsensitiveDataNoMatch))]
-        public void AlbumArtist_CaseInsensitive(string jfName, string provName, bool shouldMatch)
+        public void Artist_CaseInsensitive_MusicArtist(string jfName, string provName, bool shouldMatch)
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Non-existent", "Artist 2" }, new List<string> { "aaaaaaa", provName, "bbbbbbb" });
+            var jf = ArtistHelper.CreateJfItem(jfName, null);
+
+            if (shouldMatch)
+            {
+                Assert.True(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.IgnoreCase), ArtistHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.IgnoreCase), ArtistHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
+        [ClassData(typeof(AnyArtistCaseInsensitiveDataMatch))]
+        [ClassData(typeof(AnyArtistCaseInsensitiveDataNoMatch))]
+        public void AlbumArtist_CaseInsensitive_Audio(string jfName, string provName, bool shouldMatch)
         {
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "aaaaaaa", provName, "bbbbbbb" }, new List<string> { "Non-existent", "Artist 2" });
             var jf = TrackHelper.CreateJfItem("Track", "Album", jfName, "Non-existent");
@@ -1093,6 +1253,24 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
             else
             {
                 Assert.False(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnoreCase), TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
+        [ClassData(typeof(AnyArtistCaseInsensitiveDataMatch))]
+        [ClassData(typeof(AnyArtistCaseInsensitiveDataNoMatch))]
+        public void AlbumArtist_CaseInsensitive_MusicAlbum(string jfName, string provName, bool shouldMatch)
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "aaaaaaa", provName, "bbbbbbb" }, new List<string> { "Non-existent", "Artist 2" });
+            var jf = AlbumHelper.CreateJfItem("Album", jfName, null);
+
+            if (shouldMatch)
+            {
+                Assert.True(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnoreCase), AlbumHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnoreCase), AlbumHelper.GetErrorString(jf));
             }
         }
 
@@ -1149,7 +1327,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Theory]
         [ClassData(typeof(AnyArtistNoPunctuationDataMatch))]
         [ClassData(typeof(AnyArtistNoPunctuationDataNoMatch))]
-        public void Artist_NoPunctuation(string jfName, string provName, bool shouldMatch)
+        public void Artist_NoPunctuation_Audio(string jfName, string provName, bool shouldMatch)
         {
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Non-existent", "Artist 2" }, new List<string> { "aaaaaaa", provName, "bbbbbbb" });
             var jf = TrackHelper.CreateJfItem("Track", "Album", "Non-existent", jfName);
@@ -1167,7 +1345,25 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Theory]
         [ClassData(typeof(AnyArtistNoPunctuationDataMatch))]
         [ClassData(typeof(AnyArtistNoPunctuationDataNoMatch))]
-        public void AlbumArtist_NoPunctuation(string jfName, string provName, bool shouldMatch)
+        public void Artist_NoPunctuation_MusicArtist(string jfName, string provName, bool shouldMatch)
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Non-existent", "Artist 2" }, new List<string> { "aaaaaaa", provName, "bbbbbbb" });
+            var jf = ArtistHelper.CreateJfItem(jfName, null);
+
+            if (shouldMatch)
+            {
+                Assert.True(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.IgnorePunctuationAndCase), ArtistHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.IgnorePunctuationAndCase), ArtistHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
+        [ClassData(typeof(AnyArtistNoPunctuationDataMatch))]
+        [ClassData(typeof(AnyArtistNoPunctuationDataNoMatch))]
+        public void AlbumArtist_NoPunctuation_Audio(string jfName, string provName, bool shouldMatch)
         {
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "aaaaaaa", provName, "bbbbbbb" }, new List<string> { "Non-existent", "Artist 2" });
             var jf = TrackHelper.CreateJfItem("Track", "Album", jfName, "Non-existent");
@@ -1179,6 +1375,24 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
             else
             {
                 Assert.False(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnorePunctuationAndCase), TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
+        [ClassData(typeof(AnyArtistNoPunctuationDataMatch))]
+        [ClassData(typeof(AnyArtistNoPunctuationDataNoMatch))]
+        public void AlbumArtist_NoPunctuation_MusicAlbum(string jfName, string provName, bool shouldMatch)
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "aaaaaaa", provName, "bbbbbbb" }, new List<string> { "Non-existent", "Artist 2" });
+            var jf = AlbumHelper.CreateJfItem("Album", jfName, null);
+
+            if (shouldMatch)
+            {
+                Assert.True(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnorePunctuationAndCase), AlbumHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnorePunctuationAndCase), AlbumHelper.GetErrorString(jf));
             }
         }
 
@@ -1243,7 +1457,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Theory]
         [ClassData(typeof(AnyArtistNoParensDataMatch))]
         [ClassData(typeof(AnyArtistNoParensDataNoMatch))]
-        public void Artist_NoParens(string jfName, string provName, bool shouldMatch)
+        public void Artist_NoParens_Audio(string jfName, string provName, bool shouldMatch)
         {
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Non-existent", "Artist 2" }, new List<string> { "aaaaaaa", provName, "bbbbbbb" });
             var jf = TrackHelper.CreateJfItem("Track", "Album", "Non-existent", jfName);
@@ -1261,7 +1475,25 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         [Theory]
         [ClassData(typeof(AnyArtistNoParensDataMatch))]
         [ClassData(typeof(AnyArtistNoParensDataNoMatch))]
-        public void AlbumArtist_NoParens(string jfName, string provName, bool shouldMatch)
+        public void Artist_NoParens_MusicArtist(string jfName, string provName, bool shouldMatch)
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Non-existent", "Artist 2" }, new List<string> { "aaaaaaa", provName, "bbbbbbb" });
+            var jf = ArtistHelper.CreateJfItem(jfName, null);
+
+            if (shouldMatch)
+            {
+                Assert.True(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.IgnoreParensPunctuationAndCase), ArtistHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.IgnoreParensPunctuationAndCase), ArtistHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
+        [ClassData(typeof(AnyArtistNoParensDataMatch))]
+        [ClassData(typeof(AnyArtistNoParensDataNoMatch))]
+        public void AlbumArtist_NoParens_Audio(string jfName, string provName, bool shouldMatch)
         {
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "aaaaaaa", provName, "bbbbbbb" }, new List<string> { "Non-existent", "Artist 2" });
             var jf = TrackHelper.CreateJfItem("Track", "Album", jfName, "Non-existent");
@@ -1277,10 +1509,28 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         }
 
         [Theory]
+        [ClassData(typeof(AnyArtistNoParensDataMatch))]
+        [ClassData(typeof(AnyArtistNoParensDataNoMatch))]
+        public void AlbumArtist_NoParens_MusicAlbum(string jfName, string provName, bool shouldMatch)
+        {
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "aaaaaaa", provName, "bbbbbbb" }, new List<string> { "Non-existent", "Artist 2" });
+            var jf = AlbumHelper.CreateJfItem("Album", jfName, null);
+
+            if (shouldMatch)
+            {
+                Assert.True(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnoreParensPunctuationAndCase), AlbumHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.IgnoreParensPunctuationAndCase), AlbumHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
         // fuzzy matching for artists is disabled, should match the same things as NoParens
         [ClassData(typeof(AnyArtistNoParensDataMatch))]
         [ClassData(typeof(AnyArtistNoParensDataNoMatch))]
-        public void Artist_Fuzzy(string jfName, string provName, bool shouldMatch)
+        public void Artist_Fuzzy_Audio(string jfName, string provName, bool shouldMatch)
         {
             TrackHelper.SetValidPluginInstance();
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Non-existent", "Artist 2" }, new List<string> { "aaaaaaa", provName, "bbbbbbb" });
@@ -1300,7 +1550,27 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
         // fuzzy matching for artists is disabled, should match the same things as NoParens
         [ClassData(typeof(AnyArtistNoParensDataMatch))]
         [ClassData(typeof(AnyArtistNoParensDataNoMatch))]
-        public void AlbumArtist_Fuzzy(string jfName, string provName, bool shouldMatch)
+        public void Artist_Fuzzy_MusicArtist(string jfName, string provName, bool shouldMatch)
+        {
+            TrackHelper.SetValidPluginInstance();
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "Non-existent", "Artist 2" }, new List<string> { "aaaaaaa", provName, "bbbbbbb" });
+            var jf = ArtistHelper.CreateJfItem(jfName, null);
+
+            if (shouldMatch)
+            {
+                Assert.True(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.Fuzzy), ArtistHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(TrackComparison.ArtistOneContained(jf, prov, ItemMatchLevel.Fuzzy), ArtistHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
+        // fuzzy matching for artists is disabled, should match the same things as NoParens
+        [ClassData(typeof(AnyArtistNoParensDataMatch))]
+        [ClassData(typeof(AnyArtistNoParensDataNoMatch))]
+        public void AlbumArtist_Fuzzy_Audio(string jfName, string provName, bool shouldMatch)
         {
             TrackHelper.SetValidPluginInstance();
             var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "aaaaaaa", provName, "bbbbbbb" }, new List<string> { "Non-existent", "Artist 2" });
@@ -1313,6 +1583,26 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.Matchers
             else
             {
                 Assert.False(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.Fuzzy), TrackHelper.GetErrorString(jf));
+            }
+        }
+
+        [Theory]
+        // fuzzy matching for artists is disabled, should match the same things as NoParens
+        [ClassData(typeof(AnyArtistNoParensDataMatch))]
+        [ClassData(typeof(AnyArtistNoParensDataNoMatch))]
+        public void AlbumArtist_Fuzzy_MusicAlbum(string jfName, string provName, bool shouldMatch)
+        {
+            TrackHelper.SetValidPluginInstance();
+            var prov = TrackHelper.CreateProviderItem("Track", "Album", new List<string> { "aaaaaaa", provName, "bbbbbbb" }, new List<string> { "Non-existent", "Artist 2" });
+            var jf = AlbumHelper.CreateJfItem("Album", jfName, null);
+
+            if (shouldMatch)
+            {
+                Assert.True(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.Fuzzy), AlbumHelper.GetErrorString(jf));
+            }
+            else
+            {
+                Assert.False(TrackComparison.AlbumArtistOneContained(jf, prov, ItemMatchLevel.Fuzzy), AlbumHelper.GetErrorString(jf));
             }
         }
 

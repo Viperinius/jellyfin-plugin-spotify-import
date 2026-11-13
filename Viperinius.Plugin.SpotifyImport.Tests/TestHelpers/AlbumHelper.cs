@@ -17,7 +17,7 @@ namespace Viperinius.Plugin.SpotifyImport.Tests.TestHelpers
 
             if (artistName != null)
             {
-                album.Artists = new List<string> { artistName };
+                album.AlbumArtists = new List<string> { artistName };
             }
 
             if (tracks != null)

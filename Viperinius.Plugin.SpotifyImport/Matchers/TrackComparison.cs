@@ -226,7 +226,7 @@ namespace Viperinius.Plugin.SpotifyImport.Matchers
         public static bool AlbumArtistOneContained(MusicAlbum jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
         {
             var correctedMatchLevel = matchLevel >= ItemMatchLevel.Fuzzy ? ItemMatchLevel.IgnoreParensPunctuationAndCase : matchLevel;
-            return ListMatchOneItem(jfItem.Artists, providerItem.AlbumArtistNames, correctedMatchLevel);
+            return ListMatchOneItem(jfItem.AlbumArtists, providerItem.AlbumArtistNames, correctedMatchLevel);
         }
 
         public static bool ArtistOneContained(Audio jfItem, ProviderTrackInfo providerItem, ItemMatchLevel matchLevel)
